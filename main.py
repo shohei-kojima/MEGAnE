@@ -68,13 +68,13 @@ hybrid          =os.path.join(args.outdir, 'hybrid_reads.txt')
 ### insertion finder ###
 import general
 import blastn, parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
-from multiprocessing import Pool
 
 
 # 1. process unmapped overhangs
 # extract discordant reads from bam
 outfiles=[overhang_fa, overhang_pA, distant_txt, unmapped_fa]
 if args.p >= 2:
+    from multiprocessing import Pool
     count,interval=extract_discordant.flagstat(args)
     def extract_discordant_exe(n):
         extract_discordant_c.main(args, params, main_chrs_set, outfiles, n, count, interval)
