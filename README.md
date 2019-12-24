@@ -1,2 +1,2 @@
 # aimup
-AIMUP
+https://github.com/shohei-kojima/aimup
