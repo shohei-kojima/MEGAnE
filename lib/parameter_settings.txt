@@ -1,0 +1,14 @@
+discordant_reads_clip_len=20
+read_pair_gap_len=2000
+max_TSD_len=50
+polyA_overhang_threshold=0.7
+mapped_region_low_complex_threshold=0.7
+blastn_evalue=1e-05
+blastn_ident=80
+blastn_word_size=11
+overhang_evalue_threshold=1e-05
+gzip_compresslevel=1
+pA_scan_bin=12
+max_non_pA_count=2
+scan_loop_from_edge=5
+max_ref_genome_hits_for_unmapped=20
