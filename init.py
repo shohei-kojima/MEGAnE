@@ -12,5 +12,5 @@ from os.path import abspath,dirname,realpath,join
 def init():
     global base
     base=abspath(dirname(realpath(__file__)))
-    sys.path.append(join(base, 'src'))
+    sys.path.insert(0, join(base, 'src'))
 

@@ -23,6 +23,7 @@ class load:
         self.max_non_pA_count=2
         self.scan_loop_from_edge=5
         self.max_ref_genome_hits_for_unmapped=20
+        self.repbase_seq_slide_bin=5
         # read parameter setting file
         with open(f) as infile:
             for line in infile:
@@ -55,3 +56,5 @@ class load:
                     self.scan_loop_from_edge=int(ls[1])
                 elif ls[0] == 'max_ref_genome_hits_for_unmapped':
                     self.max_ref_genome_hits_for_unmapped=int(ls[1])
+                elif ls[0] == 'repbase_seq_slide_bin':
+                    self.repbase_seq_slide_bin=int(ls[1])

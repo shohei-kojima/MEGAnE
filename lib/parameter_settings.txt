@@ -12,3 +12,4 @@ pA_scan_bin=12
 max_non_pA_count=2
 scan_loop_from_edge=5
 max_ref_genome_hits_for_unmapped=20
+repbase_seq_slide_bin=5
