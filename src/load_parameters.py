@@ -27,6 +27,10 @@ class load:
         self.min_read_num_per_breakpoint_edge=1
         self.max_breakpoint_gap=50
         self.max_TSD_len=50
+        self.ref_TE_slop_len=0
+        self.blastn_evalue_for_mapped=float('1e-05')
+        self.blastn_ident_for_mapped=98
+        self.blastn_word_size_for_mapped=30
         # read parameter setting file
         with open(f) as infile:
             for line in infile:
@@ -67,3 +71,14 @@ class load:
                     self.max_breakpoint_gap=int(ls[1])
                 elif ls[0] == 'max_TSD_len':
                     self.max_TSD_len=int(ls[1])
+                elif ls[0] == 'ref_TE_slop_len':
+                    if not int(ls[1]) < 0:
+                        self.ref_TE_slop_len=int(ls[1])
+                    else:
+                        print('Warning: ref_TE_slop_len must be positive value. Changed to 0 and continue this analysis.')
+                elif ls[0] == 'blastn_evalue_for_mapped':
+                    self.blastn_evalue_for_mapped=float(ls[1])
+                elif ls[0] == 'blastn_ident_for_mapped':
+                    self.blastn_ident_for_mapped=int(ls[1])
+                elif ls[0] == 'blastn_word_size_for_mapped':
+                    self.blastn_word_size_for_mapped=int(ls[1])

@@ -7,9 +7,27 @@ See file LICENSE for details.
 '''
 
 
-# load MEI info from RepBase
 import utils
+from pybedtools import BedTool
+
+
+# load MEI info from RepBase
 mes,all_clas=utils.load_me_classification(filenames.reshaped_rep)
+
+
+# list up simple repeat in the ref genome
+def load_ref_simple_rep_as_bed(filenames):
+    simple=''
+    with open(filenames.repout_bed) as infile:
+        for line in infile:
+            ls=line.split()
+            name,clas=ls[3].split(':')
+            if clas == 'Simple_repeat':
+                simple += line
+            elif mes[name] in simple_rep:
+                simple += line
+    simple=BedTool(simple, from_string=True)
+    return simple
 
 
 def pairing(args, params, filenames):
@@ -47,6 +65,7 @@ def pairing(args, params, filenames):
                             if not end in R_poss[m][chr]:
                                 R_poss[m][chr][end]=[]
                             R_poss[m][chr][end].append(c)
+
     # load breakpoints from pA file
     L_pA,R_pA={},{}
     for chr in args.main_chrs_set:
@@ -69,6 +88,7 @@ def pairing(args, params, filenames):
                     if not end in R_pA[chr]:
                         R_pA[chr][end]=[]
                     R_pA[chr][end].append(line)
+
     # sweep, gather pA-only overhang and normal overhang
     outfile=open(filenames.breakpoint_pairs, 'w')
     L_added={}
@@ -126,6 +146,7 @@ def pairing(args, params, filenames):
                             iter_n += 1
                         elif (r - l) >= params.max_TSD_len:
                             break
+
     # antisense-direction, long pA
     for m in args.rep_with_pA:
         if m in all_clas:
@@ -150,6 +171,7 @@ def pairing(args, params, filenames):
                                 iter_n += 1
                             elif (r - l) >= params.max_TSD_len:
                                 break
+
     # antisense-direction, long pA
     for m in args.rep_with_pA:
         if m in all_clas:
@@ -177,3 +199,157 @@ def pairing(args, params, filenames):
     outfile.close()
 
 
+def add_TE_subclass(filenames, infpath, outfpath):
+    # load bed file
+    L,R={},{}
+    for chr in hu_chrs:
+        L[chr]={}
+        R[chr]={}
+    with open(infpath) as infile:
+        for line in infile:
+            ls=line.split()
+            r=ls[3].split(':')[0]
+            l=ls[4].split(':')[0]
+            if not l in L[ls[0]]:
+                L[ls[0]][l]={}
+            L[ls[0]][l][ls[7]]=[[],[]]
+            if not r in R[ls[0]]:
+                R[ls[0]][r]={}
+            R[ls[0]][r][ls[7]]=[[],[]]
+
+    # load e-values
+    files=(filenames.overhang_MEI, filenames.unmapped_MEI)
+    for f in files:
+        with open(f) as infile:
+            for line in infile:
+                ls=line.split()
+                poss=ls[0].split(';')
+                meis=ls[1].split(';')
+                meis_d={}
+                for m in meis:
+                    c=name_to_clas[m]
+                    if not c in meis_d:
+                        meis_d[c]=''
+                    meis_d[c] += m +';'
+                for p in poss[:-1]:
+                    chr,tmp=p.split(':', 1)
+                    start,tmp=tmp.split('-', 1)
+                    end,dir,_=tmp.split('/', 2)
+                    if dir == 'L':
+                        pos=start
+                        if pos in L[chr]:
+                            for c in meis_d:
+                                if c in L[chr][pos]:
+                                    L[chr][pos][c][0].append(float(ls[2]))
+                                    L[chr][pos][c][1].append(meis_d[c])
+                    else:
+                        pos=end
+                        if pos in R[chr]:
+                            for c in meis_d:
+                                if c in R[chr][pos]:
+                                    R[chr][pos][c][0].append(float(ls[2]))
+                                    R[chr][pos][c][1].append(meis_d[c])
+
+    # add TE names to the existing file
+    with open(outfpath, 'w') as outfile:
+        with open(infpath) as infile:
+            for line in infile:
+                line=line.strip()
+                ls=line.split()
+                r=ls[3].split(':')[0]
+                l=ls[4].split(':')[0]
+                if len(L[ls[0]][l][ls[7]][0]) >= 1:
+                    l_min=min(L[ls[0]][l][ls[7]][0])
+                else:
+                    l_min=100
+                if len(R[ls[0]][r][ls[7]][0]) >= 1:
+                    r_min=min(R[ls[0]][r][ls[7]][0])
+                else:
+                    r_min=100
+                eval=min(l_min,r_min)
+                vsl,vsr=[],[]
+                msl,msr=[],[]
+                if len(L[ls[0]][l][ls[7]][0]) >= 1:
+                    for v,m in zip(L[ls[0]][l][ls[7]][0], L[ls[0]][l][ls[7]][1]):
+                        vsl.append(v)
+                        msl.append(m)
+                    vsl=[ str(v) for v in vsl ]
+                else:
+                    vsl.append('NA')
+                    msl.append('NA')
+                if len(R[ls[0]][r][ls[7]][0]) >= 1:
+                    for v,m in zip(R[ls[0]][r][ls[7]][0], R[ls[0]][r][ls[7]][1]):
+                        vsr.append(v)
+                        msr.append(m)
+                    vsr=[ str(v) for v in vsr ]
+                else:
+                    vsr.append('NA')
+                    msr.append('NA')
+                outfile.write('\t'.join(ls[:8]) +'\t'+ ';'.join(vsr) +'\t'+ ';'.join(vsl) +'\t'+ ';'.join(msr) +'\t'+ ';'.join(msl) +'\n')
+
+
+def remove_cand_inside_TE(args, params, filenames):
+    # remove breakpoints in simple repeats
+    simple=load_ref_simple_rep_as_bed(filenames)
+    breakpoints=set()
+    with open(filenames.breakpoint_info) as infile:
+        for line in infile:
+            ls=line.split()
+            tmp=set()
+            for l in ls[10:12]:
+                for i in l.split(';'):
+                    if not (i == '') and not (i == 'NA'):
+                        tmp.add(i)
+            tmp=sorted(list(tmp))
+            tmp=';'.join(tmp)
+            breakpoints.add('\t'.join(ls[:3]) +'\t'+ tmp)
+    breakpoints=list(breakpoints)
+    breakpoints='\n'.join(breakpoints) +'\n'
+    breakpoints=BedTool(breakpoints, from_string=True).sort()
+    breakpoints=breakpoints.intersect(simple, v=True)
+    del(simple)
+
+    # retrieve candidate hotspots overlaps with reference TEs
+    ref_genome_tes=BedTool(filenames.repout_bed)
+    if not params.ref_TE_slop_len == 0:
+        ref_genome_tes=ref_genome_tes.slop(g=args.fai, b=slop_len)
+    breakpoints_intersect=breakpoints.intersect(ref_genome_tes, wa=True, wb=True)
+    del(ref_genome_tes)
+
+    # load similar TEs
+    similar_te_d={}
+    with open(filenames.similar_rep_list) as infile:
+        for line in infile:
+            ls=line.split()
+            similar_te_d[ls[0]]=ls[1].split(';')
+
+    # remove breakpoints overlaps with similar TEs
+    remove=set()
+    for line in breakpoints_intersect:
+        line=str(line)
+        ls=line.strip().split('\t')
+        ref_te,ref_te_class=ls[7].split(':')
+        if not ref_te_class == 'Simple_repeat':
+            hit_te=set(ls[3].split(';'))
+            tmp=[]
+            for m in hit_te:
+                tmp.extend(similar_te_d[m])
+            tmp=set(tmp)
+            if ref_te in tmp:
+                remove.add('\t'.join(ls[:3]))
+
+    retain=set()
+    for line in breakpoints:
+        line=str(line)
+        ls=line.split()
+        id='\t'.join(ls[:3])
+        if not id in remove:
+            retain.add(id)
+
+    with open(filenames.breakpoint_clean, 'w') as outfile:
+        with open(filenames.breakpoint_info) as infile:
+            for line in infile:
+                ls=line.split()
+                id='\t'.join(ls[:3])
+                if id in retain:
+                    outfile.write(line)

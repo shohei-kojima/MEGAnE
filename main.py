@@ -60,6 +60,9 @@ args.rep_with_pA=setup.rep_with_pA
 # output file names
 import utils
 filenames=utils.empclass()
+
+filenames.repdb           =os.path.join(args.outdir, 'repdb')
+filenames.repout_bed      =os.path.join(args.outdir, 'repout.bed')
 filenames.reshaped_rep    =os.path.join(args.outdir, 'reshaped_repbase.fa')
 filenames.rep_slide_file  =os.path.join(args.outdir, 'reshaped_repbase_slide.fa')
 filenames.blast0_res      =os.path.join(args.outdir, 'blastn_rep_slide.txt')
@@ -82,21 +85,29 @@ filenames.unmapped_MEI    =os.path.join(args.outdir, 'unmapped_to_MEI_list.txt')
 filenames.hybrid          =os.path.join(args.outdir, 'hybrid_reads.txt')
 
 filenames.breakpoint_pairs=os.path.join(args.outdir, 'breakpoint_pairs.txt')
+filenames.breakpoint_info =os.path.join(args.outdir, 'breakpoint_pairs_info.txt')
+filenames.breakpoint_clean=os.path.join(args.outdir, 'breakpoint_pairs_info_clean.txt')
+
+filenames.mapped_fa_select=os.path.join(args.outdir, 'mapped_selected.fa')
+filenames.blast4_res      =os.path.join(args.outdir, 'blastn_result_mapped_ref.txt')
+filenames.bp_pair_single  =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons.txt')
+filenames.bp_info_single  =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons_info.txt')
+filenames.bp_clean_single =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons_clean.txt')
 
 
 # preprocess repbase file
 import reshape_rep, blastn
-reshape_rep.reshape(args, reshaped_rep)
+reshape_rep.reshape(args, filenames)
+blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
+reshape_rep.slide_rep_file(args, params, filenames)
+#blastn.blastn(args, params, filenames.rep_slide_file, filenames.repdb, filenames.blast0_res)  # params, q_path, db_path, outfpath
+reshape_rep.parse_slide_rep_blastn_res(args, filenames)
 
-blastn.makeblastdb(reshaped_rep)
-args.repdb=blastn.dbpath
-
-reshape_rep.slide_rep_file(args, params, reshaped_rep, rep_slide_file)
-#blastn.blastn(args, params, rep_slide_file, args.repdb, blast0_res)  # params, q_path, db_path, outfpath
-reshape_rep.parse_slide_rep_blastn_res(args, blast0_res, similar_rep_list)
+reshape_rep.reshape_repout_to_bed(args, filenames)
 
 #os.remove(blast0_res)
 #os.remove(rep_slide_file)
+
 exit()
 
 
@@ -105,7 +116,6 @@ import parse_blastn_result, find_additional_pA, extract_discordant, extract_disc
 
 
 # 1. process unmapped overhangs
-# extract discordant reads from bam
 if args.p >= 2:
     from multiprocessing import Pool
     count,interval=extract_discordant.flagstat(args)
@@ -117,27 +127,19 @@ if args.p >= 2:
 else:
     extract_discordant_c.main(args, params, filenames, None, None, None)
 exit()
-# blastn overhangs to repeat seqs
-blastn.blastn(args, params, filenames.overhang_fa, args.repdb, filenames.blast1_res)
-# find overhangs originating from MEIs
+blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
 parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)
-# find additional pA overhang from the rest of the overhangs
 find_additional_pA.find(params, filenames.blast1_res, filenames.overhang_fa, filenames.additional_pA)
-# gzip or delete unnecessary files
+
 utils.gzip_or_del(args, params, filenames.blast1_res)
 
 # 2. process unmapped reads
-# blastn unmapped reads to repeat seqs
-blastn.blastn(args, params, filenames.unmapped_fa, args.repdb, filenames.blast2_res)
-# find unmapped reads mapped to MEIs and output fasta
+blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
 parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
-# gzip or delete unnecessary files
 utils.gzip_or_del(args, params, filenames.blast2_res)
-# blastn unmapped reads to repeat seqs
 blastn.blastn(args, params, filenames.unmapped_hit_fa, args.fadb, filenames.blast3_res)
-# find unmapped reads mapped both to MEIs and ref genome
 parse_blastn_result.find_chimeric_unmapped(args, params, filenames.blast3_res, filenames.unmapped_MEI)
-# gzip or delete unnecessary files
+
 utils.gzip_or_del(args, params, filenames.blast3_res)
 utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
 
@@ -145,6 +147,19 @@ utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
 import process_distant_read
 process_distant_read.process_reads(args, params, filenames, filenames.distant_txt, filenames.hybrid)  # need change, repbase
 
-# 4. merge all results, identify MEI
+# 4. merge all results, identify MEI outside of similar MEs
 import pair_breakpoints
 pair_breakpoints.pairing(args, params, filenames)
+pair_breakpoints.add_TE_subclass(filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
+pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
+
+# 5. identify MEI nested in similar MEs
+import process_mapped_seq
+process_mapped_seq.retrieve_mapped_seq(filenames)
+process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
+process_mapped_seq.pairing(filenames)
+pair_breakpoints.add_TE_subclass(filenames, filenames.bp_pair_single, filenames.bp_info_single)
+pair_breakpoints.remove_redundant_pairs(filenames)
+
+# 6. pool results and filter candidates
+
