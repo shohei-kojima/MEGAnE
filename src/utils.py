@@ -8,6 +8,11 @@ See file LICENSE for details.
 
 import os,gzip,shutil
 
+
+class empclass:
+    pass
+
+
 def gzip_or_del(args, params, file):
     if args.keep is None:
         os.remove(file)
@@ -32,4 +37,20 @@ def parse_fasta(path_to_file):
                 seq += line.strip()
         tmp[header]=seq
     return tmp
+
+
+def load_me_classification(path_to_file):
+    mes,all_clas={},set()
+    with open(f) as infile:
+        for line in infile:
+            if '>' in line:
+                ls=line.strip().replace('>', '').split('\t')
+                if len(ls) >= 2:
+                    clas=ls[1]
+                    if ls[0] == 'SVA2':  # exist in humrep.ref of RepBase24.01
+                        clas='SINE'
+                clas=clas.replace(' ', '_')
+                mes[ls[0]]=clas
+                all_clas.add(clas)
+    return mes, all_clas
 

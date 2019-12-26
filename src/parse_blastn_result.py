@@ -99,7 +99,7 @@ def unmapped_to_fa(params, unmapped_fa, blast_res, outfpath):
                         unmapped_hit_fa.write(hs +'\n'+ cs +'\n')
 
 
-def find_chimeric_unmapped(params, main_chrs, blast_res, outfpath):
+def find_chimeric_unmapped(args, params, blast_res, outfpath):
     # load blast results
     res={}
     with open(blast_res) as infile:
@@ -140,7 +140,7 @@ def find_chimeric_unmapped(params, main_chrs, blast_res, outfpath):
             meis.append([breakpoint +'/'+ readname, dir, te, eval])
         for line in res_few[id]:
             ls=line.split()
-            if ls[1] in main_chrs:
+            if ls[1] in args.main_chrs_set:
                 sstart,send= int(ls[8]) - 1, int(ls[9])  # 1-base to 0-base
                 dir='+'
                 if sstart > send:

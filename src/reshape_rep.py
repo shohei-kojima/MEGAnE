@@ -10,13 +10,12 @@ import os
 from utils import parse_fasta
 
 def reshape(args, outfpath):
-    remove_headers={'HSFAU', 'KER', 'Pseudogene', 'SAT', 'Satellite', 'satellite', 'snRNA'}
     fa=parse_fasta(args.rep)
     fa_keep={}
     for header in fa:
         hs=header.split('\t')
         if len(hs) == 3:
-            if not hs[1] in remove_headers:
+            if not hs[1] in args.rep_headers_to_be_removed:
                 fa_keep[header]=fa[header]
     with open(outfpath, 'w') as outfile:
         for header in fa_keep:

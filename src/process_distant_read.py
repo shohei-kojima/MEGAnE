@@ -6,7 +6,7 @@ All Rights Reserved
 See file LICENSE for details.
 '''
 
-def process_reads(args, params, distant_txt, outfpath):
+def process_reads(args, params, filenames):
     
     def process_bed(bed):
         ids={}
@@ -24,20 +24,7 @@ def process_reads(args, params, distant_txt, outfpath):
         return ids
 
     # read repbase file, pick up simple repeats
-    name_to_clas={}
-    with open(args.rep) as infile:
-        for line in infile:
-            if '>' in line:
-                ls=line.strip().replace('>', '').split('\t')
-                if len(ls) >= 2:
-                    clas=ls[1]
-                    if ls[0] == 'SVA2':
-                        clas='SINE'
-                elif ('Alu' in ls[0]) or ('FLA' in ls[0]):
-                    clas='SINE1/7SL'
-                elif 'LTR26' in ls[0]:
-                    clas='ERV1'
-                name_to_clas[ls[0]]=clas
+    mes,_=utils.load_me_classification(filenames.reshaped_rep)
 
     # list up simple repeat in the ref genome
     simple=''
@@ -48,17 +35,16 @@ def process_reads(args, params, distant_txt, outfpath):
             name,clas=ls[3].split(':')
             if clas == 'Simple_repeat':
                 simple += line
-            elif name_to_clas[name] in simple_rep:
+            elif mes[name] in args.rep_headers_to_be_removed:
                 simple += line
             else:
                 tes += line
-            pass
     simple=BedTool(simple, from_string=True)
     tes=BedTool(tes, from_string=True)
 
     # pairing of distant reads
     d={}
-    with open(distant_txt) as infile:
+    with open(filenames.distant_txt) as infile:
         for line in infile:
             ls=line.split()
             id,dir=ls[0].split('/')
@@ -74,7 +60,7 @@ def process_reads(args, params, distant_txt, outfpath):
     # extract reads intersect with ref TEs
     d={}
     bed=[]
-    with open(distant_txt) as infile:
+    with open(filenames.distant_txt) as infile:
         for line in infile:
             ls=line.split()
             rn,dir=ls[0].split('/')
@@ -115,8 +101,8 @@ def process_reads(args, params, distant_txt, outfpath):
                 retain[id +'/'+ first_or_second]=sorted(list(pair_d[id][key]))
 
     # output bed
-    with open(outfpath, 'w') as outfile:
-        with open(distant_txt) as infile:
+    with open(filenames.hybrid, 'w') as outfile:
+        with open(filenames.distant_txt) as infile:
             for line in infile:
                 ls=line.split()
                 if ls[0] in retain:

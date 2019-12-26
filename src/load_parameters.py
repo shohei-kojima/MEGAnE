@@ -24,6 +24,9 @@ class load:
         self.scan_loop_from_edge=5
         self.max_ref_genome_hits_for_unmapped=20
         self.repbase_seq_slide_bin=5
+        self.min_read_num_per_breakpoint_edge=1
+        self.max_breakpoint_gap=50
+        self.max_TSD_len=50
         # read parameter setting file
         with open(f) as infile:
             for line in infile:
@@ -58,3 +61,9 @@ class load:
                     self.max_ref_genome_hits_for_unmapped=int(ls[1])
                 elif ls[0] == 'repbase_seq_slide_bin':
                     self.repbase_seq_slide_bin=int(ls[1])
+                elif ls[0] == 'min_read_num_per_breakpoint_edge':
+                    self.min_read_num_per_breakpoint_edge=int(ls[1])
+                elif ls[0] == 'max_breakpoint_gap':
+                    self.max_breakpoint_gap=int(ls[1])
+                elif ls[0] == 'max_TSD_len':
+                    self.max_TSD_len=int(ls[1])

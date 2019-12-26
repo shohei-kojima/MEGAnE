@@ -32,8 +32,12 @@ def setup(args, base):
         main_chr_path=args.mainchr
     else:
         main_chr_path=join(base, 'lib/human_main_chrs.txt')
-    import load_main_chrs
-    main_chrs=load_main_chrs.load(main_chr_path)
+    main_chrs=[]
+    with open(main_chr_path) as infile:
+        for line in infile:
+            chr=line.strip()
+            if not chr == '':
+                main_chrs.append(chr)
     if args.mainchr is None:
         if args.gender == 'female':
             main_chrs=main_chrs[:-1]
@@ -47,3 +51,29 @@ def setup(args, base):
         param_path=join(base, 'lib/parameter_settings.txt')
     import load_parameters
     params=load_parameters.load(param_path)
+
+    # load rep headers to be removed
+    global rep_headers_to_be_removed
+    if args.repremove is not None:
+        param_path=args.repremove
+    else:
+        param_path=join(base, 'lib/non_ME_rep_headers.txt')
+    rep_headers_to_be_removed=set()
+    with open(param_path) as infile:
+        for line in infile:
+            line=line.strip().replace(' ', '_')
+            if not line == '':
+                rep_headers_to_be_removed.add(line)
+
+    # load rep with polyA tail
+    global rep_with_pA
+    if args.pA_ME is not None:
+        param_path=args.pA_ME
+    else:
+        param_path=join(base, 'lib/ME_with_polyA_tail.txt')
+    rep_with_pA=set()
+    with open(param_path) as infile:
+        for line in infile:
+            line=line.strip().replace(' ', '_')
+            if not line == '':
+                rep_with_pA.add(line)

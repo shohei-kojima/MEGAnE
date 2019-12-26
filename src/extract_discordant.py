@@ -11,16 +11,16 @@ import os,sys,pysam,itertools,math,shutil,cython
 from Bio.Seq import Seq
 
 
-nt=['A', 'T', 'G', 'C']
+nt=('A', 'T', 'G', 'C')
 
-cigar_op=['M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X']
-cigar_ref_retain=['M', 'D', 'N', '=', 'X']
-cigar_read_retain=['M', 'I', '=', 'X']
+cigar_op={'M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X'}
+cigar_ref_retain={'M', 'D', 'N', '=', 'X'}
+cigar_read_retain={'M', 'I', '=', 'X'}
 
 
 # flagstat
 def flagstat(args):
-    flag=pysam.flagstat(args.b, '-@ %d' % args.p)  # multi process
+    flag=pysam.flagstat(args.b, '-@ %d' % args.p - 1)  # multi process
     count= int(flag.split()[0])
     interval= math.ceil(count / args.p)
     return count,interval
@@ -38,19 +38,23 @@ def concat(args, outfiles):
 
 
 # main
-def main(args, params, main_chrs, outfiles, n, count, interval):
+def main(args, params, filenames, n, count, interval):
     if not n is None:  # multi process
         start= interval * n
         end= min(interval * (n + 1), count)
-        f_overhang  =open(outfiles[0] + str(n) + '.txt', 'w')
-        f_pA        =open(outfiles[1] + str(n) + '.txt', 'w')
-        f_distant   =open(outfiles[2] + str(n) + '.txt', 'w')
-        f_unmapped  =open(outfiles[3] + str(n) + '.txt', 'w')
+        f_overhang  =open(filenames.overhang_fa + str(n) + '.txt', 'w')
+        f_pA        =open(filenames.overhang_pA + str(n) + '.txt', 'w')
+        f_distant   =open(filenames.distant_txt + str(n) + '.txt', 'w')
+        f_unmapped  =open(filenames.unmapped_fa + str(n) + '.txt', 'w')
+        f_mapped    =open(filenames.mapped_fa   + str(n) + '.txt', 'w')
+        f_del       =open(filenames.del_txt     + str(n) + '.txt', 'w')
     else:  # single process
-        f_overhang  =open(outfiles[0], 'w')
-        f_pA        =open(outfiles[1], 'w')
-        f_distant   =open(outfiles[2], 'w')
-        f_unmapped  =open(outfiles[3], 'w')
+        f_overhang  =open(filenames.overhang_fa, 'w')
+        f_pA        =open(filenames.overhang_pA, 'w')
+        f_distant   =open(filenames.distant_txt, 'w')
+        f_unmapped  =open(filenames.unmapped_fa, 'w')
+        f_mapped    =open(filenames.mapped_fa  , 'w')
+        f_del       =open(filenames.del_txt    , 'w')
 
     def complement(string):
         c=Seq(string).reverse_complement()
@@ -157,7 +161,7 @@ def main(args, params, main_chrs, outfiles, n, count, interval):
                             if len(b) >= 9:
                                 first_or_second='/1' if b[-7] == '1' else '/2'
                             elems=[]
-                            if ls[2] in main_chrs:
+                            if ls[2] in args.main_chrs_set:
                                 if 'S' in ls[5]:
                                     elems.append([ls[2], ls[3], ls[5], strand])  # chr, pos, cigar, strand
                             if 'SA:Z:' in line:
@@ -166,7 +170,7 @@ def main(args, params, main_chrs, outfiles, n, count, interval):
                                         lsp=l.replace('SA:Z:', '').split(';')
                                         for i in lsp[:-1]:
                                             isp=i.split(',')
-                                            if isp[0] in main_chrs:
+                                            if isp[0] in args.main_chrs_set:
                                                 elems.append([isp[0], isp[1], isp[3], isp[2]])
                                         break
                                 for chr,pos,_,_ in elems[1:]:
@@ -181,10 +185,11 @@ def main(args, params, main_chrs, outfiles, n, count, interval):
                                             lsp=l.replace('XA:Z:', '').split(';')
                                             for i in lsp[:-1]:
                                                 isp=i.split(',')
-                                                if isp[0] in main_chrs:
+                                                if isp[0] in args.main_chrs_set:
                                                     elems.append([isp[0], isp[1][1:], isp[2], isp[1][0]])
                                             break
                                 d={}
+                                d_mapped={}
                                 rseq=complement(fseq)
                                 for chr,pos,cigar,strand in elems:
                                     breakpoint,L_clip_len,R_clip_len=determine_breakpoint_from_cigar(cigar)
@@ -211,16 +216,26 @@ def main(args, params, main_chrs, outfiles, n, count, interval):
                                                 else:
                                                     if not clip_seq in d:
                                                         d[clip_seq]=[]
+                                                    if not mapped_seq in d_mapped:
+                                                        d_mapped[mapped_seq]=[]
                                                     h= chr +':'+ str(start) +'-'+ str(end) +'/'+ breakpoint +'/'+ ls[0] + first_or_second +'/'+ strand
                                                     d[clip_seq].append(h)
+                                                    d_mapped[mapped_seq].append(h)
                                 if len(d) >= 1:
                                     out_overhang=''
                                     for seq in d:
                                         out_overhang += '>'
                                         for i in d[seq]:
                                             out_overhang += i +';'
-                                    out_overhang += '\n'+ seq +'\n'
-                                    f_overhang.write(out_overhang)   # end retrieving overhangs
+                                        out_overhang += '\n'+ seq +'\n'
+                                    f_overhang.write(out_overhang)   # end retrieving overhang seqs
+                                    out_mapped=''
+                                    for seq in d_mapped:
+                                        out_mapped += '>ref;'
+                                        for i in d_mapped[seq]:
+                                            out_mapped += i +';'
+                                        out_mapped += '\n'+ seq +'\n'
+                                    f_mapped.write(out_mapped)   # end retrieving mapped seqs
                         ins=int(ls[8])
                         if (ins == 0) or (ins <= -params.read_pair_gap_len) or (params.read_pair_gap_len <= ins):    # start retrieving distant reads
                             if b[-4:-2] == '00':
@@ -257,5 +272,6 @@ def main(args, params, main_chrs, outfiles, n, count, interval):
     f_pA.close()
     f_distant.close()
     f_unmapped.close()
-
+    f_mapped.close()
+    f_del.close()
 
