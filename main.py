@@ -86,13 +86,19 @@ filenames.hybrid          =os.path.join(args.outdir, 'hybrid_reads.txt')
 
 filenames.breakpoint_pairs=os.path.join(args.outdir, 'breakpoint_pairs.txt')
 filenames.breakpoint_info =os.path.join(args.outdir, 'breakpoint_pairs_info.txt')
-filenames.breakpoint_clean=os.path.join(args.outdir, 'breakpoint_pairs_info_clean.txt')
+filenames.breakpoint_clean=os.path.join(args.outdir, 'breakpoint_pairs_clean.txt')
 
 filenames.mapped_fa_select=os.path.join(args.outdir, 'mapped_selected.fa')
 filenames.blast4_res      =os.path.join(args.outdir, 'blastn_result_mapped_ref.txt')
 filenames.bp_pair_single  =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons.txt')
 filenames.bp_info_single  =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons_info.txt')
 filenames.bp_clean_single =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons_clean.txt')
+
+filenames.bp_merged       =os.path.join(args.outdir, 'breakpoint_pairs_pooled_merged.txt')
+filenames.hybrid_master   =os.path.join(args.outdir, 'hybrid_reads_master.txt')  # one of the final outputs
+filenames.bp_merged_all   =os.path.join(args.outdir, 'breakpoint_pairs_pooled_all.txt')
+filenames.bp_merged_filt  =os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered.txt')
+filenames.bp_merged_group =os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped.txt')
 
 
 # preprocess repbase file
@@ -162,4 +168,9 @@ pair_breakpoints.add_TE_subclass(filenames, filenames.bp_pair_single, filenames.
 pair_breakpoints.remove_redundant_pairs(filenames)
 
 # 6. pool results and filter candidates
-
+import pool_results
+pool_results.merge_breakpoints(filenames)
+pool_results.add_hybrid(params, filenames)
+import filter_candidates
+filter_candidates.filter(args, params, filenames)
+filter_candidates.grouping(filenames)
