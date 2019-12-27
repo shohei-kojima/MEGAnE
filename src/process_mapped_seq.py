@@ -83,9 +83,14 @@ def blastn_for_mapped(args, params, q_path, db_path, outfpath):
     NcbiblastnCommandline(db=db_path, query=q_path, evalue=params.blastn_evalue_for_mapped, perc_identity=params.blastn_ident_for_mapped, word_size=params.blastn_word_size_for_mapped, num_threads=args.p, culling_limit=2, outfmt=6, out=outfpath)()
 
 
-def pairing(filenames):
+def pairing(params, filenames):
     def check_true_pos(list):
+        retain=False
         if len(list) == 1:
+            retain=True
+        elif (float(list[0][2]) > float(list[1][2])) and (float(list[0][2]) >= params.mapped_abs_single_ident_threshold) and (float(list[1][2]) < params.mapped_abs_single_ident_threshold):
+            retain=True
+        if retain is True:
             ls=list[0]
             headers=ls[0].split(';')[:-1]
             for header in headers:

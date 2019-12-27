@@ -29,17 +29,19 @@ class load:
         self.max_TSD_len=50
         self.ref_TE_slop_len=0
         self.blastn_evalue_for_mapped=float('1e-05')
-        self.blastn_ident_for_mapped=98
+        self.blastn_ident_for_mapped=95
         self.blastn_word_size_for_mapped=30
+        self.mapped_abs_single_ident_threshold=98
         self.hybrid_read_range_from_breakpint=500
         self.first_filter_eval_threshold=float('1e-15')
         self.first_filter_total_hybrid_read_num=1
-        self.first_filter_total_read_num_coefficient=0.3334
+        self.first_filter_total_read_num_coefficient=0.3333
         self.first_filter_total_read_num_coefficient_for_zero_hybrid=0.6
         self.second_filter_hybrid_read_num=1
         self.second_filter_eval_threshold_for_few_hybrid=float('1e-25')
         self.L1_filter_min_TSD_len=5
         self.L1_filter_A_or_T_perc=50
+        self.L1_filter_A_plus_T_perc=90
         self.L1_filter_eval_threshold=float('1e-25')
         # read parameter setting file
         with open(f) as infile:
@@ -92,6 +94,8 @@ class load:
                     self.blastn_ident_for_mapped=int(ls[1])
                 elif ls[0] == 'blastn_word_size_for_mapped':
                     self.blastn_word_size_for_mapped=int(ls[1])
+                elif ls[0] == 'mapped_abs_single_ident_threshold':
+                    self.mapped_abs_single_ident_threshold=int(ls[1])
                 elif ls[0] == 'hybrid_read_range_from_breakpint':
                     if not int(ls[1]) < self.max_TSD_len:
                         self.hybrid_read_range_from_breakpint=int(ls[1])
@@ -114,5 +118,7 @@ class load:
                     self.L1_filter_min_TSD_len=int(ls[1])
                 elif ls[0] == 'L1_filter_A_or_T_perc':
                     self.L1_filter_A_or_T_perc=int(ls[1])
+                elif ls[0] == 'L1_filter_A_plus_T_perc':
+                    self.L1_filter_A_plus_T_perc=int(ls[1])
                 elif ls[0] == 'L1_filter_eval_threshold':
                     self.L1_filter_eval_threshold=float(ls[1])

@@ -12,6 +12,7 @@ from pybedtools import BedTools
 
 
 def filter(args, params, filenames):
+    nts=['A', 'T']
     total_read_threshold= round(args.cov * params.first_filter_total_read_num_coefficient)
     zero_hybrid_total_read_threshold= round((args.cov * params.first_filter_total_read_num_coefficient_for_zero_hybrid))
 
@@ -28,10 +29,14 @@ def filter(args, params, filenames):
                 for h in fa:
                     seq=fa[h].upper()
                     seqlen=len(seq)
-                    for nt in ['A', 'T']:
+                    total_AT=0
+                    for nt in nts:
                         c=seq.count(nt)
-                        if (100 *(c / seqlen)) >= params.L1_filter_A_or_T_perc:
+                        if (100 * (c / seqlen)) >= params.L1_filter_A_or_T_perc:
                             cand=False
+                        total_AT += c
+                    if (100 * (total_AT / seqlen)) >= params.L1_filter_A_plus_T_perc:
+                        cand=False
         if len(R_eval) >= 1:
             if not (min(R_eval) < params.L1_filter_eval_threshold):
                 cand=False

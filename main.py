@@ -163,7 +163,7 @@ pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
 import process_mapped_seq
 process_mapped_seq.retrieve_mapped_seq(filenames)
 process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
-process_mapped_seq.pairing(filenames)
+process_mapped_seq.pairing(params, filenames)
 pair_breakpoints.add_TE_subclass(filenames, filenames.bp_pair_single, filenames.bp_info_single)
 pair_breakpoints.remove_redundant_pairs(filenames)
 
