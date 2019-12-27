@@ -254,7 +254,12 @@ def main(args, params, filenames, n, count, interval):
                             ins=int(ls[8])
                             if (ins == 0) or (ins <= -params.read_pair_gap_len) or (params.read_pair_gap_len <= ins):    # start retrieving distant reads
                                 if b[-4:-2] == '00':   # both mapped
+                                    retain=False
                                     if not 'S' in ls[5]:
+                                        retain=True
+                                    elif count_clip(ls[5]) < params.discordant_reads_clip_len:
+                                        retain=True
+                                    if retain is True:
                                         if ls[2] in args.main_chrs_set:
                                             dir='+' if b[-5] == '0' else '-'
                                             start= int(ls[3]) - 1   # 0-based
@@ -267,7 +272,12 @@ def main(args, params, filenames, n, count, interval):
                                                     break
                                             for x in xs:
                                                 chr,pos,xcigar,_=x.split(',')
+                                                retain=False
                                                 if not 'S' in xcigar:
+                                                    retain=True
+                                                elif count_clip(xcigar) < params.discordant_reads_clip_len:
+                                                    retain=True
+                                                if retain is True:
                                                     if chr in args.main_chrs_set:
                                                         start= int(pos[1:]) - 1   # 0-based
                                                         end= start + calc_ref_len(xcigar)

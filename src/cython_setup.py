@@ -18,5 +18,6 @@ setup(
       )
 
 '''
+cat extract_discordant.py > extract_discordant_c.pyx
 python cython_setup.py build_ext --inplace
 '''
