@@ -123,7 +123,7 @@ if args.p >= 2:
     from multiprocessing import Pool
     count,interval=extract_discordant.flagstat(args)
     def extract_discordant_exe(n):
-        extract_discordant.main(args, params, filenames, n, count, interval)  ### c
+        extract_discordant_c.main(args, params, filenames, n, count, interval)  ### c
     with Pool(args.p) as p:
         p.map(extract_discordant_exe, range(args.p))
     extract_discordant.concat(args, filenames)
