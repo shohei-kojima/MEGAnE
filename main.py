@@ -10,7 +10,7 @@ See file LICENSE for details.
 import os,sys,datetime,argparse
 
 '''
-time python main.py -overwrite -b test_data/test.bam -rep test_data/humrepsub.fa -p 2
+time python main.py -overwrite -b test_data/test.bam -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -p 2
 '''
 
 # args
@@ -19,20 +19,20 @@ parser.add_argument('-b', metavar='str', type=str, help='Required. Specify input
 parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: hg38.fa')
 parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fasta index of the reference genome. Example: hg38.fa.fai')
 parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
-parser.add_argument('-repout', metavar='str', type=str, help='Required. Specify RepeatMasker output. Example: hg38.fa.out')
+parser.add_argument('-repout', metavar='str', type=str, help='Required. Specify RepeatMasker output. Must be masked using the input RepBase file. Example: hg38.fa.out')
 parser.add_argument('-cov', metavar='int', type=int, help='Optional. Specify coverage depth. Default: 30', default=30)
 parser.add_argument('-readlen', metavar='int', type=int, help='Optional. Specify read length. Default: 150', default=150)
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
 parser.add_argument('-gender', metavar='str', type=str, help='Optional. Specify gender of the sample; male or female or unknown. Available only when human sample. Default: unknown', default='unknown')
 parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/prog/lib/parameter_settings.txt')
-parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing repeat class you do not want to use. Default: /path/to/prog/lib/non_ME_rep_headers.txt')
+parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing the names of non-ME repeat class. Default: /path/to/prog/lib/non_ME_rep_headers.txt')
 parser.add_argument('-pA_ME', metavar='str', type=str, help='Optional. Specify full path to a file containing repat class with polyA tail. Default: /path/to/prog/lib/ME_with_polyA_tail.txt')
 parser.add_argument('-only_ins', help='Optional. Specify if you only analyze non-reference MEI insertions.', action='store_true')
 parser.add_argument('-only_abs', help='Optional. Specify if you only analyze absence of reference MEI.', action='store_true')
-parser.add_argument('-overwrite', help='Optional. Specify to overwrite when outdir and result files already exist.', action='store_true')
+parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
-parser.add_argument('-p', metavar='int', type=int, help='Number of thread to use for blastn. Default: 1', default=1)
+parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 1', default=1)
 args=parser.parse_args()
 
 
@@ -73,7 +73,7 @@ filenames.overhang_pA     =os.path.join(args.outdir, 'overhang_pA.txt')
 filenames.distant_txt     =os.path.join(args.outdir, 'distant.txt')
 filenames.unmapped_fa     =os.path.join(args.outdir, 'unmapped.fa')
 filenames.mapped_fa       =os.path.join(args.outdir, 'mapped.fa')
-filenames.del_txt         =os.path.join(args.outdir, 'del.txt')
+filenames.abs_txt         =os.path.join(args.outdir, 'absent.txt')
 
 filenames.blast1_res      =os.path.join(args.outdir, 'blastn_result_overhang_to_rep.txt')
 filenames.overhang_MEI    =os.path.join(args.outdir, 'overhang_to_MEI_list.txt')
@@ -104,17 +104,14 @@ filenames.bp_merged_group =os.path.join(args.outdir, 'breakpoint_pairs_pooled_gr
 # preprocess repbase file
 import reshape_rep, blastn
 reshape_rep.reshape(args, filenames)
-blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
-reshape_rep.slide_rep_file(args, params, filenames)
+#blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
+#reshape_rep.slide_rep_file(args, params, filenames)
 #blastn.blastn(args, params, filenames.rep_slide_file, filenames.repdb, filenames.blast0_res)  # params, q_path, db_path, outfpath
 reshape_rep.parse_slide_rep_blastn_res(args, filenames)
-
 reshape_rep.reshape_repout_to_bed(args, filenames)
 
 #os.remove(blast0_res)
 #os.remove(rep_slide_file)
-
-exit()
 
 
 ### insertion finder ###
@@ -126,10 +123,10 @@ if args.p >= 2:
     from multiprocessing import Pool
     count,interval=extract_discordant.flagstat(args)
     def extract_discordant_exe(n):
-        extract_discordant_c.main(args, params, filenames, n, count, interval)
+        extract_discordant.main(args, params, filenames, n, count, interval)  ### c
     with Pool(args.p) as p:
         p.map(extract_discordant_exe, range(args.p))
-    extract_discordant.concat(args, outfiles)
+    extract_discordant.concat(args, filenames)
 else:
     extract_discordant_c.main(args, params, filenames, None, None, None)
 exit()

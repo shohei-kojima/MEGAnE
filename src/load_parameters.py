@@ -14,6 +14,8 @@ class load:
         self.max_TSD_len=50
         self.polyA_overhang_threshold=0.7
         self.mapped_region_low_complex_threshold=0.7
+        self.abs_min_dist=50
+        self.abs_max_dist=20000
         self.blastn_evalue=float('1e-05')
         self.blastn_ident=80
         self.blastn_word_size=11
@@ -57,6 +59,10 @@ class load:
                     self.polyA_overhang_threshold=float(ls[1])
                 elif ls[0] == 'mapped_region_low_complex_threshold':
                     self.mapped_region_low_complex_threshold=float(ls[1])
+                elif ls[0] == 'abs_min_dist':
+                    self.abs_min_dist=int(ls[1])
+                elif ls[0] == 'abs_max_dist':
+                    self.abs_max_dist=int(ls[1])
                 elif ls[0] == 'blastn_evalue':
                     self.blastn_evalue=float(ls[1])
                 elif ls[0] == 'blastn_ident':

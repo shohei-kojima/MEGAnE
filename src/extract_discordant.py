@@ -7,11 +7,12 @@ See file LICENSE for details.
 '''
 
 
-import os,sys,pysam,itertools,math,shutil,cython
+import os,sys,pysam,itertools,math,shutil
 from Bio.Seq import Seq
 
 
 nt=('A', 'T', 'G', 'C')
+strands=('+', '-')
 
 cigar_op={'M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X'}
 cigar_ref_retain={'M', 'D', 'N', '=', 'X'}
@@ -20,14 +21,15 @@ cigar_read_retain={'M', 'I', '=', 'X'}
 
 # flagstat
 def flagstat(args):
-    flag=pysam.flagstat(args.b, '-@ %d' % args.p - 1)  # multi process
+    flag=pysam.flagstat(args.b, '-@ %d' % (args.p - 1))  # multi process
     count= int(flag.split()[0])
     interval= math.ceil(count / args.p)
     return count,interval
 
 
 # concatenate result files
-def concat(args, outfiles):
+def concat(args, filenames):
+    outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.unmapped_fa, filenames.mapped_fa, filenames.abs_txt]
     for file_base in outfiles:
         shutil.move(file_base +'0.txt', file_base)
         with open(file_base, 'a') as outfile:
@@ -47,14 +49,14 @@ def main(args, params, filenames, n, count, interval):
         f_distant   =open(filenames.distant_txt + str(n) + '.txt', 'w')
         f_unmapped  =open(filenames.unmapped_fa + str(n) + '.txt', 'w')
         f_mapped    =open(filenames.mapped_fa   + str(n) + '.txt', 'w')
-        f_del       =open(filenames.del_txt     + str(n) + '.txt', 'w')
+        f_abs       =open(filenames.abs_txt     + str(n) + '.txt', 'w')
     else:  # single process
         f_overhang  =open(filenames.overhang_fa, 'w')
         f_pA        =open(filenames.overhang_pA, 'w')
         f_distant   =open(filenames.distant_txt, 'w')
         f_unmapped  =open(filenames.unmapped_fa, 'w')
         f_mapped    =open(filenames.mapped_fa  , 'w')
-        f_del       =open(filenames.del_txt    , 'w')
+        f_abs       =open(filenames.abs_txt    , 'w')
 
     def complement(string):
         c=Seq(string).reverse_complement()
@@ -136,7 +138,7 @@ def main(args, params, filenames, n, count, interval):
                 break
         return judge
 
-    
+    do_abs=False if args.only_ins is True else True
     with pysam.AlignmentFile(args.b, 'rb') as infile:
         if not n is None:  # multi process
             infile=itertools.islice(infile, start, end, 1)
@@ -146,20 +148,18 @@ def main(args, params, filenames, n, count, interval):
             if int(ls[1]) < 2048:  # remove supplementary alignment
                 b=bin(int(ls[1]))
                 if b[-1] == '1':   # paired-end
-                    if b[-3] == '1':   # retrieving unmapped
+                    if b[-3] == '1':   # output unmapped
                         strand='/1' if b[-7] == '1' else '/2'
-                        f_unmapped.write('>'+ ls[0] + strand +'\n'+ ls[9] +'\n')
+                        f_unmapped.write('>%s%s\n%s\n' % (ls[0], strand, ls[9]))
                     else:
                         if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs
                             deletion=False
                             fseq=ls[9]
                             strand='+'
-                            if len(b) >= 7:
-                                if b[-5] == '1':
-                                    strand='-'
-                                    fseq=complement(fseq)
-                            if len(b) >= 9:
-                                first_or_second='/1' if b[-7] == '1' else '/2'
+                            if b[-5] == '1':
+                                strand='-'
+                                fseq=complement(fseq)
+                            first_or_second='/1' if b[-7] == '1' else '/2'
                             elems=[]
                             if ls[2] in args.main_chrs_set:
                                 if 'S' in ls[5]:
@@ -195,9 +195,7 @@ def main(args, params, filenames, n, count, interval):
                                     breakpoint,L_clip_len,R_clip_len=determine_breakpoint_from_cigar(cigar)
                                     if not breakpoint == 'NA':
                                         if max(L_clip_len, R_clip_len) >= params.discordant_reads_clip_len:
-                                            seq=fseq
-                                            if strand == '-':
-                                                seq=rseq
+                                            seq=fseq if strand == '+' else rseq
                                             seqlen=len(seq)
                                             read_seq= seq[L_clip_len:seqlen - R_clip_len]
                                             rep=check_repeat(read_seq)
@@ -212,13 +210,14 @@ def main(args, params, filenames, n, count, interval):
                                                     clip_seq= seq[seqlen - R_clip_len:]
                                                     Acount=clip_seq.count('T')
                                                 if (Acount / len(clip_seq)) >= params.polyA_overhang_threshold:
-                                                    f_pA.write(chr +':'+ str(start) +'-'+ str(end) +'/'+ breakpoint +'/'+ ls[0] + first_or_second +'/'+ strand +'\t'+ str(len(clip_seq)) +'\n')  # reads with pA
+                                                    f_pA.write('%s:%d-%d/%s/%s%s/%s\t%d\n' %(chr, start, end, breakpoint, ls[0], first_or_second, strand, len(clip_seq)))  # reads with pA
                                                 else:
+                                                    mapped_seq= seq[L_clip_len:seqlen - R_clip_len]
                                                     if not clip_seq in d:
                                                         d[clip_seq]=[]
                                                     if not mapped_seq in d_mapped:
                                                         d_mapped[mapped_seq]=[]
-                                                    h= chr +':'+ str(start) +'-'+ str(end) +'/'+ breakpoint +'/'+ ls[0] + first_or_second +'/'+ strand
+                                                    h='%s:%d-%d/%s/%s%s/%s' % (chr, start, end, breakpoint, ls[0], first_or_second, strand)
                                                     d[clip_seq].append(h)
                                                     d_mapped[mapped_seq].append(h)
                                 if len(d) >= 1:
@@ -226,15 +225,15 @@ def main(args, params, filenames, n, count, interval):
                                     for seq in d:
                                         out_overhang += '>'
                                         for i in d[seq]:
-                                            out_overhang += i +';'
-                                        out_overhang += '\n'+ seq +'\n'
+                                            out_overhang += '%s;' % i
+                                        out_overhang += '\n%s\n' % seq
                                     f_overhang.write(out_overhang)   # end retrieving overhang seqs
                                     out_mapped=''
                                     for seq in d_mapped:
-                                        out_mapped += '>ref;'
+                                        out_mapped += '>'
                                         for i in d_mapped[seq]:
-                                            out_mapped += i +';'
-                                        out_mapped += '\n'+ seq +'\n'
+                                            out_mapped += '%s;' % i
+                                        out_mapped += '\n%s\n' % seq
                                     f_mapped.write(out_mapped)   # end retrieving mapped seqs
                         ins=int(ls[8])
                         if (ins == 0) or (ins <= -params.read_pair_gap_len) or (params.read_pair_gap_len <= ins):    # start retrieving distant reads
@@ -245,8 +244,7 @@ def main(args, params, filenames, n, count, interval):
                                         if 'MC:Z:' in l:
                                             mcigar=l.replace('MC:Z:', '')
                                             break
-                                    if len(b) >= 9:
-                                        first_or_second='/1' if b[-7] == '1' else '/2'
+                                    first_or_second='/1' if b[-7] == '1' else '/2'
                                     readname= ls[0] + first_or_second
                                     if not 'S' in mcigar:
                                         if len(b) >= 7:
@@ -268,10 +266,92 @@ def main(args, params, filenames, n, count, interval):
                                                 tmp.append(chr +':'+ start +'-'+ str(end) +'/'+ dir)
                                     if len(tmp) >= 1:
                                         f_distant.write(readname +'\t'+ ';'.join(tmp) +'\n')   # end retrieving distant reads
+                        if do_abs is True:   # retrieve reads with absent ME
+                            if 'SA:Z:' in line:
+                                first_or_second='/1' if b[-7] == '1' else '/2'
+                                saz,xaz={},{}
+                                saz['+'],xaz['+'],saz['-'],xaz['-']={},{},{},{}
+                                if 'S' in ls[5]:
+                                    breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ls[5])
+                                    if not breakpoint == 'NA':
+                                        clip_len=l_len if breakpoint == 'L' else r_len
+                                        if clip_len > params.discordant_reads_clip_len:
+                                            strand='+' if b[-5] == 0 else '-'
+                                            start= int(ls[3]) - 1  # 0-based
+                                            end= start + calc_ref_len(ls[5])
+                                            if not ls[2] in xaz[strand]:
+                                                xaz[strand][ls[2]]={}
+                                            if breakpoint == 'L':
+                                                if not 'L' in xaz[strand][ls[2]]:
+                                                    xaz[strand][ls[2]]['L']=[]
+                                                xaz[strand][ls[2]]['L'].append((start, end))
+                                            else:
+                                                if not 'R' in xaz[strand][ls[2]]:
+                                                    xaz[strand][ls[2]]['R']=[]
+                                                xaz[strand][ls[2]]['R'].append((start, end))
+                                for l in ls[::-1]:
+                                    if 'SA:Z:' in l:
+                                        ss=l.replace('SA:Z:', '').split(';')[:-1]
+                                        for i in ss:
+                                            ispl=i.split(',')
+                                            if 'S' in ispl[3]:
+                                                breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ispl[3])
+                                                if not breakpoint == 'NA':
+                                                    clip_len=l_len if breakpoint == 'L' else r_len
+                                                    if clip_len > params.discordant_reads_clip_len:
+                                                        start= int(ispl[1]) - 1  # 0-based
+                                                        end= start + calc_ref_len(ispl[3])
+                                                        if not ispl[0] in saz[ispl[2]]:
+                                                            saz[ispl[2]][ispl[0]]={}
+                                                        if breakpoint == 'L':
+                                                            if not 'L' in saz[ispl[2]][ispl[0]]:
+                                                                saz[ispl[2]][ispl[0]]['L']=[]
+                                                            saz[ispl[2]][ispl[0]]['L'].append((start, end))
+                                                        else:
+                                                            if not 'R' in saz[ispl[2]][ispl[0]]:
+                                                                saz[ispl[2]][ispl[0]]['R']=[]
+                                                            saz[ispl[2]][ispl[0]]['R'].append((start, end))
+                                        break
+                                for l in ls[::-1]:
+                                    if 'XA:Z:' in l:
+                                        ss=l.replace('XA:Z:', '').split(';')[:-1]
+                                        for i in ss:
+                                            ispl=i.split(',')
+                                            if 'S' in ispl[2]:
+                                                breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ispl[2])
+                                                if not breakpoint == 'NA':
+                                                    clip_len=l_len if breakpoint == 'L' else r_len
+                                                    if clip_len > params.discordant_reads_clip_len:
+                                                        start= int(ispl[1][1:]) - 1  # 0-based
+                                                        end= start + calc_ref_len(ispl[2])
+                                                        if not ispl[0] in xaz[ispl[1][0]]:
+                                                            xaz[ispl[1][0]][ispl[0]]={}
+                                                        if breakpoint == 'L':
+                                                            if not 'L' in xaz[ispl[1][0]][ispl[0]]:
+                                                                xaz[ispl[1][0]][ispl[0]]['L']=[]
+                                                            xaz[ispl[1][0]][ispl[0]]['L'].append((start, end))
+                                                        else:
+                                                            if not 'R' in xaz[ispl[1][0]][ispl[0]]:
+                                                                xaz[ispl[1][0]][ispl[0]]['R']=[]
+                                                            xaz[ispl[1][0]][ispl[0]]['R'].append((start, end))
+                                        break
+                                for strand in strands:
+                                    for chr in saz[strand]:
+                                        if chr in xaz[strand]:
+                                            if ('R' in saz[strand][chr]) and ('L' in xaz[strand][chr]):
+                                                for r_s,r_e in saz[strand][chr]['R']:
+                                                    for l_s,l_e in xaz[strand][chr]['L']:
+                                                        if params.abs_min_dist <= (l_s - r_e) <= params.abs_max_dist:
+                                                            f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e))
+                                            if ('R' in xaz[strand][chr]) and ('L' in saz[strand][chr]):
+                                                for r_s,r_e in xaz[strand][chr]['R']:
+                                                    for l_s,l_e in saz[strand][chr]['L']:
+                                                        if params.abs_min_dist <= (l_s - r_e) <= params.abs_max_dist:
+                                                            f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e))   # end retrieving reads with absent ME
     f_overhang.close()
     f_pA.close()
     f_distant.close()
     f_unmapped.close()
     f_mapped.close()
-    f_del.close()
+    f_abs.close()
 
