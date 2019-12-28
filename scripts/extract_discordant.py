@@ -257,8 +257,12 @@ def main(args, params, filenames, n, count, interval):
                                     retain=False
                                     if not 'S' in ls[5]:
                                         retain=True
-                                    elif count_clip(ls[5]) < params.discordant_reads_clip_len:
-                                        retain=True
+                                    else:
+                                        breakpoint,left,right=determine_breakpoint_from_cigar(ls[5])
+                                        if breakpoint == 'NA':
+                                            retain=True
+                                        elif max(left, right) < params.discordant_reads_clip_len:
+                                            retain=True
                                     if retain is True:
                                         if ls[2] in args.main_chrs_set:
                                             dir='+' if b[-5] == '0' else '-'
@@ -275,8 +279,12 @@ def main(args, params, filenames, n, count, interval):
                                                 retain=False
                                                 if not 'S' in xcigar:
                                                     retain=True
-                                                elif count_clip(xcigar) < params.discordant_reads_clip_len:
-                                                    retain=True
+                                                else:
+                                                    breakpoint,left,right=determine_breakpoint_from_cigar(ls[5])
+                                                    if breakpoint == 'NA':
+                                                        retain=True
+                                                    elif max(left, right) < params.discordant_reads_clip_len:
+                                                        retain=True
                                                 if retain is True:
                                                     if chr in args.main_chrs_set:
                                                         start= int(pos[1:]) - 1   # 0-based
