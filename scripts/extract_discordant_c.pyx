@@ -7,8 +7,7 @@ See file LICENSE for details.
 '''
 
 
-import os,sys,pysam,itertools,math,shutil
-from Bio.Seq import Seq
+import os,sys,pysam,itertools,math,shutil,string
 
 
 nt=('A', 'T', 'G', 'C')
@@ -73,8 +72,8 @@ def main(args, params, filenames, n, count, interval):
             f_abs       =open(filenames.abs_txt    , 'w')
 
     def complement(string):
-        c=Seq(string).reverse_complement()
-        return str(c)
+        seq_c=string.translate(str.maketrans('ATGC', 'TACG'))[::-1]
+        return seq_c
 
     def count_clip(cigar):
         length=0
@@ -169,7 +168,7 @@ def main(args, params, filenames, n, count, interval):
                         if do_ins is True:
                             if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs
                                 deletion=False
-                                fseq=ls[9]
+                                fseq=ls[9].upper()
                                 strand='+'
                                 if b[-5] == '1':
                                     strand='-'
@@ -257,8 +256,12 @@ def main(args, params, filenames, n, count, interval):
                                     retain=False
                                     if not 'S' in ls[5]:
                                         retain=True
-                                    elif count_clip(ls[5]) < params.discordant_reads_clip_len:
-                                        retain=True
+                                    else:
+                                        breakpoint,left,right=determine_breakpoint_from_cigar(ls[5])
+                                        if breakpoint == 'NA':
+                                            retain=True
+                                        elif max(left, right) < params.discordant_reads_clip_len:
+                                            retain=True
                                     if retain is True:
                                         if ls[2] in args.main_chrs_set:
                                             dir='+' if b[-5] == '0' else '-'
@@ -275,8 +278,12 @@ def main(args, params, filenames, n, count, interval):
                                                 retain=False
                                                 if not 'S' in xcigar:
                                                     retain=True
-                                                elif count_clip(xcigar) < params.discordant_reads_clip_len:
-                                                    retain=True
+                                                else:
+                                                    breakpoint,left,right=determine_breakpoint_from_cigar(ls[5])
+                                                    if breakpoint == 'NA':
+                                                        retain=True
+                                                    elif max(left, right) < params.discordant_reads_clip_len:
+                                                        retain=True
                                                 if retain is True:
                                                     if chr in args.main_chrs_set:
                                                         start= int(pos[1:]) - 1   # 0-based

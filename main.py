@@ -10,13 +10,14 @@ See file LICENSE for details.
 import os,sys,datetime,argparse
 
 '''
-time python main.py -overwrite -b test_data/test.bam -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -p 2
+time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -p 4
 '''
 
 # args
 parser=argparse.ArgumentParser(description='')
 parser.add_argument('-b', metavar='str', type=str, help='Required. Specify input mapped paired-end BAM file.')  # , required=True
 parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: hg38.fa')
+parser.add_argument('-fadb', metavar='str', type=str, help='Required. Specify blastdb of reference genome. Example: hg38.fa.db')
 parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fasta index of the reference genome. Example: hg38.fa.fai')
 parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
 parser.add_argument('-repout', metavar='str', type=str, help='Required. Specify RepeatMasker output. Must be masked using the input RepBase file. Example: hg38.fa.out')
@@ -92,7 +93,6 @@ filenames.mapped_fa_select=os.path.join(args.outdir, 'mapped_selected.fa')
 filenames.blast4_res      =os.path.join(args.outdir, 'blastn_result_mapped_ref.txt')
 filenames.bp_pair_single  =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons.txt')
 filenames.bp_info_single  =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons_info.txt')
-filenames.bp_clean_single =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons_clean.txt')
 
 filenames.bp_merged       =os.path.join(args.outdir, 'breakpoint_pairs_pooled_merged.txt')
 filenames.hybrid_master   =os.path.join(args.outdir, 'hybrid_reads_master.txt')  # one of the final outputs
@@ -101,24 +101,21 @@ filenames.bp_merged_filt  =os.path.join(args.outdir, 'breakpoint_pairs_pooled_fi
 filenames.bp_merged_group =os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped.txt')
 
 
-# preprocess repbase file
 import reshape_rep, blastn
+
+# 0. preprocess repbase file
 reshape_rep.reshape(args, filenames)
-#blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
-#reshape_rep.slide_rep_file(args, params, filenames)
-#blastn.blastn(args, params, filenames.rep_slide_file, filenames.repdb, filenames.blast0_res)  # params, q_path, db_path, outfpath
+blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
+reshape_rep.slide_rep_file(args, params, filenames)
+blastn.blastn(args, params, filenames.rep_slide_file, filenames.repdb, filenames.blast0_res)  # params, q_path, db_path, outfpath
 reshape_rep.parse_slide_rep_blastn_res(args, filenames)
 reshape_rep.reshape_repout_to_bed(args, filenames)
 
-#os.remove(blast0_res)
-#os.remove(rep_slide_file)
-
-
-### insertion finder ###
-import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
-
+os.remove(filenames.blast0_res)
+os.remove(filenames.rep_slide_file)
 
 # 1. process unmapped overhangs
+import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
 if args.p >= 2:
     from multiprocessing import Pool
     count,interval=extract_discordant.flagstat(args)
@@ -129,7 +126,6 @@ if args.p >= 2:
     extract_discordant.concat(args, filenames)
 else:
     extract_discordant_c.main(args, params, filenames, None, None, None)
-exit()
 blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
 parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)
 find_additional_pA.find(params, filenames.blast1_res, filenames.overhang_fa, filenames.additional_pA)
@@ -148,12 +144,12 @@ utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
 
 # 3. process hybrid reads
 import process_distant_read
-process_distant_read.process_reads(args, params, filenames, filenames.distant_txt, filenames.hybrid)  # need change, repbase
+process_distant_read.process_reads(args, params, filenames)
 
 # 4. merge all results, identify MEI outside of similar MEs
 import pair_breakpoints
 pair_breakpoints.pairing(args, params, filenames)
-pair_breakpoints.add_TE_subclass(filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
+pair_breakpoints.add_TE_subclass(args, filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
 pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
 
 # 5. identify MEI nested in similar MEs
@@ -161,8 +157,7 @@ import process_mapped_seq
 process_mapped_seq.retrieve_mapped_seq(filenames)
 process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
 process_mapped_seq.pairing(params, filenames)
-pair_breakpoints.add_TE_subclass(filenames, filenames.bp_pair_single, filenames.bp_info_single)
-pair_breakpoints.remove_redundant_pairs(filenames)
+pair_breakpoints.add_TE_subclass(args, filenames, filenames.bp_pair_single, filenames.bp_info_single)
 
 # 6. pool results and filter candidates
 import pool_results
@@ -170,4 +165,5 @@ pool_results.merge_breakpoints(filenames)
 pool_results.add_hybrid(params, filenames)
 import filter_candidates
 filter_candidates.filter(args, params, filenames)
-filter_candidates.grouping(filenames)
+filter_candidates.grouping(args, filenames)
+

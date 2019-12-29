@@ -8,7 +8,7 @@ See file LICENSE for details.
 
 
 from utils import parse_fasta
-from pybedtools import BedTools
+from pybedtools import BedTool
 
 
 def filter(args, params, filenames):
@@ -111,7 +111,7 @@ def filter(args, params, filenames):
                 outfile.write(line +'\tlow\n')
 
 
-def grouping(filenames):
+def grouping(args, filenames):
     def merge(one_l, other_l):
         orig_len=len(one_l)
         tmp=[]
@@ -137,7 +137,7 @@ def grouping(filenames):
 
     # group non-singletons
     L,R={},{}
-    for chr in hu_chrs:
+    for chr in args.main_chrs_set:
         L[chr]={}
         R[chr]={}
     with open(filenames.bp_merged_filt) as infile:

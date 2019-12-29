@@ -7,8 +7,7 @@ See file LICENSE for details.
 '''
 
 
-import os,sys,pysam,itertools,math,shutil
-from Bio.Seq import Seq
+import os,sys,pysam,itertools,math,shutil,string
 
 
 nt=('A', 'T', 'G', 'C')
@@ -73,8 +72,8 @@ def main(args, params, filenames, n, count, interval):
             f_abs       =open(filenames.abs_txt    , 'w')
 
     def complement(string):
-        c=Seq(string).reverse_complement()
-        return str(c)
+        seq_c=string.translate(str.maketrans('ATGC', 'TACG'))[::-1]
+        return seq_c
 
     def count_clip(cigar):
         length=0
@@ -169,7 +168,7 @@ def main(args, params, filenames, n, count, interval):
                         if do_ins is True:
                             if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs
                                 deletion=False
-                                fseq=ls[9]
+                                fseq=ls[9].upper()
                                 strand='+'
                                 if b[-5] == '1':
                                     strand='-'

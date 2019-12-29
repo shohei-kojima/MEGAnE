@@ -14,7 +14,7 @@ class empclass:
 
 
 def gzip_or_del(args, params, file):
-    if args.keep is None:
+    if args.keep is False:
         os.remove(file)
     else:
         with open(file, 'rt') as f_in:
@@ -41,7 +41,7 @@ def parse_fasta(path_to_file):
 
 def load_me_classification(path_to_file):
     mes,all_clas={},set()
-    with open(f) as infile:
+    with open(path_to_file) as infile:
         for line in infile:
             if '>' in line:
                 ls=line.strip().replace('>', '').split('\t')

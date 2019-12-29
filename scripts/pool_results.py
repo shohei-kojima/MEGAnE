@@ -110,7 +110,7 @@ def merge_breakpoints(filenames):
             if not ls[7] in bed_d:
                 bed_d[ls[7]]=''
             bed_d[ls[7]] += line
-    with open(filenames.bp_clean_single) as infile:
+    with open(filenames.bp_info_single) as infile:
         for line in infile:
             if not line in first_clean:
                 ls=line.split()
@@ -130,7 +130,7 @@ def merge_breakpoints(filenames):
             lines[ls[7]][ls[0]] += line
     del(bed_d)
 
-    with open(filenames.bp_merged) as outfile:
+    with open(filenames.bp_merged, 'w') as outfile:
         for clas in lines:
             for chr in lines[clas]:
                 bed=BedTool(lines[clas][chr], from_string=True)

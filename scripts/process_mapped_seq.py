@@ -7,6 +7,9 @@ See file LICENSE for details.
 '''
 
 
+from Bio.Blast.Applications import NcbiblastnCommandline
+
+
 def retrieve_mapped_seq(filenames):
     # load read names
     R_readnames,L_readnames={},{}

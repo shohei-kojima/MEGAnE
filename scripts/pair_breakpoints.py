@@ -11,12 +11,9 @@ import utils
 from pybedtools import BedTool
 
 
-# load MEI info from RepBase
-mes,all_clas=utils.load_me_classification(filenames.reshaped_rep)
-
-
 # list up simple repeat in the ref genome
 def load_ref_simple_rep_as_bed(filenames):
+    mes,all_clas=utils.load_me_classification(filenames.reshaped_rep)
     simple=''
     with open(filenames.repout_bed) as infile:
         for line in infile:
@@ -24,13 +21,14 @@ def load_ref_simple_rep_as_bed(filenames):
             name,clas=ls[3].split(':')
             if clas == 'Simple_repeat':
                 simple += line
-            elif mes[name] in simple_rep:
+            elif name in mes:
                 simple += line
     simple=BedTool(simple, from_string=True)
     return simple
 
 
 def pairing(args, params, filenames):
+    mes,all_clas=utils.load_me_classification(filenames.reshaped_rep)
     # load blast results
     L_poss={}
     R_poss={}
@@ -94,7 +92,6 @@ def pairing(args, params, filenames):
     L_added={}
     R_added={}
     for m in all_clas:
-        out[m]=[]
         L_added[m]={}
         R_added[m]={}
         for chr in args.main_chrs_set:
@@ -199,10 +196,11 @@ def pairing(args, params, filenames):
     outfile.close()
 
 
-def add_TE_subclass(filenames, infpath, outfpath):
+def add_TE_subclass(args, filenames, infpath, outfpath):
+    mes,all_clas=utils.load_me_classification(filenames.reshaped_rep)
     # load bed file
     L,R={},{}
-    for chr in hu_chrs:
+    for chr in args.main_chrs_set:
         L[chr]={}
         R[chr]={}
     with open(infpath) as infile:
@@ -227,7 +225,7 @@ def add_TE_subclass(filenames, infpath, outfpath):
                 meis=ls[1].split(';')
                 meis_d={}
                 for m in meis:
-                    c=name_to_clas[m]
+                    c=mes[m]
                     if not c in meis_d:
                         meis_d[c]=''
                     meis_d[c] += m +';'

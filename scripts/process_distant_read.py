@@ -7,6 +7,8 @@ See file LICENSE for details.
 '''
 
 def process_reads(args, params, filenames):
+    import utils
+    from pybedtools import BedTool
     
     def process_bed(bed):
         ids={}
@@ -29,13 +31,13 @@ def process_reads(args, params, filenames):
     # list up simple repeat in the ref genome
     simple=''
     tes=''
-    with open(args.repout) as infile:
+    with open(filenames.repout_bed) as infile:
         for line in infile:
             ls=line.split()
             name,clas=ls[3].split(':')
             if clas == 'Simple_repeat':
                 simple += line
-            elif mes[name] in args.rep_headers_to_be_removed:
+            elif not name in mes:
                 simple += line
             else:
                 tes += line
@@ -78,6 +80,7 @@ def process_reads(args, params, filenames):
                     bed=[]
     del(simple)
     del(tes)
+    del(retain)
 
     # pairing, 2nd
     pair_d={}
@@ -87,6 +90,7 @@ def process_reads(args, params, filenames):
             pair_d[id]={}
         if not first_or_second in pair_d[id]:
             pair_d[id][first_or_second]=d[fid]
+    del(d)
 
     retain={}
     for id in pair_d:

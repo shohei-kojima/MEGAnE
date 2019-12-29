@@ -96,7 +96,7 @@ def unmapped_to_fa(params, unmapped_fa, blast_res, outfpath):
                 for cs in tmp:
                     hs='>' + ';'.join(tmp[cs])
                     if len(hs) >= 2:
-                        unmapped_hit_fa.write(hs +'\n'+ cs +'\n')
+                        outfile.write(hs +'\n'+ cs +'\n')
 
 
 def find_chimeric_unmapped(args, params, blast_res, outfpath):
@@ -129,15 +129,14 @@ def find_chimeric_unmapped(args, params, blast_res, outfpath):
         refs=[]
         meis=[]
         for i in id.split(';'):
-            tmp,eval=i.rsplit('/', 1)
-            tmp,dir=tmp.rsplit('/', 1)
+            tmp,dir=i.rsplit('/', 1)
             tmp,te=tmp.rsplit('/', 1)
             readname,breakpoint=tmp.rsplit('/', 1)
             if breakpoint == 'L':
                 breakpoint='R'
             elif breakpoint == 'R':
                 breakpoint='L'
-            meis.append([breakpoint +'/'+ readname, dir, te, eval])
+            meis.append([breakpoint +'/'+ readname, dir, te])
         for line in res_few[id]:
             ls=line.split()
             if ls[1] in args.main_chrs_set:
@@ -146,9 +145,9 @@ def find_chimeric_unmapped(args, params, blast_res, outfpath):
                 if sstart > send:
                     dir='-'
                     sstart,send=send,sstart
-                refs.append([ls[1] +':'+ str(sstart) +'-'+ str(send), dir])
-        for mid,mdir,te,eval in meis:
-            for rid,rdir in refs:
+                refs.append([ls[1] +':'+ str(sstart) +'-'+ str(send), dir, ls[10]])
+        for mid,mdir,te in meis:
+            for rid,rdir,eval in refs:
                 dir='-'
                 if mdir == rdir:
                     dir='+'
