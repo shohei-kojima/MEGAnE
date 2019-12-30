@@ -18,20 +18,23 @@ def retrieve_mapped_seq(filenames):
     with open(filenames.breakpoint_pairs) as infile:
         for line in infile:
             ls=line.split()
-            id= ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7]
-            ids.append(id)
-            R_read_lens[id]=[]
-            L_read_lens[id]=[]
-            if not ls[8] == 'NA':
-                for readname in ls[8].split(';'):
-                    if not readname in R_readnames:
-                        R_readnames[readname]=set()
-                    R_readnames[readname].add(id)
-            if not ls[9] == 'NA':
-                for readname in ls[9].split(';'):
-                    if not readname in L_readnames:
-                        L_readnames[readname]=set()
-                    L_readnames[readname].add(id)
+            r=int(ls[3].split(':')[1])
+            l=int(ls[4].split(':')[1])
+            if (r + l) >= params.retrieve_mapped_seq_threshold:
+                id= ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7]
+                ids.append(id)
+                R_read_lens[id]=[]
+                L_read_lens[id]=[]
+                if not ls[8] == 'NA':
+                    for readname in ls[8].split(';'):
+                        if not readname in R_readnames:
+                            R_readnames[readname]=set()
+                        R_readnames[readname].add(id)
+                if not ls[9] == 'NA':
+                    for readname in ls[9].split(';'):
+                        if not readname in L_readnames:
+                            L_readnames[readname]=set()
+                        L_readnames[readname].add(id)
 
     # load longest reads
     with open(filenames.mapped_fa) as infile:

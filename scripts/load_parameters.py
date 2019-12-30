@@ -30,6 +30,7 @@ class load:
         self.max_breakpoint_gap=50
         self.max_TSD_len=50
         self.ref_TE_slop_len=0
+        self.retrieve_mapped_seq_threshold=3
         self.blastn_evalue_for_mapped=float('1e-05')
         self.blastn_ident_for_mapped=95
         self.blastn_word_size_for_mapped=30
@@ -94,6 +95,8 @@ class load:
                         self.ref_TE_slop_len=int(ls[1])
                     else:
                         print('Warning: ref_TE_slop_len must be positive value. Changed to 0 and continue this analysis.')
+                elif ls[0] == 'retrieve_mapped_seq_threshold':
+                    self.retrieve_mapped_seq_threshold=int(ls[1])
                 elif ls[0] == 'blastn_evalue_for_mapped':
                     self.blastn_evalue_for_mapped=float(ls[1])
                 elif ls[0] == 'blastn_ident_for_mapped':

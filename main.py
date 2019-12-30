@@ -59,6 +59,8 @@ args.main_chrs=setup.main_chrs
 args.main_chrs_set=set(args.main_chrs)
 args.rep_headers_to_be_removed=setup.rep_headers_to_be_removed
 args.rep_with_pA=setup.rep_with_pA
+do_ins=False if args.only_abs is True else True
+do_abs=False if args.only_ins is True else True
 
 
 # output file names
@@ -109,79 +111,87 @@ filenames.bp_merged_group =os.path.join(args.outdir, 'breakpoint_pairs_pooled_gr
 # 0. preprocess repbase file
 import reshape_rep, blastn
 print('AIM-UP: Preprocess started: '+ datetime.datetime.now().isoformat())
-reshape_rep.reshape(args, params, filenames)
-blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
-reshape_rep.slide_rep_file(args, params, filenames)
-blastn.blastn(args, params, filenames.rep_slide_file, filenames.repdb, filenames.blast0_res)  # params, q_path, db_path, outfpath
-reshape_rep.parse_slide_rep_blastn_res(args, filenames)
 reshape_rep.reshape_repout_to_bed(args, filenames)
 
-#os.remove(filenames.blast0_res)
-#os.remove(filenames.rep_slide_file)
+if do_ins is True:
+    reshape_rep.reshape(args, params, filenames)
+    blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
+    reshape_rep.slide_rep_file(args, params, filenames)
+    blastn.blastn(args, params, filenames.rep_slide_file, filenames.repdb, filenames.blast0_res)  # params, q_path, db_path, outfpath
+    reshape_rep.parse_slide_rep_blastn_res(args, filenames)
 
-# 1. process unmapped overhangs
-import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
-print('AIM-UP: Discordant read search started: '+ datetime.datetime.now().isoformat())
-if args.p >= 2:
-    from multiprocessing import Pool
-    def extract_discordant_exe(n):
-        extract_discordant_c.main(args, params, filenames, n)  ### c
-    def blast_exe(n):
-        infpath =filenames.overhang_fa + str(n) + '.txt'
-        outfpath=filenames.blast1_res  + str(n) + '.txt'
-        blastn.blastn_single_thread(args, params, infpath, filenames.repdb, outfpath)
-    with Pool(args.p) as p:
-        p.map(extract_discordant_exe, range(args.p))
+    #os.remove(filenames.blast0_res)
+    #os.remove(filenames.rep_slide_file)
+
+    # 1. process unmapped overhangs
+    import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
+    print('AIM-UP: Discordant read search started: '+ datetime.datetime.now().isoformat())
+    if args.p >= 2:
+        from multiprocessing import Pool
+        def extract_discordant_exe(n):
+            extract_discordant_c.main(args, params, filenames, n)  ### c
+        def blast_exe(n):
+            infpath =filenames.overhang_fa + str(n) + '.txt'
+            outfpath=filenames.blast1_res  + str(n) + '.txt'
+            blastn.blastn_single_thread(args, params, infpath, filenames.repdb, outfpath)
+        with Pool(args.p) as p:
+            p.map(extract_discordant_exe, range(args.p))
+            print('AIM-UP: Clipped read processing started: '+ datetime.datetime.now().isoformat())
+            p.map(blast_exe, range(args.p))
+        extract_discordant.concat(args, filenames)
+    else:
+        extract_discordant_c.main(args, params, filenames, None)  ### c
         print('AIM-UP: Clipped read processing started: '+ datetime.datetime.now().isoformat())
-        p.map(blast_exe, range(args.p))
-    extract_discordant.concat(args, filenames)
-else:
-    extract_discordant_c.main(args, params, filenames, None)  ### c
-    print('AIM-UP: Clipped read processing started: '+ datetime.datetime.now().isoformat())
-    blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
-parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)
-find_additional_pA.find(params, filenames.blast1_res, filenames.overhang_fa, filenames.additional_pA)
+        blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
+    parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)
+    find_additional_pA.find(params, filenames.blast1_res, filenames.overhang_fa, filenames.additional_pA)
 
-#utils.gzip_or_del(args, params, filenames.blast1_res)
+    #utils.gzip_or_del(args, params, filenames.blast1_res)
 
-# 2. process unmapped reads
-print('AIM-UP: Unmapped read processing started: '+ datetime.datetime.now().isoformat())
-blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
-parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
-utils.gzip_or_del(args, params, filenames.blast2_res)
-blastn.blastn(args, params, filenames.unmapped_hit_fa, args.fadb, filenames.blast3_res)
-parse_blastn_result.find_chimeric_unmapped(args, params, filenames.blast3_res, filenames.unmapped_MEI)
+    # 2. process unmapped reads
+    print('AIM-UP: Unmapped read processing started: '+ datetime.datetime.now().isoformat())
+    blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
+    parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
+    utils.gzip_or_del(args, params, filenames.blast2_res)
+    blastn.blastn(args, params, filenames.unmapped_hit_fa, args.fadb, filenames.blast3_res)
+    parse_blastn_result.find_chimeric_unmapped(args, params, filenames.blast3_res, filenames.unmapped_MEI)
 
-#utils.gzip_or_del(args, params, filenames.blast3_res)
-#utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
+    #utils.gzip_or_del(args, params, filenames.blast3_res)
+    #utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
 
-# 3. process hybrid reads
-import process_distant_read
-print('AIM-UP: Hybrid read processing started: '+ datetime.datetime.now().isoformat())
-process_distant_read.process_reads(args, params, filenames)
+    # 3. process hybrid reads
+    import process_distant_read
+    print('AIM-UP: Hybrid read processing started: '+ datetime.datetime.now().isoformat())
+    process_distant_read.process_reads(args, params, filenames)
 
-# 4. merge all results, identify MEI outside of similar MEs
-import pair_breakpoints
-print('AIM-UP: Integration junction search (outside of TEs) started: '+ datetime.datetime.now().isoformat())
-pair_breakpoints.pairing(args, params, filenames)
-pair_breakpoints.add_TE_subclass(args, filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
-pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
+    # 4. merge all results, identify MEI outside of similar MEs
+    import pair_breakpoints
+    print('AIM-UP: Integration junction search (outside of TEs) started: '+ datetime.datetime.now().isoformat())
+    pair_breakpoints.pairing(args, params, filenames)
+    pair_breakpoints.add_TE_subclass(args, filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
+    pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
 
-# 5. identify MEI nested in similar MEs
-import process_mapped_seq
-print('AIM-UP: Integration junction search (nested in TEs) started: '+ datetime.datetime.now().isoformat())
-process_mapped_seq.retrieve_mapped_seq(filenames)
-process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
-process_mapped_seq.pairing(params, filenames)
-pair_breakpoints.add_TE_subclass(args, filenames, filenames.bp_pair_single, filenames.bp_info_single)
+    # 5. identify MEI nested in similar MEs
+    import process_mapped_seq
+    print('AIM-UP: Integration junction search (nested in TEs) started: '+ datetime.datetime.now().isoformat())
+    process_mapped_seq.retrieve_mapped_seq(filenames)
+    process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
+    process_mapped_seq.pairing(params, filenames)
+    pair_breakpoints.add_TE_subclass(args, filenames, filenames.bp_pair_single, filenames.bp_info_single)
 
-# 6. pool results and filter candidates
-import pool_results
-print('AIM-UP: Filtering started: '+ datetime.datetime.now().isoformat())
-pool_results.merge_breakpoints(filenames)
-pool_results.add_hybrid(params, filenames)
-import filter_candidates
-filter_candidates.filter(args, params, filenames)
-filter_candidates.grouping(args, filenames)
+    # 6. pool results and filter candidates
+    import pool_results
+    print('AIM-UP: Filtering started: '+ datetime.datetime.now().isoformat())
+    pool_results.merge_breakpoints(filenames)
+    pool_results.add_hybrid(params, filenames)
+    import filter_candidates
+    filter_candidates.filter(args, params, filenames)
+    filter_candidates.grouping(args, filenames)
 
-print('\nAIM-UP: Finished！: '+ datetime.datetime.now().isoformat())
+    print('\nAIM-UP: ME insertion search finished！: '+ datetime.datetime.now().isoformat())
+
+
+#if do_abs is True:
+
+# 7. search for absent MEs
+

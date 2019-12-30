@@ -61,13 +61,11 @@ def filter(args, params, filenames):
             vs=ls[8].split(';')
             vs=[ float(v) for v in vs if not (v == 'NA') and not (v == '') ]
             if len(vs) >= 1:
-                for v in vs:
-                    R_eval.append(v)
+                R_eval.extend(vs)
             vs=ls[9].split(';')
             vs=[ float(v) for v in vs if not (v == 'NA') and not (v == '') ]
             if len(vs) >= 1:
-                for v in vs:
-                    L_eval.append(v)
+                L_eval.extend(vs)
             retain_count=False
             if total_read_count >= total_read_threshold:
                 retain_count=True
@@ -107,7 +105,7 @@ def filter(args, params, filenames):
                                 high.add(line)
                         else:
                             high.add(line)
-
+    
     with open(filenames.bp_merged_filt, 'w') as outfile:
         for line in all:
             if line in high:
