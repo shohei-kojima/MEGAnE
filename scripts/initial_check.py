@@ -27,9 +27,6 @@ def which(program):
     return None
 
 def check(args):
-    # start
-    print('Initial check started: '+ datetime.datetime.now().isoformat())
-    
     # check python version
     version=sys.version_info
     if (version[0] >= 3) and (version[1] >= 7):

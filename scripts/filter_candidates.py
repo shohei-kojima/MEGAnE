@@ -77,6 +77,13 @@ def filter(args, params, filenames):
                     vmin=min(l)
                     if vmin <= params.first_filter_eval_threshold:
                         retain_eval=True
+            pA_only=True
+            if ls[5] == 'NA':
+                if ls[6] == 'NA':
+                    pA_only=False
+            elif not ls[6] == 'NA':
+                pA_only=False
+
             # first filter
             if (retain_count is True) and (retain_eval is True):
                 if (int(ls[12]) + int(ls[13])) >= params.first_filter_total_hybrid_read_num:
@@ -187,33 +194,39 @@ def grouping(args, filenames):
 
     singletons,multis={},{}
     me_clas=set()
-    n=0
+    n=1
     for f in final:
         if len(f) == 1:
             ls=f[0].split()
+            ls.append('singleton')
             if not ls[7] in singletons:
-                singletons[ls[7]]=''
+                singletons[ls[7]]=[]
                 me_clas.add(ls[7])
-            singletons[ls[7]] += f[0] +'\tsingleton\n'
+            singletons[ls[7]].append(ls)
         else:
+            groupname='group%d' % n
             for line in f:
                 ls=line.split()
-                if not ls[7] in singletons:
-                    multis[ls[7]]=''
+                ls.append(groupname)
+                if not ls[7] in multis:
+                    multis[ls[7]]={}
                     me_clas.add(ls[7])
-                multis[ls[7]] += line +'\tgroup%d\n' % n
+                if not groupname in multis[ls[7]]:
+                    multis[ls[7]][groupname]=[]
+                multis[ls[7]][groupname].append(ls)
             n += 1
     me_clas=sorted(list(me_clas))
 
     with open(filenames.bp_merged_group, 'w') as outfile:
         for m in me_clas:
             if m in singletons:
-                bed=BedTool(singletons[m], from_string=True).sort()
-                for line in bed:
-                    outfile.write(str(line))
+                singletons[m]=sorted(singletons[m], key=lambda x:(x[0], int(x[1]), int(x[2])))
+                for ls in singletons[m]:
+                    outfile.write('\t'.join(ls) +'\n')
         for m in me_clas:
             if m in multis:
-                bed=BedTool(multis[m], from_string=True).sort()
-                for line in bed:
-                    multis_sorted += str(line)
+                for g in multis[m]:
+                    multis[m][g]=sorted(multis[m][g], key=lambda x:(x[0], int(x[1]), int(x[2])))
+                    for ls in multis[m][g]:
+                        outfile.write('\t'.join(ls) +'\n')
 

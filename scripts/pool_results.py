@@ -99,7 +99,6 @@ def merge_breakpoints(filenames):
         ret_str='\t'.join(l)
         return ret_str +'\n'
 
-
     # merge results, delete redundant
     bed_d={}
     first_clean=set()
@@ -108,39 +107,32 @@ def merge_breakpoints(filenames):
             first_clean.add(line)
             ls=line.split()
             if not ls[7] in bed_d:
-                bed_d[ls[7]]=''
-            bed_d[ls[7]] += line
+                bed_d[ls[7]]=[]
+            bed_d[ls[7]].append(ls)
     with open(filenames.bp_info_single) as infile:
         for line in infile:
             if not line in first_clean:
                 ls=line.split()
                 if not ls[7] in bed_d:
-                    bed_d[ls[7]]=''
-                bed_d[ls[7]] += line
+                    bed_d[ls[7]]=[]
+                bed_d[ls[7]].append(ls)
     lines={}
     for m in bed_d:
-        bed=BedTool(bed_d[m], from_string=True).sort()
-        for line in bed:
-            line=str(line)
-            ls=line.split()
-            if not ls[7] in lines:
-                lines[ls[7]]={}
-            if not ls[0] in lines[ls[7]]:
-                lines[ls[7]][ls[0]]=''
-            lines[ls[7]][ls[0]] += line
+        lines[m]={}
+        bed_d[m]=sorted(bed_d[m], key=lambda x:(x[0], int(x[1]), int(x[2])))
+        for ls in bed_d[m]:
+            if not ls[0] in lines[m]:
+                lines[m][ls[0]]=[]
+            lines[m][ls[0]].append(ls)
     del(bed_d)
 
     with open(filenames.bp_merged, 'w') as outfile:
-        for clas in lines:
-            for chr in lines[clas]:
-                bed=BedTool(lines[clas][chr], from_string=True)
-                bed=bed.sort()
+        for m in lines:
+            for chr in lines[m]:
                 prev_end=-1
                 prev_line=''
                 tmp=[]
-                for line in bed:
-                    line=str(line)
-                    ls=line.split()
+                for ls in lines[m][chr]:
                     start=int(ls[1])
                     end=int(ls[2])
                     if start <= prev_end:

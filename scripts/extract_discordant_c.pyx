@@ -31,9 +31,9 @@ def concat(args, filenames):
     do_ins=False if args.only_abs is True else True
     do_abs=False if args.only_ins is True else True
     if (do_ins is True) and (do_abs is True):
-        outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.unmapped_fa, filenames.mapped_fa, filenames.abs_txt]
+        outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.unmapped_fa, filenames.mapped_fa, filenames.blast1_res, filenames.abs_txt]
     elif do_ins is True:
-        outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.unmapped_fa, filenames.mapped_fa]
+        outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.unmapped_fa, filenames.mapped_fa, filenames.blast1_res]
     elif do_abs is True:
         outfiles=[filenames.abs_txt]
     for file_base in outfiles:
@@ -46,13 +46,11 @@ def concat(args, filenames):
 
 
 # main
-def main(args, params, filenames, n, count, interval):
+def main(args, params, filenames, n):
     do_ins=False if args.only_abs is True else True
     do_abs=False if args.only_ins is True else True
     
     if not n is None:  # multi process
-        start= interval * n
-        end= min(interval * (n + 1), count)
         if do_ins is True:
             f_overhang  =open(filenames.overhang_fa + str(n) + '.txt', 'w')
             f_pA        =open(filenames.overhang_pA + str(n) + '.txt', 'w')
@@ -153,7 +151,7 @@ def main(args, params, filenames, n, count, interval):
 
     with pysam.AlignmentFile(args.b, 'rb') as infile:
         if not n is None:  # multi process
-            infile=itertools.islice(infile, start, end, 1)
+            infile=itertools.islice(infile, n, None, args.p)
         for line in infile:
             line=line.tostring()
             ls=line.strip().split('\t')
