@@ -7,15 +7,17 @@ See file LICENSE for details.
 '''
 
 
-import os,sys,datetime,argparse
+import os,sys,datetime,argparse,datetime
 
 '''
 time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -p 4
+time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -p 4
 '''
 
 # args
 parser=argparse.ArgumentParser(description='')
-parser.add_argument('-b', metavar='str', type=str, help='Required. Specify input mapped paired-end BAM file.')  # , required=True
+parser.add_argument('-b', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end BAM file.')  # , required=True
+parser.add_argument('-c', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end CRAM file.')  # , required=True
 parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: hg38.fa')
 parser.add_argument('-fadb', metavar='str', type=str, help='Required. Specify blastdb of reference genome. Example: hg38.fa.db')
 parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fasta index of the reference genome. Example: hg38.fa.fai')
@@ -45,6 +47,7 @@ base=init.base
 
 # initial check
 import initial_check
+print('\nInitial check started: '+ datetime.datetime.now().isoformat())
 initial_check.check(args)
 
 
@@ -64,6 +67,8 @@ filenames=utils.empclass()
 
 filenames.repdb           =os.path.join(args.outdir, 'repdb')
 filenames.repout_bed      =os.path.join(args.outdir, 'repout.bed')
+filenames.rep_unknown_fa  =os.path.join(args.outdir, 'rep_unknown.fa')
+filenames.blast_tmp_res   =os.path.join(args.outdir, 'blastn_tmp.txt')
 filenames.reshaped_rep    =os.path.join(args.outdir, 'reshaped_repbase.fa')
 filenames.rep_slide_file  =os.path.join(args.outdir, 'reshaped_repbase_slide.fa')
 filenames.blast0_res      =os.path.join(args.outdir, 'blastn_rep_slide.txt')
@@ -76,12 +81,12 @@ filenames.unmapped_fa     =os.path.join(args.outdir, 'unmapped.fa')
 filenames.mapped_fa       =os.path.join(args.outdir, 'mapped.fa')
 filenames.abs_txt         =os.path.join(args.outdir, 'absent.txt')
 
-filenames.blast1_res      =os.path.join(args.outdir, 'blastn_result_overhang_to_rep.txt')
+filenames.blast1_res      =os.path.join(args.outdir, 'blastn_out_overhang_to_rep.txt')
 filenames.overhang_MEI    =os.path.join(args.outdir, 'overhang_to_MEI_list.txt')
 filenames.additional_pA   =os.path.join(args.outdir, 'overhang_additional_pA.txt')
-filenames.blast2_res      =os.path.join(args.outdir, 'blastn_result_unmapped_to_rep.txt')
+filenames.blast2_res      =os.path.join(args.outdir, 'blastn_out_unmapped_to_rep.txt')
 filenames.unmapped_hit_fa =os.path.join(args.outdir, 'unmapped_ref_side.fa')
-filenames.blast3_res      =os.path.join(args.outdir, 'blastn_result_unmapped_mei_to_ref.txt')
+filenames.blast3_res      =os.path.join(args.outdir, 'blastn_out_unmapped_mei_to_ref.txt')
 filenames.unmapped_MEI    =os.path.join(args.outdir, 'unmapped_to_MEI_list.txt')
 filenames.hybrid          =os.path.join(args.outdir, 'hybrid_reads.txt')
 
@@ -90,7 +95,7 @@ filenames.breakpoint_info =os.path.join(args.outdir, 'breakpoint_pairs_info.txt'
 filenames.breakpoint_clean=os.path.join(args.outdir, 'breakpoint_pairs_clean.txt')
 
 filenames.mapped_fa_select=os.path.join(args.outdir, 'mapped_selected.fa')
-filenames.blast4_res      =os.path.join(args.outdir, 'blastn_result_mapped_ref.txt')
+filenames.blast4_res      =os.path.join(args.outdir, 'blastn_out_mapped_ref.txt')
 filenames.bp_pair_single  =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons.txt')
 filenames.bp_info_single  =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_singletons_info.txt')
 
@@ -101,59 +106,70 @@ filenames.bp_merged_filt  =os.path.join(args.outdir, 'breakpoint_pairs_pooled_fi
 filenames.bp_merged_group =os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped.txt')
 
 
-import reshape_rep, blastn
-
 # 0. preprocess repbase file
-reshape_rep.reshape(args, filenames)
+import reshape_rep, blastn
+print('AIM-UP: Preprocess started: '+ datetime.datetime.now().isoformat())
+reshape_rep.reshape(args, params, filenames)
 blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
 reshape_rep.slide_rep_file(args, params, filenames)
 blastn.blastn(args, params, filenames.rep_slide_file, filenames.repdb, filenames.blast0_res)  # params, q_path, db_path, outfpath
 reshape_rep.parse_slide_rep_blastn_res(args, filenames)
 reshape_rep.reshape_repout_to_bed(args, filenames)
 
-os.remove(filenames.blast0_res)
-os.remove(filenames.rep_slide_file)
+#os.remove(filenames.blast0_res)
+#os.remove(filenames.rep_slide_file)
 
 # 1. process unmapped overhangs
 import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
+print('AIM-UP: Discordant read search started: '+ datetime.datetime.now().isoformat())
 if args.p >= 2:
     from multiprocessing import Pool
-    count,interval=extract_discordant.flagstat(args)
     def extract_discordant_exe(n):
-        extract_discordant_c.main(args, params, filenames, n, count, interval)  ### c
+        extract_discordant_c.main(args, params, filenames, n)  ### c
+    def blast_exe(n):
+        infpath =filenames.overhang_fa + str(n) + '.txt'
+        outfpath=filenames.blast1_res  + str(n) + '.txt'
+        blastn.blastn_single_thread(args, params, infpath, filenames.repdb, outfpath)
     with Pool(args.p) as p:
         p.map(extract_discordant_exe, range(args.p))
+        print('AIM-UP: Clipped read processing started: '+ datetime.datetime.now().isoformat())
+        p.map(blast_exe, range(args.p))
     extract_discordant.concat(args, filenames)
 else:
-    extract_discordant_c.main(args, params, filenames, None, None, None)
-blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
+    extract_discordant_c.main(args, params, filenames, None)  ### c
+    print('AIM-UP: Clipped read processing started: '+ datetime.datetime.now().isoformat())
+    blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
 parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)
 find_additional_pA.find(params, filenames.blast1_res, filenames.overhang_fa, filenames.additional_pA)
 
-utils.gzip_or_del(args, params, filenames.blast1_res)
+#utils.gzip_or_del(args, params, filenames.blast1_res)
 
 # 2. process unmapped reads
+print('AIM-UP: Unmapped read processing started: '+ datetime.datetime.now().isoformat())
 blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
 parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
 utils.gzip_or_del(args, params, filenames.blast2_res)
 blastn.blastn(args, params, filenames.unmapped_hit_fa, args.fadb, filenames.blast3_res)
 parse_blastn_result.find_chimeric_unmapped(args, params, filenames.blast3_res, filenames.unmapped_MEI)
 
-utils.gzip_or_del(args, params, filenames.blast3_res)
-utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
+#utils.gzip_or_del(args, params, filenames.blast3_res)
+#utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
 
 # 3. process hybrid reads
 import process_distant_read
+print('AIM-UP: Hybrid read processing started: '+ datetime.datetime.now().isoformat())
 process_distant_read.process_reads(args, params, filenames)
 
 # 4. merge all results, identify MEI outside of similar MEs
 import pair_breakpoints
+print('AIM-UP: Integration junction search (outside of TEs) started: '+ datetime.datetime.now().isoformat())
 pair_breakpoints.pairing(args, params, filenames)
 pair_breakpoints.add_TE_subclass(args, filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
 pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
 
 # 5. identify MEI nested in similar MEs
 import process_mapped_seq
+print('AIM-UP: Integration junction search (nested in TEs) started: '+ datetime.datetime.now().isoformat())
 process_mapped_seq.retrieve_mapped_seq(filenames)
 process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
 process_mapped_seq.pairing(params, filenames)
@@ -161,9 +177,11 @@ pair_breakpoints.add_TE_subclass(args, filenames, filenames.bp_pair_single, file
 
 # 6. pool results and filter candidates
 import pool_results
+print('AIM-UP: Filtering started: '+ datetime.datetime.now().isoformat())
 pool_results.merge_breakpoints(filenames)
 pool_results.add_hybrid(params, filenames)
 import filter_candidates
 filter_candidates.filter(args, params, filenames)
 filter_candidates.grouping(args, filenames)
 
+print('\nAIM-UP: Finished！: '+ datetime.datetime.now().isoformat())

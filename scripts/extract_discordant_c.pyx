@@ -263,11 +263,12 @@ def main(args, params, filenames, n, count, interval):
                                         elif max(left, right) < params.discordant_reads_clip_len:
                                             retain=True
                                     if retain is True:
+                                        tmp=[]
                                         if ls[2] in args.main_chrs_set:
                                             dir='+' if b[-5] == '0' else '-'
                                             start= int(ls[3]) - 1   # 0-based
                                             end= start + calc_ref_len(ls[5])
-                                            tmp=[ '%s:%d-%d/%s' % (ls[2], start, end, dir) ]
+                                            tmp.append('%s:%d-%d/%s' % (ls[2], start, end, dir))
                                         if 'XA:Z:' in line:
                                             for l in ls[::-1]:
                                                 if 'XA:Z:' in l:

@@ -33,7 +33,8 @@ def check(args):
     # check python version
     version=sys.version_info
     if (version[0] >= 3) and (version[1] >= 7):
-        print('Python version check OK. You are using Python 3.7 or later.')
+        pass
+#        print('Python version check OK. You are using Python 3.7 or later.')
     else:
         print('Error: Please use Python 3.7 or later. Your Python is version %d.%d.' % (version[0], version[1]))
         exit()

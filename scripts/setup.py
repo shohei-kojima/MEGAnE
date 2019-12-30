@@ -12,9 +12,6 @@ from os.path import abspath,dirname,realpath,join
 
 
 def setup(args, base):
-    # start
-    print('Setup started: '+ datetime.datetime.now().isoformat())
-    
     # make output dir
     if args.overwrite is False:
         if os.path.exists(args.outdir) is True:
