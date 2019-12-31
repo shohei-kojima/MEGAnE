@@ -221,10 +221,13 @@ def main(args, params, filenames, n):
                                                     else:
                                                         clip_seq= seq[seqlen - R_clip_len:]
                                                         Acount=clip_seq.count('T')
+                                                    mapped_seq= seq[L_clip_len:seqlen - R_clip_len]
                                                     if (Acount / len(clip_seq)) >= params.polyA_overhang_threshold:
                                                         f_pA.write('%s:%d-%d/%s/%s%s/%s\t%d\n' %(chr, start, end, breakpoint, ls[0], first_or_second, strand, len(clip_seq)))  # reads with pA
+                                                        if not mapped_seq in d_mapped:
+                                                            d_mapped[mapped_seq]=[]
+                                                        d_mapped[mapped_seq].append('%s:%d-%d/%s/%s%s/%s' % (chr, start, end, breakpoint, ls[0], first_or_second, strand))
                                                     else:
-                                                        mapped_seq= seq[L_clip_len:seqlen - R_clip_len]
                                                         if not clip_seq in d:
                                                             d[clip_seq]=[]
                                                         if not mapped_seq in d_mapped:
@@ -233,20 +236,11 @@ def main(args, params, filenames, n):
                                                         d[clip_seq].append(h)
                                                         d_mapped[mapped_seq].append(h)
                                     if len(d) >= 1:
-                                        out_overhang=''
-                                        for seq in d:
-                                            out_overhang += '>'
-                                            for i in d[seq]:
-                                                out_overhang += '%s;' % i
-                                            out_overhang += '\n%s\n' % seq
-                                        f_overhang.write(out_overhang)   # end retrieving overhang seqs
-                                        out_mapped=''
-                                        for seq in d_mapped:
-                                            out_mapped += '>'
-                                            for i in d_mapped[seq]:
-                                                out_mapped += '%s;' % i
-                                            out_mapped += '\n%s\n' % seq
-                                        f_mapped.write(out_mapped)   # end retrieving mapped seqs
+                                        out_overhang=[ '>%s;\n%s\n' % (';'.join(d[seq]), seq) for seq in d ]
+                                        f_overhang.write(''.join(out_overhang))   # end retrieving overhang seqs
+                                    if len(d_mapped) >= 1:
+                                        out_mapped=[ '>%s;\n%s\n' % (';'.join(d_mapped[seq]), seq) for seq in d_mapped ]
+                                        f_mapped.write(''.join(out_mapped))   # end retrieving mapped seqs
                             
                             ins=int(ls[8])
                             if (ins == 0) or (ins <= -params.read_pair_gap_len) or (params.read_pair_gap_len <= ins):    # start retrieving distant reads

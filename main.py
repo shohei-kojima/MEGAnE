@@ -106,6 +106,7 @@ filenames.hybrid_master   =os.path.join(args.outdir, 'hybrid_reads_master.txt') 
 filenames.bp_merged_all   =os.path.join(args.outdir, 'breakpoint_pairs_pooled_all.txt')
 filenames.bp_merged_filt  =os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered.txt')
 filenames.bp_merged_group =os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped.txt')
+filenames.gaussian_plot   =os.path.join(args.outdir, 'plot_gaussian_fitting.pdf')
 
 
 # 0. preprocess repbase file

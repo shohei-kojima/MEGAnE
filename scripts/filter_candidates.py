@@ -9,12 +9,26 @@ See file LICENSE for details.
 
 from utils import parse_fasta
 from pybedtools import BedTool
+import numpy as np
+from scipy.optimize import curve_fit
+from scipy.stats import norm
 
 
 def filter(args, params, filenames):
     nts=['A', 'T']
-    total_read_threshold= round(args.cov * params.first_filter_total_read_num_coefficient)
-    zero_hybrid_total_read_threshold= round((args.cov * params.first_filter_total_read_num_coefficient_for_zero_hybrid))
+    
+    def gaussian_func(x, a, mu, sigma):
+        return (a*np.exp(-(x-mu)**2/(2*sigma**2))) + (0.25*a*np.exp(-(x-(2*mu))**2/(4*sigma**2)))
+    
+    def fit_gaussian(list_support_read_count):
+        x,y=[],[]
+        for i in range(max(list_support_read_count)):
+            x.append(i)
+            y.append(list_support_read_count.count(i))
+        init_param=[args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff]
+        popt,pcov=curve_fit(gaussian_func, x, y, init_param)
+        CI99=norm.interval(alpha=params.fit_gaussian_CI_alpha, loc=popt[1], scale=popt[2])
+        return x, y, popt, pcov, CI99
 
     def L1_filter(line, r_pos, l_pos):
         cand=True
@@ -45,6 +59,53 @@ def filter(args, params, filenames):
                 cand=False
         return cand
 
+    # determine threshold by fitting gaussian function
+    for_gaussian_fitting=[]
+    hybrid_num=[]
+    with open(filenames.bp_merged_all) as infile:
+        for line in infile:
+            ls=line.split('\t')
+            r_pos,r_num=ls[3].split(':')
+            l_pos,l_num=ls[4].split(':')
+            r_num=0 if r_num == 'NA' else int(r_num)
+            l_num=0 if l_num == 'NA' else int(l_num)
+            total_read_count= r_num + l_num
+            R_eval,L_eval=[],[]
+            vs=ls[8].split(';')
+            vs=[ float(v) for v in vs if not (v == 'NA') and not (v == '') ]
+            if len(vs) >= 1:
+                R_eval.extend(vs)
+            vs=ls[9].split(';')
+            vs=[ float(v) for v in vs if not (v == 'NA') and not (v == '') ]
+            if len(vs) >= 1:
+                L_eval.extend(vs)
+            if (int(ls[12]) >= (args.cov * params.hybrid_read_coeff_for_gaussian_fitting)) and (int(ls[13]) >= (args.cov * params.hybrid_read_coeff_for_gaussian_fitting)):
+                if (len(R_eval) >= 1) and (len(L_eval) >= 1):
+                    if (min(R_eval) < params.eval_threshold_for_gaussian_fitting) and (min(L_eval) < params.eval_threshold_for_gaussian_fitting):
+                        for_gaussian_fitting.append(total_read_count)
+                        hybrid_num.append(int(ls[12]) + int(ls[13]))
+    x,y,popt,pcov,CI99=fit_gaussian(gaussian)
+    xd=np.arange(min(x), max(x), 0.1)
+    estimated_curve=gaussian_func(xd, popt[0], popt[1], popt[2])
+
+    # plot
+    fig=plt.figure(figsize=(3,3))
+    ax=fig.add_subplot(111)
+    ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='Actual data')
+    ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red')
+    ax.set_xlim(0, popt[1] * 4)
+    ax.set_xlabel('Number of support reads per MEI')
+    ax.set_ylabel('Number of MEI')
+    ax.legend()
+    plt.suptitle('n=%d, mu=%f, sigma=%f\nlowCI99=%f' % (len(gaussian), popt[1], popt[2], CI99[0]))  # popt[1] = mean, popt[2] = sigma
+    plt.savefig(filenames.gaussian_plot)
+    plt.close()
+
+    # parameter settings
+    total_read_threshold= round(CI99[0])
+    zero_hybrid_total_read_threshold= round(popt[1] * ((sum(gaussian) - sum(hybrid)) / sum(gaussian)))
+
+    # main
     all=[]
     high=set()
     with open(filenames.bp_merged_all) as infile:

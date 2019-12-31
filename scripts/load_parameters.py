@@ -36,10 +36,14 @@ class load:
         self.blastn_word_size_for_mapped=30
         self.mapped_abs_single_ident_threshold=98
         self.hybrid_read_range_from_breakpint=500
+        self.hybrid_read_coeff_for_gaussian_fitting=0.1
+        self.eval_threshold_for_gaussian_fitting=float('1e-25')
+        self.fit_gaussian_init_a_coeff=1
+        self.fit_gaussian_init_mu_coeff=1
+        self.fit_gaussian_init_sigma_coeff=0.33
+        self.fit_gaussian_CI_alpha=0.99
         self.first_filter_eval_threshold=float('1e-15')
         self.first_filter_total_hybrid_read_num=1
-        self.first_filter_total_read_num_coefficient=0.3333
-        self.first_filter_total_read_num_coefficient_for_zero_hybrid=0.6
         self.second_filter_hybrid_read_num=1
         self.second_filter_eval_threshold_for_few_hybrid=float('1e-25')
         self.L1_filter_min_TSD_len=5
@@ -111,14 +115,22 @@ class load:
                     else:
                         print('Warning: hybrid_read_range_from_breakpint must be larger than max_TSD_len. Changed to max_TSD_len and continue this analysis.')
                         self.hybrid_read_range_from_breakpint=self.max_TSD_len
+                elif ls[0] == 'hybrid_read_coeff_for_gaussian_fitting':
+                    self.hybrid_read_coeff_for_gaussian_fitting=float(ls[1])
+                elif ls[0] == 'eval_threshold_for_gaussian_fitting':
+                    self.eval_threshold_for_gaussian_fitting=float(ls[1])
+                elif ls[0] == 'fit_gaussian_init_a_coeff':
+                    self.fit_gaussian_init_a_coeff=float(ls[1])
+                elif ls[0] == 'fit_gaussian_init_mu_coeff':
+                    self.fit_gaussian_init_mu_coeff=float(ls[1])
+                elif ls[0] == 'fit_gaussian_init_sigma_coeff':
+                    self.fit_gaussian_init_sigma_coeff=float(ls[1])
+                elif ls[0] == 'fit_gaussian_CI_alpha':
+                    self.fit_gaussian_CI_alpha=float(ls[1])
                 elif ls[0] == 'first_filter_eval_threshold':
                     self.first_filter_eval_threshold=float(ls[1])
                 elif ls[0] == 'first_filter_total_hybrid_read_num':
                     self.first_filter_total_hybrid_read_num=int(ls[1])
-                elif ls[0] == 'first_filter_total_read_num_coefficient':
-                    self.first_filter_total_read_num_coefficient=float(ls[1])
-                elif ls[0] == 'first_filter_total_read_num_coefficient_for_zero_hybrid':
-                    self.first_filter_total_read_num_coefficient_for_zero_hybrid=float(ls[1])
                 elif ls[0] == 'second_filter_hybrid_read_num':
                     self.second_filter_hybrid_read_num=int(ls[1])
                 elif ls[0] == 'second_filter_eval_threshold_for_few_hybrid':
