@@ -38,7 +38,7 @@ class load:
         self.hybrid_read_range_from_breakpint=500
         self.hybrid_read_coeff_for_gaussian_fitting=0.1
         self.eval_threshold_for_gaussian_fitting=float('1e-25')
-        self.fit_gaussian_init_a_coeff=1
+        self.fit_gaussian_init_a_coeff=0.5
         self.fit_gaussian_init_mu_coeff=1
         self.fit_gaussian_init_sigma_coeff=0.33
         self.fit_gaussian_CI_alpha=0.99

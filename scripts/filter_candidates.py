@@ -7,6 +7,7 @@ See file LICENSE for details.
 '''
 
 
+import os
 from utils import parse_fasta
 from pybedtools import BedTool
 import numpy as np
@@ -23,18 +24,25 @@ matplotlib.rcParams['font.size']=5
 
 
 def filter(args, params, filenames):
+    if args.b is not None:
+        input_sample=os.path.basename(args.b)
+    elif args.c is not None:
+        input_sample=os.path.basename(args.c)
     nts=['A', 'T']
     
-    def gaussian_func(x, a, mu, sigma):
+    def gaussian_func_biallelic(x, a, mu, sigma):
         return (a*np.exp(-(x-mu)**2/(2*sigma**2))) + (0.333*a*np.exp(-(x-(2*mu))**2/(4*sigma**2)))
-    
+
+    def gaussian_func(x, a, mu, sigma):
+        return a*np.exp(-(x-mu)**2/(2*sigma**2))
+
     def fit_gaussian(list_support_read_count):
         x,y=[],[]
         for i in range(max(list_support_read_count)):
             x.append(i)
             y.append(list_support_read_count.count(i))
         init_param=[args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff]
-        popt,pcov=curve_fit(gaussian_func, x, y, init_param)
+        popt,pcov=curve_fit(gaussian_func_biallelic, x, y, init_param)
         CI99=norm.interval(alpha=params.fit_gaussian_CI_alpha, loc=popt[1], scale=popt[2])
         return x, y, popt, pcov, CI99
 
@@ -93,19 +101,23 @@ def filter(args, params, filenames):
                         for_gaussian_fitting.append(total_read_count)
                         hybrid_num.append(int(ls[12]) + int(ls[13]))
     x,y,popt,pcov,CI99=fit_gaussian(for_gaussian_fitting)
-    xd=np.arange(min(x), max(x), 0.1)
-    estimated_curve=gaussian_func(xd, popt[0], popt[1], popt[2])
+    xd=np.arange(min(x), max(x), 0.5)
+    estimated_curve=gaussian_func_biallelic(xd, popt[0], popt[1], popt[2])
+    estimated_curve_single_allele=gaussian_func(xd, popt[0], popt[1], popt[2])
+    estimated_curve_bi_allele=gaussian_func(xd, 0.333 * popt[0], 2 * popt[1], 1.414 * popt[2])
 
     # plot
     fig=plt.figure(figsize=(3,3))
     ax=fig.add_subplot(111)
     ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='Actual data')
-    ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red')
+    ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
+    ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
+    ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
     ax.set_xlim(0, popt[1] * 4)
     ax.set_xlabel('Number of support reads per MEI')
     ax.set_ylabel('Number of MEI')
     ax.legend()
-    plt.suptitle('n=%d, mu=%f, sigma=%f\nlowCI99=%f' % (len(for_gaussian_fitting), popt[1], popt[2], CI99[0]))  # popt[1] = mean, popt[2] = sigma
+    plt.suptitle('sample=%s,\nn=%d, mu=%f, sigma=%f,\nlowCI99=%f' % (input_sample, len(for_gaussian_fitting), popt[1], popt[2], CI99[0]))  # popt[1] = mean, popt[2] = sigma
     plt.savefig(filenames.gaussian_plot)
     plt.close()
 
