@@ -96,7 +96,7 @@ def parse_slide_rep_blastn_res(args, filenames):
         d[id]=sorted(list(d[id]))
     with open(filenames.similar_rep_list, 'w') as outfile:
         for id in d:
-            outfile.write(id +'\t'+ ';'.join(d[id]) +'\n')
+            outfile.write('%s\t%s\n' % (id, ';'.join(d[id])))
 
 
 def reshape_repout_to_bed(args, filenames):
@@ -107,6 +107,6 @@ def reshape_repout_to_bed(args, filenames):
             for line in infile:
                 ls=line.split()
                 start= int(ls[5]) - 1  # 0-based
-                out= ls[4] +'\t'+ str(start) +'\t'+ ls[6] +'\t'+ ls[9]+':'+ls[10] +'\n'
-                outfile.write(out)
+                strand='+' if ls[8] == '+' else '-'
+                outfile.write('%s\t%d\t%s\t%s:%s\t%s\n' % (ls[4], start, ls[6], ls[9], ls[10], strand))
 

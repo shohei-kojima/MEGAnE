@@ -10,8 +10,8 @@ See file LICENSE for details.
 import os,sys,datetime,argparse,datetime
 
 '''
-time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -p 4
-time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4
+time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4 -only_abs
+time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4 -only_abs
 '''
 
 # args
@@ -108,12 +108,14 @@ filenames.bp_merged_filt  =os.path.join(args.outdir, 'breakpoint_pairs_pooled_fi
 filenames.bp_merged_group =os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped.txt')
 filenames.gaussian_plot   =os.path.join(args.outdir, 'plot_gaussian_fitting.pdf')
 
+filenames.abs_res         =os.path.join(args.outdir, 'absent_MEs.bed')
+filenames.transd_res      =os.path.join(args.outdir, 'absent_MEs_transduction.bed')
+
 
 # 0. preprocess repbase file
 import reshape_rep, blastn
 print('AIM-UP: Preprocess started: '+ datetime.datetime.now().isoformat())
-reshape_rep.reshape_repout_to_bed(args, filenames)
-
+#reshape_rep.reshape_repout_to_bed(args, filenames)
 if do_ins is True:
     reshape_rep.reshape(args, params, filenames)
     blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
@@ -124,25 +126,30 @@ if do_ins is True:
     #os.remove(filenames.blast0_res)
     #os.remove(filenames.rep_slide_file)
 
-    # 1. process unmapped overhangs
-    import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
-    print('AIM-UP: Discordant read search started: '+ datetime.datetime.now().isoformat())
+# 1. process unmapped overhangs
+import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
+print('AIM-UP: Discordant read search started: '+ datetime.datetime.now().isoformat())
+if args.p >= 2:
+    from multiprocessing import Pool
+    def extract_discordant_exe(n):
+        extract_discordant_c.main(args, params, filenames, n)  ### c
+#    with Pool(args.p) as p:
+#        p.map(extract_discordant_exe, range(args.p))
+#    if do_abs is True:
+#        extract_discordant.concat(args, filenames)
+else:
+    extract_discordant_c.main(args, params, filenames, None)  ### c
+if do_ins is True:
+    print('AIM-UP: Clipped read processing started: '+ datetime.datetime.now().isoformat())
     if args.p >= 2:
-        from multiprocessing import Pool
-        def extract_discordant_exe(n):
-            extract_discordant_c.main(args, params, filenames, n)  ### c
         def blast_exe(n):
             infpath =filenames.overhang_fa + str(n) + '.txt'
             outfpath=filenames.blast1_res  + str(n) + '.txt'
             blastn.blastn_single_thread(args, params, infpath, filenames.repdb, outfpath)
         with Pool(args.p) as p:
-            p.map(extract_discordant_exe, range(args.p))
-            print('AIM-UP: Clipped read processing started: '+ datetime.datetime.now().isoformat())
             p.map(blast_exe, range(args.p))
         extract_discordant.concat(args, filenames)
     else:
-        extract_discordant_c.main(args, params, filenames, None)  ### c
-        print('AIM-UP: Clipped read processing started: '+ datetime.datetime.now().isoformat())
         blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
     parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)
     find_additional_pA.find(params, filenames.blast1_res, filenames.overhang_fa, filenames.additional_pA)
@@ -189,10 +196,12 @@ if do_ins is True:
     filter_candidates.filter(args, params, filenames)
     filter_candidates.grouping(args, filenames)
 
-    print('\nAIM-UP: ME insertion search finished！: '+ datetime.datetime.now().isoformat())
+    print('\nAIM-UP: ME insertion search finished!: '+ datetime.datetime.now().isoformat())
 
-
-#if do_abs is True:
 
 # 7. search for absent MEs
-
+if do_abs is True:
+    import find_absent
+    print('\nAIM-UP: Absent ME search started: '+ datetime.datetime.now().isoformat())
+    find_absent.find_abs(args, params, filenames)
+    print('AIM-UP: Absent ME finished!: '+ datetime.datetime.now().isoformat())

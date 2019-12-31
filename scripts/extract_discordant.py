@@ -262,7 +262,7 @@ def main(args, params, filenames, n):
                                             end= start + calc_ref_len(ls[5])
                                             tmp.append('%s:%d-%d/%s' % (ls[2], start, end, dir))
                                         if 'XA:Z:' in line:
-                                            for l in ls[::-1]:
+                                            for l in ls[11:]:
                                                 if 'XA:Z:' in l:
                                                     xs=l.replace('XA:Z:', '').split(';')[:-1]
                                                     break
@@ -301,17 +301,18 @@ def main(args, params, filenames, n):
                                                 strand='+' if b[-5] == 0 else '-'
                                                 start= int(ls[3]) - 1  # 0-based
                                                 end= start + calc_ref_len(ls[5])
+                                                cigar_reshape= '%d-%d' % (l_len, l_len + calc_read_len(ls[5]))
                                                 if not ls[2] in xaz[strand]:
                                                     xaz[strand][ls[2]]={}
                                                 if breakpoint == 'L':
                                                     if not 'L' in xaz[strand][ls[2]]:
                                                         xaz[strand][ls[2]]['L']=[]
-                                                    xaz[strand][ls[2]]['L'].append((start, end))
+                                                    xaz[strand][ls[2]]['L'].append((start, end, cigar_reshape))
                                                 else:
                                                     if not 'R' in xaz[strand][ls[2]]:
                                                         xaz[strand][ls[2]]['R']=[]
-                                                    xaz[strand][ls[2]]['R'].append((start, end))
-                                for l in ls[::-1]:
+                                                    xaz[strand][ls[2]]['R'].append((start, end, cigar_reshape))
+                                for l in ls[11:]:
                                     if 'SA:Z:' in l:
                                         ss=l.replace('SA:Z:', '').split(';')[:-1]
                                         for i in ss:
@@ -324,18 +325,19 @@ def main(args, params, filenames, n):
                                                         if clip_len > params.discordant_reads_clip_len:
                                                             start= int(ispl[1]) - 1  # 0-based
                                                             end= start + calc_ref_len(ispl[3])
+                                                            cigar_reshape= '%d-%d' % (l_len, l_len + calc_read_len(ispl[3]))
                                                             if not ispl[0] in saz[ispl[2]]:
                                                                 saz[ispl[2]][ispl[0]]={}
                                                             if breakpoint == 'L':
                                                                 if not 'L' in saz[ispl[2]][ispl[0]]:
                                                                     saz[ispl[2]][ispl[0]]['L']=[]
-                                                                saz[ispl[2]][ispl[0]]['L'].append((start, end))
+                                                                saz[ispl[2]][ispl[0]]['L'].append((start, end, cigar_reshape))
                                                             else:
                                                                 if not 'R' in saz[ispl[2]][ispl[0]]:
                                                                     saz[ispl[2]][ispl[0]]['R']=[]
-                                                                saz[ispl[2]][ispl[0]]['R'].append((start, end))
+                                                                saz[ispl[2]][ispl[0]]['R'].append((start, end, cigar_reshape))
                                         break
-                                for l in ls[::-1]:
+                                for l in ls[11:]:
                                     if 'XA:Z:' in l:
                                         ss=l.replace('XA:Z:', '').split(';')[:-1]
                                         for i in ss:
@@ -348,30 +350,31 @@ def main(args, params, filenames, n):
                                                         if clip_len > params.discordant_reads_clip_len:
                                                             start= int(ispl[1][1:]) - 1  # 0-based
                                                             end= start + calc_ref_len(ispl[2])
+                                                            cigar_reshape= '%d-%d' % (l_len, l_len + calc_read_len(ispl[2]))
                                                             if not ispl[0] in xaz[ispl[1][0]]:
                                                                 xaz[ispl[1][0]][ispl[0]]={}
                                                             if breakpoint == 'L':
                                                                 if not 'L' in xaz[ispl[1][0]][ispl[0]]:
                                                                     xaz[ispl[1][0]][ispl[0]]['L']=[]
-                                                                xaz[ispl[1][0]][ispl[0]]['L'].append((start, end))
+                                                                xaz[ispl[1][0]][ispl[0]]['L'].append((start, end, cigar_reshape))
                                                             else:
                                                                 if not 'R' in xaz[ispl[1][0]][ispl[0]]:
                                                                     xaz[ispl[1][0]][ispl[0]]['R']=[]
-                                                                xaz[ispl[1][0]][ispl[0]]['R'].append((start, end))
+                                                                xaz[ispl[1][0]][ispl[0]]['R'].append((start, end, cigar_reshape))
                                         break
                                 for strand in strands:
                                     for chr in saz[strand]:
                                         if chr in xaz[strand]:
                                             if ('R' in saz[strand][chr]) and ('L' in xaz[strand][chr]):
-                                                for r_s,r_e in saz[strand][chr]['R']:
-                                                    for l_s,l_e in xaz[strand][chr]['L']:
+                                                for r_s,r_e,r_pos in saz[strand][chr]['R']:
+                                                    for l_s,l_e,l_pos in xaz[strand][chr]['L']:
                                                         if params.abs_min_dist <= (l_s - r_e) <= params.abs_max_dist:
-                                                            f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e))
+                                                            f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\t%s\t%s\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e, r_pos, l_pos))
                                             if ('R' in xaz[strand][chr]) and ('L' in saz[strand][chr]):
-                                                for r_s,r_e in xaz[strand][chr]['R']:
-                                                    for l_s,l_e in saz[strand][chr]['L']:
+                                                for r_s,r_e,r_pos in xaz[strand][chr]['R']:
+                                                    for l_s,l_e,l_pos in saz[strand][chr]['L']:
                                                         if params.abs_min_dist <= (l_s - r_e) <= params.abs_max_dist:
-                                                            f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e))   # end retrieving reads with absent ME
+                                                            f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\t%s\t%s\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e, r_pos, l_pos))   # end retrieving reads with absent ME
     if do_ins is True:
         f_overhang.close()
         f_pA.close()

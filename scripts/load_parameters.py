@@ -50,6 +50,10 @@ class load:
         self.L1_filter_A_or_T_perc=50
         self.L1_filter_A_plus_T_perc=90
         self.L1_filter_eval_threshold=float('1e-25')
+        self.abs_min_chimeric_num_coeff=0.33
+        self.breakpoint_annotation_gap=10
+        self.transduction_pA_len=20
+        self.transduction_pA_ratio=0.7
         # read parameter setting file
         with open(f) as infile:
             for line in infile:
@@ -143,3 +147,11 @@ class load:
                     self.L1_filter_A_plus_T_perc=int(ls[1])
                 elif ls[0] == 'L1_filter_eval_threshold':
                     self.L1_filter_eval_threshold=float(ls[1])
+                elif ls[0] == 'abs_min_chimeric_num_coeff':
+                    self.abs_min_chimeric_num_coeff=float(ls[1])
+                elif ls[0] == 'breakpoint_annotation_gap':
+                    self.breakpoint_annotation_gap=int(ls[1])
+                elif ls[0] == 'transduction_pA_len':
+                    self.transduction_pA_len=int(ls[1])
+                elif ls[0] == 'transduction_pA_ratio':
+                    self.transduction_pA_ratio=float(ls[1])
