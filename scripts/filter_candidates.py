@@ -12,13 +12,21 @@ from pybedtools import BedTool
 import numpy as np
 from scipy.optimize import curve_fit
 from scipy.stats import norm
+import matplotlib
+import matplotlib.pyplot as plt
+
+matplotlib.rcParams['lines.linewidth']=0.5
+matplotlib.rcParams['axes.linewidth']=0.5
+matplotlib.rcParams['xtick.major.width']=0.5
+matplotlib.rcParams['ytick.major.width']=0.5
+matplotlib.rcParams['font.size']=5
 
 
 def filter(args, params, filenames):
     nts=['A', 'T']
     
     def gaussian_func(x, a, mu, sigma):
-        return (a*np.exp(-(x-mu)**2/(2*sigma**2))) + (0.25*a*np.exp(-(x-(2*mu))**2/(4*sigma**2)))
+        return (a*np.exp(-(x-mu)**2/(2*sigma**2))) + (0.333*a*np.exp(-(x-(2*mu))**2/(4*sigma**2)))
     
     def fit_gaussian(list_support_read_count):
         x,y=[],[]
@@ -84,7 +92,7 @@ def filter(args, params, filenames):
                     if (min(R_eval) < params.eval_threshold_for_gaussian_fitting) and (min(L_eval) < params.eval_threshold_for_gaussian_fitting):
                         for_gaussian_fitting.append(total_read_count)
                         hybrid_num.append(int(ls[12]) + int(ls[13]))
-    x,y,popt,pcov,CI99=fit_gaussian(gaussian)
+    x,y,popt,pcov,CI99=fit_gaussian(for_gaussian_fitting)
     xd=np.arange(min(x), max(x), 0.1)
     estimated_curve=gaussian_func(xd, popt[0], popt[1], popt[2])
 
@@ -97,13 +105,13 @@ def filter(args, params, filenames):
     ax.set_xlabel('Number of support reads per MEI')
     ax.set_ylabel('Number of MEI')
     ax.legend()
-    plt.suptitle('n=%d, mu=%f, sigma=%f\nlowCI99=%f' % (len(gaussian), popt[1], popt[2], CI99[0]))  # popt[1] = mean, popt[2] = sigma
+    plt.suptitle('n=%d, mu=%f, sigma=%f\nlowCI99=%f' % (len(for_gaussian_fitting), popt[1], popt[2], CI99[0]))  # popt[1] = mean, popt[2] = sigma
     plt.savefig(filenames.gaussian_plot)
     plt.close()
 
     # parameter settings
     total_read_threshold= round(CI99[0])
-    zero_hybrid_total_read_threshold= round(popt[1] * ((sum(gaussian) - sum(hybrid)) / sum(gaussian)))
+    zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))
 
     # main
     all=[]
