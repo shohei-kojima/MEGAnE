@@ -50,7 +50,7 @@ class load:
         self.L1_filter_A_or_T_perc=50
         self.L1_filter_A_plus_T_perc=90
         self.L1_filter_eval_threshold=float('1e-25')
-        self.abs_min_chimeric_num_coeff=0.05
+        self.abs_min_chimeric_num_coeff=0.03
         self.breakpoint_annotation_gap=10
         self.abs_len_to_te_ratio=0.9
         self.len_te_for_abs_ratio=0.9
