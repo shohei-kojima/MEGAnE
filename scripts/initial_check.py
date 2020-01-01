@@ -45,8 +45,7 @@ def check(args):
     # check PATH
     for i in ['blastn', 'bedtools']:
         if which(i) is None:
-            print('Error: blastn not found. Please check if blastn is installed and added to PATH.')
-            exit()
+            print('Warning: %s not found in $PATH. Please check if %s is installed and added to PATH. Please ignore when you are using job scheduler. Proceed anyway.' % i)
 
     # check prerequisite modules
     from Bio.Seq import Seq

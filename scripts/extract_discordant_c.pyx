@@ -156,7 +156,7 @@ def main(args, params, filenames, n):
     if not args.b is None:
         infile=pysam.AlignmentFile(args.b, 'rb')
     elif not args.c is None:
-        infile=pysam.AlignmentFile(args.c, 'rc', '-T %s' % args.fa)
+        infile=pysam.AlignmentFile(args.c, 'rc', reference_filename=args.fa)
     if not n is None:  # multi process
         infile=itertools.islice(infile, n, None, args.p)
     for line in infile:
@@ -382,7 +382,6 @@ def main(args, params, filenames, n):
                                                 for l_s,l_e,l_pos in saz[strand][chr]['L']:
                                                     if params.abs_min_dist <= (l_s - r_e) <= params.abs_max_dist:
                                                         f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\t%s\t%s\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e, r_pos, l_pos))   # end retrieving reads with absent ME
-    infile.close()
     if do_ins is True:
         f_overhang.close()
         f_pA.close()
