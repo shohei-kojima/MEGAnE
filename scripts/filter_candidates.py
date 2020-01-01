@@ -100,30 +100,34 @@ def filter(args, params, filenames):
                     if (min(R_eval) < params.eval_threshold_for_gaussian_fitting) and (min(L_eval) < params.eval_threshold_for_gaussian_fitting):
                         for_gaussian_fitting.append(total_read_count)
                         hybrid_num.append(int(ls[12]) + int(ls[13]))
-    x,y,popt,pcov,CI99=fit_gaussian(for_gaussian_fitting)
-    xd=np.arange(min(x), max(x), 0.5)
-    estimated_curve=gaussian_func_biallelic(xd, popt[0], popt[1], popt[2])
-    estimated_curve_single_allele=gaussian_func(xd, popt[0], popt[1], popt[2])
-    estimated_curve_bi_allele=gaussian_func(xd, 0.333 * popt[0], 2 * popt[1], 1.414 * popt[2])
-
-    # plot
-    fig=plt.figure(figsize=(3,3))
-    ax=fig.add_subplot(111)
-    ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='Actual data')
-    ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
-    ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
-    ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
-    ax.set_xlim(0, popt[1] * 4)
-    ax.set_xlabel('Number of support reads per MEI')
-    ax.set_ylabel('Number of MEI')
-    ax.legend()
-    plt.suptitle('sample=%s,\nn=%d, mu=%f, sigma=%f,\nlowCI99=%f' % (input_sample, len(for_gaussian_fitting), popt[1], popt[2], CI99[0]))  # popt[1] = mean, popt[2] = sigma
-    plt.savefig(filenames.gaussian_plot)
-    plt.close()
-
-    # parameter settings
-    total_read_threshold= round(CI99[0])
-    zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))
+    if len(for_gaussian_fitting) >= 3:
+        x,y,popt,pcov,CI99=fit_gaussian(for_gaussian_fitting)
+        xd=np.arange(min(x), max(x), 0.5)
+        estimated_curve=gaussian_func_biallelic(xd, popt[0], popt[1], popt[2])
+        estimated_curve_single_allele=gaussian_func(xd, popt[0], popt[1], popt[2])
+        estimated_curve_bi_allele=gaussian_func(xd, 0.333 * popt[0], 2 * popt[1], 1.414 * popt[2])
+        # plot
+        fig=plt.figure(figsize=(3,3))
+        ax=fig.add_subplot(111)
+        ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='Actual data')
+        ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
+        ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
+        ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
+        ax.axvline(x=round(CI99[0]), linewidth=1, alpha=0.5, color='green', linestyle='dashed', label='Auto-determined threshold')
+        ax.set_xlim(0, popt[1] * 4)
+        ax.set_xlabel('Number of support reads per MEI')
+        ax.set_ylabel('Number of MEI')
+        ax.legend()
+        plt.suptitle('sample=%s,\nn=%d, mu=%f, sigma=%f,\nlowCI99=%f' % (input_sample, len(for_gaussian_fitting), popt[1], popt[2], CI99[0]))  # popt[1] = mean, popt[2] = sigma
+        plt.savefig(filenames.gaussian_plot)
+        plt.close()
+        # parameter settings
+        total_read_threshold= round(CI99[0])
+        zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))
+    else:
+        print('AIM-UP: Warning: Not enough data to automatically determine thresholds for MEI filtering. Please check if your data is enough big or contans discordant reads. Proceed anyway.')
+        total_read_threshold=3
+        zero_hybrid_total_read_threshold=5
 
     # main
     all=[]
@@ -273,10 +277,14 @@ def grouping(args, filenames):
 
     singletons,multis={},{}
     me_clas=set()
+    global ins_n
+    ins_n=0
     n=1
     for f in final:
         if len(f) == 1:
             ls=f[0].split()
+            if ls[-1] == 'high':
+                ins_n += 1
             ls.append('singleton')
             if not ls[7] in singletons:
                 singletons[ls[7]]=[]

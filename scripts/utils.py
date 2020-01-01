@@ -14,12 +14,18 @@ class empclass:
 
 
 def gzip_or_del(args, params, file):
-    if args.keep is False:
-        os.remove(file)
-    else:
+    if args.keep is True:
         with open(file, 'rt') as f_in:
-            with gzip.open(file +'.gz', mode='wt', compresslevel=params.gzip_compresslevel) as f_out:
+            with gzip.open(file +'.gz', 'wt', compresslevel=params.gzip_compresslevel) as f_out:
                 shutil.copyfileobj(f_in, f_out)
+    os.remove(file)
+
+
+def gzip_file(params, file):
+    with open(file, 'rt') as f_in:
+        with gzip.open(file +'.gz', 'wt', compresslevel=params.gzip_compresslevel) as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    os.remove(file)
 
 
 def parse_fasta(path_to_file):

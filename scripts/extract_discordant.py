@@ -27,15 +27,19 @@ def flagstat(args):
 
 
 # concatenate result files
-def concat(args, filenames):
-    do_ins=False if args.only_abs is True else True
-    do_abs=False if args.only_ins is True else True
-    if (do_ins is True) and (do_abs is True):
-        outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.unmapped_fa, filenames.mapped_fa, filenames.blast1_res, filenames.abs_txt]
-    elif do_ins is True:
-        outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.unmapped_fa, filenames.mapped_fa, filenames.blast1_res]
-    elif do_abs is True:
-        outfiles=[filenames.abs_txt]
+def concat_for_ins(args, filenames):
+    outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.unmapped_fa, filenames.mapped_fa, filenames.blast1_res]
+    for file_base in outfiles:
+        shutil.move(file_base +'0.txt', file_base)
+        with open(file_base, 'a') as outfile:
+            for n in range(1, args.p):
+                with open(file_base + str(n) +'.txt') as infile:
+                    shutil.copyfileobj(infile, outfile)
+                os.remove(file_base + str(n) +'.txt')
+
+
+def concat_for_abs(args, filenames):
+    outfiles=[filenames.abs_txt]
     for file_base in outfiles:
         shutil.move(file_base +'0.txt', file_base)
         with open(file_base, 'a') as outfile:

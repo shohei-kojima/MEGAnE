@@ -55,6 +55,8 @@ def find_abs(args, params, filenames):
 
     outfile_abs=open(filenames.abs_res, 'w')
     outfile_transd=open(filenames.transd_res, 'w')
+    global abs_n
+    abs_n=0
     for id in d:
         chr,start,end=id.split('_')
         start,end=int(start),int(end)
@@ -93,6 +95,7 @@ def find_abs(args, params, filenames):
                 if (len(te_names) >= 1) and ((non_ME_len / (end - start)) <= params.non_ME_len_ratio):
                     te_names=sorted(list(set(te_names)))
                     outfile_abs.write('%s\t%d\t%d\t%s\t%s\tTSD_len=%s\n' % (chr, start, end, ';'.join(te_names), r, t))
+                    abs_n += 1
         elif (te_start <= params.breakpoint_annotation_gap) or (te_end <= params.breakpoint_annotation_gap):
             transd=False
             if te_start <= params.breakpoint_annotation_gap:
@@ -123,5 +126,6 @@ def find_abs(args, params, filenames):
                                     transd=True
             if transd is True:
                 outfile_transd.write('%s\t%d\t%d\t%s\t%s\tTSD_len=%s\n' % (chr, start, end, n, r, t))
+                abs_n += 1
     outfile_abs.close()
     outfile_transd.close()
