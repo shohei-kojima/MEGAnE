@@ -15,6 +15,8 @@ from utils import load_me_classification, parse_fasta
 
 def find_abs(args, params, filenames):
     min_chimeric_num= round(args.cov * params.abs_min_chimeric_num_coeff)
+    if min_chimeric_num < 2:
+        min_chimeric_num=2
     mes,_=load_me_classification(filenames.reshaped_rep)
     
     # load chimeric reads
@@ -74,17 +76,22 @@ def find_abs(args, params, filenames):
             for line in intersect:
                 ls=str(line).split()
                 count += int(ls[2]) - int(ls[1])
-            perc_te= 100 * (count / (end - start))
-            if perc_te >= 90:
+            te_ratio= count / (end - start)
+            if te_ratio >= params.abs_len_to_te_ratio:
                 te_names=[]
+                non_ME_len=0
                 for s,e,n,r,_,t in d[id]:
                     if start <= s:
                         c=(e - s) if e <= end else (end - s)
                     else:
                         c=(e - start) if e <= end else (end - start)
-                    if (c / (e-s)) >= 0.9:
+                    if (c / (e-s)) >= params.len_te_for_abs_ratio:
                         te_names.append(n)
-                if len(te_names) >= 1:
+                    te_name=n.split(':')[0]
+                    if not te_name in mes:
+                        non_ME_len += c
+                if (len(te_names) >= 1) and ((non_ME_len / (end - start)) <= params.non_ME_len_ratio):
+                    te_names=sorted(list(set(te_names)))
                     outfile_abs.write('%s\t%d\t%d\t%s\t%s\tTSD_len=%s\n' % (chr, start, end, ';'.join(te_names), r, t))
         elif (te_start <= params.breakpoint_annotation_gap) or (te_end <= params.breakpoint_annotation_gap):
             transd=False

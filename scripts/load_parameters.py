@@ -50,9 +50,12 @@ class load:
         self.L1_filter_A_or_T_perc=50
         self.L1_filter_A_plus_T_perc=90
         self.L1_filter_eval_threshold=float('1e-25')
-        self.abs_min_chimeric_num_coeff=0.33
+        self.abs_min_chimeric_num_coeff=0.05
         self.breakpoint_annotation_gap=10
         self.transduction_pA_len=20
+        self.abs_len_to_te_ratio=0.9
+        self.len_te_for_abs_ratio=0.9
+        self.non_ME_len_ratio=0.5
         self.transduction_pA_ratio=0.7
         # read parameter setting file
         with open(f) as infile:
@@ -153,5 +156,11 @@ class load:
                     self.breakpoint_annotation_gap=int(ls[1])
                 elif ls[0] == 'transduction_pA_len':
                     self.transduction_pA_len=int(ls[1])
+                elif ls[0] == 'abs_len_to_te_ratio':
+                    self.abs_len_to_te_ratio=float(ls[1])
+                elif ls[0] == 'len_te_for_abs_ratio':
+                    self.len_te_for_abs_ratio=float(ls[1])
+                elif ls[0] == 'non_ME_len_ratio':
+                    self.non_ME_len_ratio=float(ls[1])
                 elif ls[0] == 'transduction_pA_ratio':
                     self.transduction_pA_ratio=float(ls[1])
