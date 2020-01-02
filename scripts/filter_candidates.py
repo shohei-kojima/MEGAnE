@@ -43,8 +43,8 @@ def filter(args, params, filenames):
             y.append(list_support_read_count.count(i))
         init_param=[args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff]
         popt,pcov=curve_fit(gaussian_func_biallelic, x, y, init_param)
-        CI99=norm.interval(alpha=params.fit_gaussian_CI_alpha, loc=popt[1], scale=popt[2])
-        return x, y, popt, pcov, CI99
+        reject1perc=norm.interval(alpha=params.fit_gaussian_CI_alpha, loc=popt[1], scale=abs(popt[2]))
+        return x, y, popt, pcov, reject1perc
 
     def L1_filter(line, r_pos, l_pos):
         cand=True
@@ -101,7 +101,7 @@ def filter(args, params, filenames):
                         for_gaussian_fitting.append(total_read_count)
                         hybrid_num.append(int(ls[12]) + int(ls[13]))
     if len(for_gaussian_fitting) >= 3:
-        x,y,popt,pcov,CI99=fit_gaussian(for_gaussian_fitting)
+        x,y,popt,pcov,reject1perc=fit_gaussian(for_gaussian_fitting)
         xd=np.arange(min(x), max(x), 0.5)
         estimated_curve=gaussian_func_biallelic(xd, popt[0], popt[1], popt[2])
         estimated_curve_single_allele=gaussian_func(xd, popt[0], popt[1], popt[2])
@@ -113,16 +113,16 @@ def filter(args, params, filenames):
         ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
         ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
         ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
-        ax.axvline(x=round(CI99[0]), linewidth=1, alpha=0.5, color='green', linestyle='dashed', label='Auto-determined threshold')
+        ax.axvline(x=round(reject1perc[0]), linewidth=1, alpha=0.5, color='green', linestyle='dashed', label='Auto-determined threshold')
         ax.set_xlim(0, popt[1] * 4)
         ax.set_xlabel('Number of support reads per MEI')
         ax.set_ylabel('Number of MEI')
         ax.legend()
-        plt.suptitle('sample=%s,\nn=%d, mu=%f, sigma=%f,\nlowCI99=%f' % (input_sample, len(for_gaussian_fitting), popt[1], popt[2], CI99[0]))  # popt[1] = mean, popt[2] = sigma
+        plt.suptitle('sample=%s,\nn=%d, mu=%f, sigma=%f,\n1_perc_reject=%f' % (input_sample, len(for_gaussian_fitting), popt[1], popt[2], reject1perc[0]))  # popt[1] = mean, popt[2] = sigma
         plt.savefig(filenames.gaussian_plot)
         plt.close()
         # parameter settings
-        total_read_threshold= round(CI99[0])
+        total_read_threshold= round(reject1perc[0])
         zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))
     else:
         print('AIM-UP: Warning: Not enough data to automatically determine thresholds for MEI filtering. Please check if your data is enough big or contans discordant reads. Proceed anyway.')
