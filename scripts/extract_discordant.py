@@ -36,6 +36,8 @@ def concat_for_ins(args, filenames):
                 with open(file_base + str(n) +'.txt') as infile:
                     shutil.copyfileobj(infile, outfile)
                 os.remove(file_base + str(n) +'.txt')
+            outfile.flush()
+            os.fdatasync(outfile.fileno())
 
 
 def concat_for_abs(args, filenames):
@@ -47,6 +49,8 @@ def concat_for_abs(args, filenames):
                 with open(file_base + str(n) +'.txt') as infile:
                     shutil.copyfileobj(infile, outfile)
                 os.remove(file_base + str(n) +'.txt')
+            outfile.flush()
+            os.fdatasync(outfile.fileno())
 
 
 # main
@@ -383,11 +387,23 @@ def main(args, params, filenames, n):
                                                     if params.abs_min_dist <= (l_s - r_e) <= params.abs_max_dist:
                                                         f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\t%s\t%s\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e, r_pos, l_pos))   # end retrieving reads with absent ME
     if do_ins is True:
+        f_overhang.flush()
+        f_pA.flush()
+        f_distant.flush()
+        f_unmapped.flush()
+        f_mapped.flush()
+        os.fdatasync(f_overhang.fileno())
+        os.fdatasync(f_pA.fileno())
+        os.fdatasync(f_distant.fileno())
+        os.fdatasync(f_unmapped.fileno())
+        os.fdatasync(f_mapped.fileno())
         f_overhang.close()
         f_pA.close()
         f_distant.close()
         f_unmapped.close()
         f_mapped.close()
     if do_abs is True:
+        f_abs.flush()
+        os.fdatasync(f_abs.fileno())
         f_abs.close()
 

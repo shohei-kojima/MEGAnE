@@ -7,6 +7,7 @@ See file LICENSE for details.
 '''
 
 
+import os
 from pybedtools import BedTool
 
 
@@ -153,6 +154,8 @@ def merge_breakpoints(filenames):
                     tmp=[]
                 else:
                     outfile.write(prev_line)
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 
 
 def add_hybrid(params, filenames):
@@ -226,6 +229,8 @@ def add_hybrid(params, filenames):
                 for line in hybrid[pos]['down']:
                     rname,te,info=line.split()
                     outfile.write(pos +'\t'+ rname +'\t'+ info +'\t'+ te +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 
     # output
     with open(filenames.bp_merged_all, 'w') as outfile:
@@ -250,3 +255,5 @@ def add_hybrid(params, filenames):
                     s.extend(['0', '0'])
                 outline= '\t'.join(s) +'\n'
                 outfile.write(outline)
+        outfile.flush()
+        os.fdatasync(outfile.fileno())

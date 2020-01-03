@@ -6,6 +6,10 @@ All Rights Reserved
 See file LICENSE for details.
 '''
 
+
+import os
+
+
 def find(params, blast_res, q_path, outfpath):
     min_A_count_per_bin= params.pA_scan_bin - params.max_non_pA_count
     overhang_len_for_full_analysis= params.pA_scan_bin + params.scan_loop_from_edge - 1
@@ -69,3 +73,5 @@ def find(params, blast_res, q_path, outfpath):
                             for i in h.split(';'):
                                 if '/R/' in i:
                                     outfile.write(i +'\t'+ seqlen +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())

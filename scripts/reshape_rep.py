@@ -28,6 +28,8 @@ def reshape(args, params, filenames):
     with open(filenames.reshaped_rep, 'w') as outfile:
         for header in fa_keep:
             outfile.write(header +'\n'+ fa_keep[header] +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
     dels=set()
     for header in fa_unknown:
         h=header.replace('>', '')
@@ -39,6 +41,8 @@ def reshape(args, params, filenames):
     with open(filenames.rep_unknown_fa, 'w') as outfile:
         for header in fa_unknown:
             outfile.write(header +'\n'+ fa_unknown[header] +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
     blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
     blastn.blastn_for_unknown_rep_ident(args, params, filenames.rep_unknown_fa, filenames.repdb, filenames.blast_tmp_res)  # determine TE class of unknown rep
     hits={}
@@ -55,6 +59,8 @@ def reshape(args, params, filenames):
     with open(filenames.reshaped_rep, 'w') as outfile:
         for header in fa_keep:
             outfile.write(header +'\n'+ fa_keep[header] +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
     os.remove(filenames.rep_unknown_fa)
     os.remove(filenames.blast_tmp_res)
 
@@ -81,6 +87,8 @@ def slide_rep_file(args, params, filenames):
                 tmp.append(seq)
                 n += 1
             outfile.write('\n'.join(tmp) +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 
 
 def parse_slide_rep_blastn_res(args, filenames):
@@ -97,6 +105,8 @@ def parse_slide_rep_blastn_res(args, filenames):
     with open(filenames.similar_rep_list, 'w') as outfile:
         for id in d:
             outfile.write('%s\t%s\n' % (id, ';'.join(d[id])))
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 
 
 def reshape_repout_to_bed(args, filenames):
@@ -109,4 +119,6 @@ def reshape_repout_to_bed(args, filenames):
                 start= int(ls[5]) - 1  # 0-based
                 strand='+' if ls[8] == '+' else '-'
                 outfile.write('%s\t%d\t%s\t%s:%s\t%s\n' % (ls[4], start, ls[6], ls[9], ls[10], strand))
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 

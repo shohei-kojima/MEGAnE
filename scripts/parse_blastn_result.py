@@ -6,6 +6,10 @@ All Rights Reserved
 See file LICENSE for details.
 '''
 
+
+import os
+
+
 def parse(params, f_blast_res, outfpath):  
     evalue_threshold=params.overhang_evalue_threshold
 
@@ -97,6 +101,8 @@ def unmapped_to_fa(params, unmapped_fa, blast_res, outfpath):
                     hs='>' + ';'.join(tmp[cs])
                     if len(hs) >= 2:
                         outfile.write(hs +'\n'+ cs +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 
 
 def find_chimeric_unmapped(args, params, blast_res, outfpath):
@@ -165,4 +171,6 @@ def find_chimeric_unmapped(args, params, blast_res, outfpath):
             eval=min(evals)
             te=';'.join(tmp_d[id][eval])
             outfile.write(id +'\t'+ te +'\t'+ eval +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 

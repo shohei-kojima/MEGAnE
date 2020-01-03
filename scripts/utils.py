@@ -18,6 +18,8 @@ def gzip_or_del(args, params, file):
         with open(file, 'rt') as f_in:
             with gzip.open(file +'.gz', 'wt', compresslevel=params.gzip_compresslevel) as f_out:
                 shutil.copyfileobj(f_in, f_out)
+                f_out.flush()
+                os.fdatasync(f_out.fileno())
     os.remove(file)
 
 
@@ -25,6 +27,8 @@ def gzip_file(params, file):
     with open(file, 'rt') as f_in:
         with gzip.open(file +'.gz', 'wt', compresslevel=params.gzip_compresslevel) as f_out:
             shutil.copyfileobj(f_in, f_out)
+            f_out.flush()
+            os.fdatasync(f_out.fileno())
     os.remove(file)
 
 

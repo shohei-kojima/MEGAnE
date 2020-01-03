@@ -199,6 +199,8 @@ def filter(args, params, filenames):
             else:
                 line=line.strip()
                 outfile.write(line +'\tlow\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 
 
 def grouping(args, filenames):
@@ -316,4 +318,6 @@ def grouping(args, filenames):
                     multis[m][g]=sorted(multis[m][g], key=lambda x:(x[0], int(x[1]), int(x[2])))
                     for ls in multis[m][g]:
                         outfile.write('\t'.join(ls) +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 

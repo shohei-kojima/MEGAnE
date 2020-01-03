@@ -7,12 +7,13 @@ See file LICENSE for details.
 '''
 
 
-import os,sys,datetime,argparse,glob
+import os,sys,datetime,argparse,glob,logging
 
 '''
 time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4
 time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4 -only_abs
 '''
+
 
 # args
 parser=argparse.ArgumentParser(description='')
@@ -45,11 +46,17 @@ init.init()
 base=init.base
 
 
+# logging
+import log
+log.start_log(args, 'AIM-UP')
+log.logger.debug('Logging started.')
+
+
 # initial check
 import initial_check
-print('\nAIM-UP: Initial check started: '+ datetime.datetime.now().isoformat())
+log.logger.info('Initial check started.')
 initial_check.check(args)
-
+exit()
 
 # set up
 import setup
@@ -114,7 +121,8 @@ filenames.transd_res      =os.path.join(args.outdir, 'absent_MEs_transduction.be
 
 # 0. preprocess repbase file
 import reshape_rep, blastn
-print('AIM-UP: Preprocess started: '+ datetime.datetime.now().isoformat())
+print()
+log.logger.info('Preprocess started.')
 reshape_rep.reshape_repout_to_bed(args, filenames)
 reshape_rep.reshape(args, params, filenames)
 if do_ins is True:
@@ -128,7 +136,7 @@ if do_ins is True:
 
 # 1. process unmapped overhangs
 import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
-print('AIM-UP: Discordant read search started: '+ datetime.datetime.now().isoformat())
+log.logger.info('Discordant read search started.')
 if args.p >= 2:
     from multiprocessing import Pool
     def extract_discordant_exe(n):
@@ -140,7 +148,7 @@ if args.p >= 2:
 else:
     extract_discordant_c.main(args, params, filenames, None)  ### c
 if do_ins is True:
-    print('AIM-UP: Clipped read processing started: '+ datetime.datetime.now().isoformat())
+    log.logger.info('Clipped read processing started.')
     if args.p >= 2:
         def blast_exe(n):
             infpath =filenames.overhang_fa + str(n) + '.txt'
@@ -157,7 +165,7 @@ if do_ins is True:
     utils.gzip_or_del(args, params, filenames.blast1_res)
 
     # 2. process unmapped reads
-    print('AIM-UP: Unmapped read processing started: '+ datetime.datetime.now().isoformat())
+    log.logger.info('Unmapped read processing started.')
     blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
     parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
     utils.gzip_or_del(args, params, filenames.blast2_res)
@@ -170,21 +178,21 @@ if do_ins is True:
 
     # 3. process hybrid reads
     import process_distant_read
-    print('AIM-UP: Hybrid read processing started: '+ datetime.datetime.now().isoformat())
+    log.logger.info('Hybrid read processing started.')
     process_distant_read.process_reads(args, params, filenames)
     # del files
     utils.gzip_or_del(args, params, filenames.distant_txt)
 
     # 4. merge all results, identify MEI outside of similar MEs
     import pair_breakpoints
-    print('AIM-UP: Integration junction search (outside of TEs) started: '+ datetime.datetime.now().isoformat())
+    log.logger.info('Integration junction search (outside of TEs) started.')
     pair_breakpoints.pairing(args, params, filenames)
     pair_breakpoints.add_TE_subclass(args, filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
     pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
 
     # 5. identify MEI nested in similar MEs
     import process_mapped_seq
-    print('AIM-UP: Integration junction search (nested in TEs) started: '+ datetime.datetime.now().isoformat())
+    log.logger.info('Integration junction search (nested in TEs) starte.')
     process_mapped_seq.retrieve_mapped_seq(params, filenames)
     process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
     process_mapped_seq.pairing(params, filenames)
@@ -196,7 +204,7 @@ if do_ins is True:
 
     # 6. pool results and filter candidates
     import pool_results
-    print('AIM-UP: Filtering started: '+ datetime.datetime.now().isoformat())
+    log.logger.info('Filtering started.')
     pool_results.merge_breakpoints(filenames)
     pool_results.add_hybrid(params, filenames)
     import filter_candidates
@@ -220,20 +228,20 @@ if do_ins is True:
     utils.gzip_file(params, filenames.hybrid)
     utils.gzip_file(params, filenames.hybrid_master)
     # output comments
-    print('AIM-UP: %d ME insertion candidates found: ' % filter_candidates.ins_n + datetime.datetime.now().isoformat())
-    print('AIM-UP: ME insertion search finished!: '+ datetime.datetime.now().isoformat())
+    log.logger.info('%d ME insertion candidates found.' % filter_candidates.ins_n)
+    log.logger.info('ME insertion search finished!')
 
 
 # 7. search for absent MEs
 if do_abs is True:
     import find_absent
-    print('\nAIM-UP: Absent ME search started: '+ datetime.datetime.now().isoformat())
+    log.logger.info('Absent ME search started.')
     find_absent.find_abs(args, params, filenames)
     # gzip files
     utils.gzip_file(params, filenames.abs_txt)
     # output comments
-    print('AIM-UP: %d absent ME candidates found: ' % find_absent.abs_n + datetime.datetime.now().isoformat())
-    print('AIM-UP: Absent ME search finished!: '+ datetime.datetime.now().isoformat())
+    log.logger.info('%d absent ME candidates found.' % find_absent.abs_n)
+    log.logger.info('Absent ME search finished!')
 
 
 # remove unnecessary files
@@ -241,4 +249,4 @@ os.remove(filenames.repout_bed)
 os.remove(filenames.reshaped_rep)
 for f in glob.glob(filenames.repdb +'*'):
     os.remove(f)
-
+log.logger.info('All analysis finished!')

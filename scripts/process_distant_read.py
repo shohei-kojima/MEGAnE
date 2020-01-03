@@ -6,6 +6,9 @@ All Rights Reserved
 See file LICENSE for details.
 '''
 
+
+import os
+
 def process_reads(args, params, filenames):
     import utils
     from pybedtools import BedTool
@@ -116,3 +119,5 @@ def process_reads(args, params, filenames):
                         tmp,end=tmp.rsplit('-', 1)
                         chr,start=tmp.rsplit(':', 1)
                         outfile.write('\t'.join([chr, start, end, te, ls[0], strand]) +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())

@@ -7,6 +7,7 @@ See file LICENSE for details.
 '''
 
 
+import os,time
 from Bio.Blast.Applications import NcbiblastnCommandline
 
 
@@ -82,11 +83,13 @@ def retrieve_mapped_seq(params, filenames):
         for seq in seqs:
             tmp=seqs[seq] +'\n'+ seq +'\n'
             outfile.write(tmp)
-            pass
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 
 
 def blastn_for_mapped(args, params, q_path, db_path, outfpath):
     NcbiblastnCommandline(db=db_path, query=q_path, evalue=params.blastn_evalue_for_mapped, perc_identity=params.blastn_ident_for_mapped, word_size=params.blastn_word_size_for_mapped, num_threads=args.p, culling_limit=2, outfmt=6, out=outfpath)()
+    time.sleep(20)
 
 
 def pairing(params, filenames):
@@ -141,4 +144,6 @@ def pairing(params, filenames):
                 id=ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7]
                 if id in header_singleton:
                     outfile.write(line)
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 

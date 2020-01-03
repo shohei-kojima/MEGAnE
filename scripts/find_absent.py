@@ -7,6 +7,7 @@ See file LICENSE for details.
 '''
 
 
+import os 
 from pybedtools import BedTool
 from collections import Counter
 from statistics import mean
@@ -127,5 +128,9 @@ def find_abs(args, params, filenames):
             if transd is True:
                 outfile_transd.write('%s\t%d\t%d\t%s\t%s\tTSD_len=%s\n' % (chr, start, end, n, r, t))
                 abs_n += 1
+    outfile_abs.flush()
+    outfile_transd.flush()
+    os.fdatasync(outfile_abs.fileno())
+    os.fdatasync(outfile_transd.fileno())
     outfile_abs.close()
     outfile_transd.close()

@@ -7,6 +7,7 @@ See file LICENSE for details.
 '''
 
 
+import os
 import utils
 from pybedtools import BedTool
 
@@ -193,6 +194,8 @@ def pairing(args, params, filenames):
                                 iter_n += 1
                             elif (l - r) >= params.max_TSD_len:
                                 break
+    outfile.flush()
+    os.fdatasync(outfile.fileno())
     outfile.close()
 
 
@@ -284,6 +287,8 @@ def add_TE_subclass(args, filenames, infpath, outfpath):
                     vsr.append('NA')
                     msr.append('NA')
                 outfile.write('\t'.join(ls[:8]) +'\t'+ ';'.join(vsr) +'\t'+ ';'.join(vsl) +'\t'+ ';'.join(msr) +'\t'+ ';'.join(msl) +'\n')
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
 
 
 def remove_cand_inside_TE(args, params, filenames):
@@ -351,3 +356,5 @@ def remove_cand_inside_TE(args, params, filenames):
                 id='\t'.join(ls[:3])
                 if id in retain:
                     outfile.write(line)
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
