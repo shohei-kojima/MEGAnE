@@ -42,13 +42,15 @@ args=parser.parse_args()
 
 # start
 import init
-init.init()
-base=init.base
+init.init(args)
 
 
 # logging
 import log
-log.start_log(args, 'AIM-UP')
+args.logfilename='debug.log'
+if os.path.exists(os.path.join(args.outdir, args.logfilename)) is True:
+    os.remove(os.path.join(args.outdir, args.logfilename))
+log.start_log(args)
 log.logger.debug('Logging started.')
 
 
@@ -56,11 +58,11 @@ log.logger.debug('Logging started.')
 import initial_check
 log.logger.info('Initial check started.')
 initial_check.check(args)
-exit()
+
 
 # set up
 import setup
-setup.setup(args, base)
+setup.setup(args, init.base)
 params=setup.params
 args.main_chrs=setup.main_chrs
 args.main_chrs_set=set(args.main_chrs)
@@ -68,6 +70,7 @@ args.rep_headers_to_be_removed=setup.rep_headers_to_be_removed
 args.rep_with_pA=setup.rep_with_pA
 do_ins=False if args.only_abs is True else True
 do_abs=False if args.only_ins is True else True
+exit()
 
 
 # output file names

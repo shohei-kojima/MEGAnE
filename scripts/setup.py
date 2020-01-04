@@ -9,20 +9,11 @@ See file LICENSE for details.
 
 import os,sys,datetime,multiprocessing
 from os.path import abspath,dirname,realpath,join
+import log
 
 
 def setup(args, base):
-    # make output dir
-    if args.overwrite is False:
-        if os.path.exists(args.outdir) is True:
-            print('Error: %s already exists. Please specify another directory name.' % outdir)
-            exit()
-        else:
-            os.mkdir(args.outdir)
-    else:
-        if os.path.exists(args.outdir) is False:
-            os.mkdir(args.outdir)
-
+    log.logger.debug('started')
     # load main chrs
     global main_chrs
     if args.mainchr is not None:
