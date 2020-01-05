@@ -57,7 +57,7 @@ log.logger.debug('Logging started.')
 # initial check
 import initial_check
 log.logger.info('Initial check started.')
-initial_check.check(args)
+initial_check.check(args, sys.argv)
 
 
 # set up

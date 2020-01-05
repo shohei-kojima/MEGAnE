@@ -7,9 +7,9 @@ See file LICENSE for details.
 '''
 
 
-import os,sys,datetime,multiprocessing,traceback
+import os,sys,datetime,multiprocessing
 from os.path import abspath,dirname,realpath,join
-import log
+import log,traceback
 
 # http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
 def which(program):
@@ -27,13 +27,14 @@ def which(program):
                 return exe_file
     return None
 
-def check(args):
+def check(args, argv):
     log.logger.debug('started')
     try:
+        log.logger.debug('command line=\n'+ ' '.join(argv))
         # check python version
         version=sys.version_info
         if (version[0] >= 3) and (version[1] >= 7):
-            log.logger.debug('Python version=%d.%d.' % (version[0], version[1]))
+            log.logger.debug('Python version=%d.%d.%d' % (version[0], version[1], version[2]))
         else:
             log.logger.error('Please use Python 3.7 or later. Your Python is version %d.%d.' % (version[0], version[1]))
             exit()
