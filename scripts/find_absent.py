@@ -52,7 +52,7 @@ def find_abs(args, params, filenames):
         d={}
         for line in bed_te_intersect:
             ls=str(line).split()
-            id='_'.join(ls[5:8])
+            id='\t'.join(ls[5:8])
             if not id in d:
                 d[id]=[]
             d[id].append([int(ls[1]), int(ls[2]), ls[3], ls[8], ls[4], ls[9]])
@@ -62,7 +62,7 @@ def find_abs(args, params, filenames):
         global abs_n
         abs_n=0
         for id in d:
-            chr,start,end=id.split('_')
+            chr,start,end=id.split('\t')
             start,end=int(start),int(end)
             ss,es=[],[]
             for s,e,_,_,_,_ in d[id]:
