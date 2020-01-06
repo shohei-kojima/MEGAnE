@@ -173,7 +173,6 @@ class load:
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))
             log.logger.debug('parameters:\n'+ '\n'.join(params_for_debug))
-            log.logger.debug('test')
         except:
             log.logger.error('\n'+ traceback.format_exc())
             exit()

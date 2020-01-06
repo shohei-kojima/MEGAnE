@@ -30,7 +30,7 @@ def which(program):
 def check(args, argv):
     log.logger.debug('started')
     try:
-        log.logger.debug('command line=\n'+ ' '.join(argv))
+        log.logger.debug('command line:\n'+ ' '.join(argv))
         # check python version
         version=sys.version_info
         if (version[0] >= 3) and (version[1] >= 7):

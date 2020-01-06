@@ -47,7 +47,7 @@ init.init(args)
 
 # logging
 import log
-args.logfilename='debug.log'
+args.logfilename='for_debug.log'
 if os.path.exists(os.path.join(args.outdir, args.logfilename)) is True:
     os.remove(os.path.join(args.outdir, args.logfilename))
 log.start_log(args)
@@ -56,6 +56,7 @@ log.logger.debug('Logging started.')
 
 # initial check
 import initial_check
+print()
 log.logger.info('Initial check started.')
 initial_check.check(args, sys.argv)
 
@@ -70,7 +71,6 @@ args.rep_headers_to_be_removed=setup.rep_headers_to_be_removed
 args.rep_with_pA=setup.rep_with_pA
 do_ins=False if args.only_abs is True else True
 do_abs=False if args.only_ins is True else True
-exit()
 
 
 # output file names
@@ -238,6 +238,7 @@ if do_ins is True:
 # 7. search for absent MEs
 if do_abs is True:
     import find_absent
+    print()
     log.logger.info('Absent ME search started.')
     find_absent.find_abs(args, params, filenames)
     # gzip files
