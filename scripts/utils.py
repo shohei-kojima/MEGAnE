@@ -6,7 +6,9 @@ All Rights Reserved
 See file LICENSE for details.
 '''
 
+
 import os,gzip,shutil
+import log,traceback
 
 
 class empclass:
@@ -14,22 +16,32 @@ class empclass:
 
 
 def gzip_or_del(args, params, file):
-    if args.keep is True:
+    log.logger.debug('started, file=%s' % file)
+    try:
+        if args.keep is True:
+            with open(file, 'rt') as f_in:
+                with gzip.open(file +'.gz', 'wt', compresslevel=params.gzip_compresslevel) as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+                    f_out.flush()
+                    os.fdatasync(f_out.fileno())
+        os.remove(file)
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit()
+
+
+def gzip_file(params, file):
+    log.logger.debug('started, file=%s' % file)
+    try:
         with open(file, 'rt') as f_in:
             with gzip.open(file +'.gz', 'wt', compresslevel=params.gzip_compresslevel) as f_out:
                 shutil.copyfileobj(f_in, f_out)
                 f_out.flush()
                 os.fdatasync(f_out.fileno())
-    os.remove(file)
-
-
-def gzip_file(params, file):
-    with open(file, 'rt') as f_in:
-        with gzip.open(file +'.gz', 'wt', compresslevel=params.gzip_compresslevel) as f_out:
-            shutil.copyfileobj(f_in, f_out)
-            f_out.flush()
-            os.fdatasync(f_out.fileno())
-    os.remove(file)
+        os.remove(file)
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit()
 
 
 def parse_fasta(path_to_file):

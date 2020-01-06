@@ -9,6 +9,7 @@ See file LICENSE for details.
 
 import os
 from pybedtools import BedTool
+import log,traceback
 
 
 def merge_breakpoints(filenames):
@@ -159,101 +160,106 @@ def merge_breakpoints(filenames):
 
 
 def add_hybrid(params, filenames):
-    bed_up,bed_down='',''
-    with open(filenames.bp_merged) as infile:
-        for line in infile:
-            ls=line.split()
-            r=int(ls[3].split(':')[0])
-            l=int(ls[4].split(':')[0])
-            s= r - params.hybrid_read_range_from_breakpint
-            e= l + params.hybrid_read_range_from_breakpint
-            s=0 if s < 0 else s
-            te=set()
-            for t in ls[10:12]:
-                if not t == 'NA':
-                    for i in t.split(';'):
-                        if not i == '':
-                            te.add(i)
-            te=';'.join(list(te))
-            id=ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7]
-            bed_up += ls[0] +'\t'+ str(s) +'\t'+ str(r) +'\t'+ id +'\t'+ te +'\n'
-            bed_down += ls[0] +'\t'+ str(l) +'\t'+ str(e) +'\t'+ id +'\t'+ te +'\n'
-    bed_up=BedTool(bed_up, from_string=True)
-    bed_down=BedTool(bed_down, from_string=True)
-
-    # load hybrid reads
-    bed_hybrid=BedTool(filenames.hybrid)
-
-    # list up hybrid reads near from integration junction candidates
-    hybrid={}
-    bed_up=bed_up.intersect(bed_hybrid, wa=True, wb=True)
-    for line in bed_up:
-        line=str(line)
-        ls=line.split()
-        if ls[10] == '+':
-            chimeric_te=set(ls[4].split(';'))
-            hybrid_te=set(ls[8].split(';'))
-            shared_te= chimeric_te & hybrid_te
-            if len(shared_te) >= 1:
-                if not ls[3] in hybrid:
-                    hybrid[ls[3]]={}
-                if not 'up' in hybrid[ls[3]]:
-                    hybrid[ls[3]]['up']=set()
-                hybrid_read_info= ls[5] +':'+ ls[6] +'-'+ ls[7] +'(+)'
-                hybrid[ls[3]]['up'].add(ls[9] +'\t'+ ls[8] +'\t'+ hybrid_read_info)
-
-    bed_down=bed_down.intersect(bed_hybrid, wa=True, wb=True)
-    for line in bed_down:
-        line=str(line)
-        ls=line.split()
-        if ls[10] == '-':
-            chimeric_te=set(ls[4].split(';'))
-            hybrid_te=set(ls[8].split(';'))
-            shared_te= chimeric_te & hybrid_te
-            if len(shared_te) >= 1:
-                if not ls[3] in hybrid:
-                    hybrid[ls[3]]={}
-                if not 'down' in hybrid[ls[3]]:
-                    hybrid[ls[3]]['down']=set()
-                hybrid_read_info= ls[5] +':'+ ls[6] +'-'+ ls[7] +'(-)'
-                hybrid[ls[3]]['down'].add(ls[9] +'\t'+ ls[8] +'\t'+ hybrid_read_info)
-
-    # write hybrid read info to a file, master file
-    with open(filenames.hybrid_master, 'w') as outfile:
-        for pos in hybrid:
-            if 'up' in hybrid[pos]:
-                for line in hybrid[pos]['up']:
-                    rname,te,info=line.split()
-                    outfile.write(pos +'\t'+ rname +'\t'+ info +'\t'+ te +'\n')
-            if 'down' in hybrid[pos]:
-                for line in hybrid[pos]['down']:
-                    rname,te,info=line.split()
-                    outfile.write(pos +'\t'+ rname +'\t'+ info +'\t'+ te +'\n')
-        outfile.flush()
-        os.fdatasync(outfile.fileno())
-
-    # output
-    with open(filenames.bp_merged_all, 'w') as outfile:
+    log.logger.debug('started')
+    try:
+        bed_up,bed_down='',''
         with open(filenames.bp_merged) as infile:
             for line in infile:
                 ls=line.split()
+                r=int(ls[3].split(':')[0])
+                l=int(ls[4].split(':')[0])
+                s= r - params.hybrid_read_range_from_breakpint
+                e= l + params.hybrid_read_range_from_breakpint
+                s=0 if s < 0 else s
+                te=set()
+                for t in ls[10:12]:
+                    if not t == 'NA':
+                        for i in t.split(';'):
+                            if not i == '':
+                                te.add(i)
+                te=';'.join(list(te))
                 id=ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7]
-                if id in hybrid:
-                    r,r_num=ls[3].split(':')
-                    l,l_num=ls[4].split(':')
-                    r_num,l_num=int(r_num),int(l_num)
-                    r_hub_num=len(hybrid[id]['up']) if 'up' in hybrid[id] else 0
-                    l_hub_num=len(hybrid[id]['down']) if 'down' in hybrid[id] else 0
-                    r_num += r_hub_num
-                    l_num += l_hub_num
-                    s=[ls[0], ls[1], ls[2], r +':'+ str(r_num), l +':'+ str(l_num)]
-                    s.extend(ls[5:])
-                    s.extend([str(r_hub_num), str(l_hub_num)])
-                else:
-                    s=[]
-                    s.extend(ls)
-                    s.extend(['0', '0'])
-                outline= '\t'.join(s) +'\n'
-                outfile.write(outline)
-        outfile.flush()
-        os.fdatasync(outfile.fileno())
+                bed_up += ls[0] +'\t'+ str(s) +'\t'+ str(r) +'\t'+ id +'\t'+ te +'\n'
+                bed_down += ls[0] +'\t'+ str(l) +'\t'+ str(e) +'\t'+ id +'\t'+ te +'\n'
+        bed_up=BedTool(bed_up, from_string=True)
+        bed_down=BedTool(bed_down, from_string=True)
+
+        # load hybrid reads
+        bed_hybrid=BedTool(filenames.hybrid)
+
+        # list up hybrid reads near from integration junction candidates
+        hybrid={}
+        bed_up=bed_up.intersect(bed_hybrid, wa=True, wb=True)
+        for line in bed_up:
+            line=str(line)
+            ls=line.split()
+            if ls[10] == '+':
+                chimeric_te=set(ls[4].split(';'))
+                hybrid_te=set(ls[8].split(';'))
+                shared_te= chimeric_te & hybrid_te
+                if len(shared_te) >= 1:
+                    if not ls[3] in hybrid:
+                        hybrid[ls[3]]={}
+                    if not 'up' in hybrid[ls[3]]:
+                        hybrid[ls[3]]['up']=set()
+                    hybrid_read_info= ls[5] +':'+ ls[6] +'-'+ ls[7] +'(+)'
+                    hybrid[ls[3]]['up'].add(ls[9] +'\t'+ ls[8] +'\t'+ hybrid_read_info)
+
+        bed_down=bed_down.intersect(bed_hybrid, wa=True, wb=True)
+        for line in bed_down:
+            line=str(line)
+            ls=line.split()
+            if ls[10] == '-':
+                chimeric_te=set(ls[4].split(';'))
+                hybrid_te=set(ls[8].split(';'))
+                shared_te= chimeric_te & hybrid_te
+                if len(shared_te) >= 1:
+                    if not ls[3] in hybrid:
+                        hybrid[ls[3]]={}
+                    if not 'down' in hybrid[ls[3]]:
+                        hybrid[ls[3]]['down']=set()
+                    hybrid_read_info= ls[5] +':'+ ls[6] +'-'+ ls[7] +'(-)'
+                    hybrid[ls[3]]['down'].add(ls[9] +'\t'+ ls[8] +'\t'+ hybrid_read_info)
+
+        # write hybrid read info to a file, master file
+        with open(filenames.hybrid_master, 'w') as outfile:
+            for pos in hybrid:
+                if 'up' in hybrid[pos]:
+                    for line in hybrid[pos]['up']:
+                        rname,te,info=line.split()
+                        outfile.write(pos +'\t'+ rname +'\t'+ info +'\t'+ te +'\n')
+                if 'down' in hybrid[pos]:
+                    for line in hybrid[pos]['down']:
+                        rname,te,info=line.split()
+                        outfile.write(pos +'\t'+ rname +'\t'+ info +'\t'+ te +'\n')
+            outfile.flush()
+            os.fdatasync(outfile.fileno())
+
+        # output
+        with open(filenames.bp_merged_all, 'w') as outfile:
+            with open(filenames.bp_merged) as infile:
+                for line in infile:
+                    ls=line.split()
+                    id=ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7]
+                    if id in hybrid:
+                        r,r_num=ls[3].split(':')
+                        l,l_num=ls[4].split(':')
+                        r_num,l_num=int(r_num),int(l_num)
+                        r_hub_num=len(hybrid[id]['up']) if 'up' in hybrid[id] else 0
+                        l_hub_num=len(hybrid[id]['down']) if 'down' in hybrid[id] else 0
+                        r_num += r_hub_num
+                        l_num += l_hub_num
+                        s=[ls[0], ls[1], ls[2], r +':'+ str(r_num), l +':'+ str(l_num)]
+                        s.extend(ls[5:])
+                        s.extend([str(r_hub_num), str(l_hub_num)])
+                    else:
+                        s=[]
+                        s.extend(ls)
+                        s.extend(['0', '0'])
+                    outline= '\t'.join(s) +'\n'
+                    outfile.write(outline)
+            outfile.flush()
+            os.fdatasync(outfile.fileno())
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit()
