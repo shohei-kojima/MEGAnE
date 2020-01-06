@@ -1,5 +1,0 @@
-2020-01-03 21:46:02,235 : test - DEBUG - debug
-2020-01-03 21:46:02,235 : test - INFO - info
-2020-01-03 21:46:02,235 : test - WARNING - This is a warning
-2020-01-03 21:46:02,235 : test - ERROR - This is an error
-2020-01-03 21:46:02,235 : test - CRITICAL - This is an critical

@@ -197,11 +197,11 @@ if do_ins is True:
     import process_mapped_seq
     log.logger.info('Integration junction search (nested in TEs) starte.')
     process_mapped_seq.retrieve_mapped_seq(params, filenames)
+    utils.gzip_or_del(args, params, filenames.mapped_fa)  # del file
     process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
     process_mapped_seq.pairing(params, filenames)
     pair_breakpoints.add_TE_subclass(args, filenames, filenames.bp_pair_single, filenames.bp_info_single)
     # del files
-    utils.gzip_or_del(args, params, filenames.mapped_fa)
     utils.gzip_or_del(args, params, filenames.mapped_fa_select)
     utils.gzip_or_del(args, params, filenames.blast4_res)
 
