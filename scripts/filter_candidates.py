@@ -45,7 +45,10 @@ def filter(args, params, filenames):
                 x.append(i)
                 y.append(list_support_read_count.count(i))
             init_param=[args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff]
-            popt,pcov=curve_fit(gaussian_func_biallelic, x, y, init_param)
+            if args.monoallelic is False:
+                popt,pcov=curve_fit(gaussian_func_biallelic, x, y, init_param)
+            elif args.monoallelic is True:
+                popt,pcov=curve_fit(gaussian_func, x, y, init_param)
             reject1perc=norm.interval(alpha=params.fit_gaussian_CI_alpha, loc=popt[1], scale=abs(popt[2]))
             return x, y, popt, pcov, reject1perc
 
@@ -106,15 +109,19 @@ def filter(args, params, filenames):
         if len(for_gaussian_fitting) >= 3:
             x,y,popt,pcov,reject1perc=fit_gaussian(for_gaussian_fitting)
             xd=np.arange(min(x), max(x), 0.5)
-            estimated_curve=gaussian_func_biallelic(xd, popt[0], popt[1], popt[2])
-            estimated_curve_single_allele=gaussian_func(xd, popt[0], popt[1], popt[2])
-            estimated_curve_bi_allele=gaussian_func(xd, 0.333 * popt[0], 2 * popt[1], 1.414 * popt[2])
+            if args.monoallelic is False:
+                estimated_curve=gaussian_func_biallelic(xd, popt[0], popt[1], popt[2])
+                estimated_curve_single_allele=gaussian_func(xd, popt[0], popt[1], popt[2])
+                estimated_curve_bi_allele=gaussian_func(xd, 0.333 * popt[0], 2 * popt[1], 1.414 * popt[2])
+            elif args.monoallelic is True:
+                estimated_curve=gaussian_func(xd, popt[0], popt[1], popt[2])
             # plot
             fig=plt.figure(figsize=(3,3))
             ax=fig.add_subplot(111)
             ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='Actual data')
-            ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
-            ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
+            if args.monoallelic is False:
+                ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
+                ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
             ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
             ax.axvline(x=round(reject1perc[0]), linewidth=1, alpha=0.5, color='green', linestyle='dashed', label='Auto-determined threshold')
             ax.set_xlim(0, popt[1] * 4)
