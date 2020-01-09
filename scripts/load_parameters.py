@@ -56,12 +56,12 @@ class load:
             self.L1_filter_A_plus_T_perc=90
             self.L1_filter_eval_threshold=float('1e-25')
             self.abs_min_chimeric_num_coeff=0.03
-            self.breakpoint_annotation_gap=10
+            self.breakpoint_annotation_gap=25
             self.abs_len_to_te_ratio=0.9
             self.len_te_for_abs_ratio=0.9
             self.non_ME_len_ratio=0.5
-            self.transduction_pA_len=20
-            self.transduction_pA_ratio=0.7
+            self.transduction_pA_len=12
+            self.transduction_pA_ratio=0.75
             # read parameter setting file
             with open(f) as infile:
                 for line in infile:
