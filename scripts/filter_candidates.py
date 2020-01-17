@@ -33,24 +33,53 @@ def filter(args, params, filenames):
             input_sample=os.path.basename(args.c)
         nts=['A', 'T']
         
-        def gaussian_func_biallelic(x, a, mu, sigma):
-            return (a*np.exp(-(x-mu)**2/(2*sigma**2))) + (0.333*a*np.exp(-(x-(2*mu))**2/(4*sigma**2)))
-
+        def gaussian_func_biallelics(coeff):
+            def gaussian_func_biallelic(x, a, mu, sigma):
+                return ((1-coeff)*a*np.exp(-(x-mu)**2/(2*sigma**2))) + (coeff*a*np.exp(-(x-(2*mu))**2/(4*sigma**2)))
+            return gaussian_func_biallelic
+        
         def gaussian_func(x, a, mu, sigma):
             return a*np.exp(-(x-mu)**2/(2*sigma**2))
 
         def fit_gaussian(list_support_read_count):
             x,y=[],[]
-            for i in range(max(list_support_read_count)):
-                x.append(i)
-                y.append(list_support_read_count.count(i))
-            init_param=[args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff, args.cov * params.fit_gaussian_init_a_coeff]
+            support_read_bin= int(np.ceil(args.cov / 50))
+            for i in range(0, max(list_support_read_count), support_read_bin):
+                x.append(i + ((support_read_bin - 1) / 2))
+                y.append(sum([ list_support_read_count.count(i + j) for j in range(support_read_bin) ]))
+            init_param_a=max(y)
+            for i,j in zip(x,y):
+                if j == init_param_a:
+                    init_param_mu=i
+                    break
+            init_param=[init_param_a, init_param_mu, args.cov * params.fit_gaussian_init_sigma_coeff]
+            log.logger.debug('init_param_a=%d,init_param_mu=%f,init_param_sigma=%f' %(init_param_a, init_param_mu, float(args.cov * params.fit_gaussian_init_sigma_coeff)))
             if args.monoallelic is False:
-                popt,pcov=curve_fit(gaussian_func_biallelic, x, y, init_param)
+                fits=[]
+                for coeff in range(100):
+                    coeff= coeff / 100
+                    func=gaussian_func_biallelics(coeff)
+                    popt,pcov=curve_fit(func, x, y, init_param)
+                    residuals= y - func(x, *popt)
+                    rss=np.sum(residuals**2)
+                    tss=np.sum((y - np.mean(y))**2)
+                    r_squared= 1 - (rss / tss)
+                    fits.append([r_squared, coeff, popt, pcov])
+                fits=sorted(fits)
+                r_squared=fits[-1][0]
+                coeff=fits[-1][1]
+                popt=fits[-1][2]
+                pcov=fits[-1][3]
+                log.logger.debug('r_squared=%f,biallelic_coeff=%f' %(r_squared, coeff))
             elif args.monoallelic is True:
+                coeff=None
                 popt,pcov=curve_fit(gaussian_func, x, y, init_param)
+                residuals= y - gaussian_func(x, popt)
+                rss=np.sum(residuals**2)
+                tss=np.sum((y - np.mean(y))**2)
+                r_squared= 1 - (rss / tss)
             reject1perc=norm.interval(alpha=params.fit_gaussian_CI_alpha, loc=popt[1], scale=abs(popt[2]))
-            return x, y, popt, pcov, reject1perc
+            return x, y, popt, pcov, reject1perc, r_squared, coeff
 
         def L1_filter(line, r_pos, l_pos):
             cand=True
@@ -107,12 +136,12 @@ def filter(args, params, filenames):
                             for_gaussian_fitting.append(total_read_count)
                             hybrid_num.append(int(ls[12]) + int(ls[13]))
         if len(for_gaussian_fitting) >= 3:
-            x,y,popt,pcov,reject1perc=fit_gaussian(for_gaussian_fitting)
+            x,y,popt,pcov,reject1perc,r_squared,coeff=fit_gaussian(for_gaussian_fitting)
             xd=np.arange(min(x), max(x), 0.5)
             if args.monoallelic is False:
-                estimated_curve=gaussian_func_biallelic(xd, popt[0], popt[1], popt[2])
-                estimated_curve_single_allele=gaussian_func(xd, popt[0], popt[1], popt[2])
-                estimated_curve_bi_allele=gaussian_func(xd, 0.333 * popt[0], 2 * popt[1], 1.414 * popt[2])
+                estimated_curve=gaussian_func_biallelics(coeff)(xd, popt[0], popt[1], popt[2])
+                estimated_curve_single_allele=gaussian_func(xd, (1-coeff) * popt[0], popt[1], popt[2])
+                estimated_curve_bi_allele=gaussian_func(xd, coeff * popt[0], 2 * popt[1], 1.414 * popt[2])
             elif args.monoallelic is True:
                 estimated_curve=gaussian_func(xd, popt[0], popt[1], popt[2])
             # plot
@@ -128,14 +157,14 @@ def filter(args, params, filenames):
             ax.set_xlabel('Number of support reads per MEI')
             ax.set_ylabel('Number of MEI')
             ax.legend()
-            plt.suptitle('sample=%s,\nn=%d, mu=%f, sigma=%f,\n1_perc_reject=%f' % (input_sample, len(for_gaussian_fitting), popt[1], popt[2], reject1perc[0]))  # popt[1] = mean, popt[2] = sigma
+            plt.suptitle('sample=%s,\nn=%d, r_squared=%f,\nreject_cutoff=%f' % (input_sample, len(for_gaussian_fitting), r_squared, reject1perc[0]))  # popt[1] = mean, popt[2] = sigma
             plt.savefig(filenames.gaussian_plot)
             plt.close()
             # parameter settings
             total_read_threshold= round(reject1perc[0])
             zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))
         else:
-            print('AIM-UP: Warning: Not enough data to automatically determine thresholds for MEI filtering. Please check if your data is enough big or contans discordant reads. Proceed anyway.')
+            log.logger.warning('Not enough data to automatically determine thresholds for MEI filtering. Please check if your data is enough big or contans discordant reads. Proceed anyway.')
             total_read_threshold=3
             zero_hybrid_total_read_threshold=5
 
