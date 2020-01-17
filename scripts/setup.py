@@ -20,7 +20,7 @@ def setup(args, base):
         if args.mainchr is not None:
             main_chr_path=args.mainchr
         else:
-            main_chr_path=join(base, 'lib/human_main_chrs.txt')
+            main_chr_path=join(base, 'lib/hg38_human_main_chrs_plus_alt_ucsc_style.txt')
         main_chrs=[]
         with open(main_chr_path) as infile:
             for line in infile:
@@ -46,7 +46,7 @@ def setup(args, base):
         if args.repremove is not None:
             param_path=args.repremove
         else:
-            param_path=join(base, 'lib/non_ME_rep_headers.txt')
+            param_path=join(base, 'lib/human_non_ME_rep_headers.txt')
         rep_headers_to_be_removed=set()
         with open(param_path) as infile:
             for line in infile:
@@ -59,7 +59,7 @@ def setup(args, base):
         if args.pA_ME is not None:
             param_path=args.pA_ME
         else:
-            param_path=join(base, 'lib/ME_with_polyA_tail.txt')
+            param_path=join(base, 'lib/human_ME_with_polyA_tail.txt')
         rep_with_pA=set()
         with open(param_path) as infile:
             for line in infile:
