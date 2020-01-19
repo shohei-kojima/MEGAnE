@@ -111,7 +111,7 @@ def filter(args, params, filenames):
             return cand
 
         # determine threshold by fitting gaussian function
-        hybrid_num_threshold= args.cov * params.hybrid_read_coeff_for_gaussian_fitting if args.cov * params.hybrid_read_coeff_for_gaussian_fitting <= 10 else 10
+        hybrid_num_threshold= args.cov * params.hybrid_read_coeff_for_gaussian_fitting
         for_gaussian_fitting=[]
         hybrid_num=[]
         with open(filenames.bp_merged_all) as infile:
