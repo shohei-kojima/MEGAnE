@@ -43,7 +43,7 @@ def filter(args, params, filenames):
 
         def fit_gaussian(list_support_read_count):
             x,y=[],[]
-            support_read_bin= int(np.ceil(args.cov / 50))
+            support_read_bin= int(np.ceil(args.cov / 25))
             for i in range(0, max(list_support_read_count), support_read_bin):
                 x.append(i + ((support_read_bin - 1) / 2))
                 y.append(sum([ list_support_read_count.count(i + j) for j in range(support_read_bin) ]))
@@ -111,6 +111,7 @@ def filter(args, params, filenames):
             return cand
 
         # determine threshold by fitting gaussian function
+        hybrid_num_threshold= args.cov * params.hybrid_read_coeff_for_gaussian_fitting if args.cov * params.hybrid_read_coeff_for_gaussian_fitting <= 10 else 10
         for_gaussian_fitting=[]
         hybrid_num=[]
         with open(filenames.bp_merged_all) as infile:
@@ -130,7 +131,7 @@ def filter(args, params, filenames):
                 vs=[ float(v) for v in vs if not (v == 'NA') and not (v == '') ]
                 if len(vs) >= 1:
                     L_eval.extend(vs)
-                if (int(ls[12]) >= (args.cov * params.hybrid_read_coeff_for_gaussian_fitting)) and (int(ls[13]) >= (args.cov * params.hybrid_read_coeff_for_gaussian_fitting)):
+                if (int(ls[12]) >= hybrid_num_threshold) and (int(ls[13]) >= hybrid_num_threshold):
                     if (len(R_eval) >= 1) and (len(L_eval) >= 1):
                         if (min(R_eval) < params.eval_threshold_for_gaussian_fitting) and (min(L_eval) < params.eval_threshold_for_gaussian_fitting):
                             for_gaussian_fitting.append(total_read_count)
