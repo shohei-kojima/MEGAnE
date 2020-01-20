@@ -112,6 +112,7 @@ def filter(args, params, filenames):
 
         # determine threshold by fitting gaussian function
         hybrid_num_threshold= args.cov * params.hybrid_read_coeff_for_gaussian_fitting
+        chimeric_num_threshold= args.cov * params.chimeric_read_coeff_for_gaussian_fitting
         for_gaussian_fitting=[]
         hybrid_num=[]
         with open(filenames.bp_merged_all) as infile:
@@ -132,7 +133,7 @@ def filter(args, params, filenames):
                 if len(vs) >= 1:
                     L_eval.extend(vs)
                 if (int(ls[12]) >= hybrid_num_threshold) and (int(ls[13]) >= hybrid_num_threshold):
-                    if (len(R_eval) >= 1) and (len(L_eval) >= 1):
+                    if (len(R_eval) >= chimeric_num_threshold) and (len(L_eval) >= chimeric_num_threshold):
                         if (min(R_eval) < params.eval_threshold_for_gaussian_fitting) and (min(L_eval) < params.eval_threshold_for_gaussian_fitting):
                             for_gaussian_fitting.append(total_read_count)
                             hybrid_num.append(int(ls[12]) + int(ls[13]))

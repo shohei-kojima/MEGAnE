@@ -42,6 +42,7 @@ class load:
             self.mapped_abs_single_ident_threshold=98
             self.hybrid_read_range_from_breakpint=500
             self.hybrid_read_coeff_for_gaussian_fitting=0.1
+            self.chimeric_read_coeff_for_gaussian_fitting=0.01
             self.eval_threshold_for_gaussian_fitting=float('1e-25')
             self.fit_gaussian_init_a_coeff=0.5
             self.fit_gaussian_init_mu_coeff=1
@@ -129,6 +130,8 @@ class load:
                             self.hybrid_read_range_from_breakpint=self.max_TSD_len
                     elif ls[0] == 'hybrid_read_coeff_for_gaussian_fitting':
                         self.hybrid_read_coeff_for_gaussian_fitting=float(ls[1])
+                    elif ls[0] == 'chimeric_read_coeff_for_gaussian_fitting':
+                        self.chimeric_read_coeff_for_gaussian_fitting=float(ls[1])
                     elif ls[0] == 'eval_threshold_for_gaussian_fitting':
                         self.eval_threshold_for_gaussian_fitting=float(ls[1])
                     elif ls[0] == 'fit_gaussian_init_a_coeff':
