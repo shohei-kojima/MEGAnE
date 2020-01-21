@@ -162,7 +162,7 @@ def filter(args, params, filenames):
             plt.suptitle('sample=%s,\nn=%d, r_squared=%f,\nreject_cutoff=%f' % (input_sample, len(for_gaussian_fitting), r_squared, reject1perc[0]))  # popt[1] = mean, popt[2] = sigma
             plt.savefig(filenames.gaussian_plot)
             plt.close()
-            log.logger.debug('gaussian_fitting_n=%d,r_squared=%f,reject_cutoff=%f' %(len(for_gaussian_fitting), r_squared, reject1perc[0])))
+            log.logger.debug('gaussian_fitting_n=%d,r_squared=%f,reject_cutoff=%f' %(len(for_gaussian_fitting), r_squared, reject1perc[0]))
             # parameter settings
             total_read_threshold= round(reject1perc[0])
             zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))
