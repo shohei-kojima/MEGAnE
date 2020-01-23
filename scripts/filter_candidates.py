@@ -59,12 +59,15 @@ def filter(args, params, filenames):
                 for coeff in range(100):
                     coeff= coeff / 100
                     func=gaussian_func_biallelics(coeff)
-                    popt,pcov=curve_fit(func, x, y, init_param)
-                    residuals= y - func(x, *popt)
-                    rss=np.sum(residuals**2)
-                    tss=np.sum((y - np.mean(y))**2)
-                    r_squared= 1 - (rss / tss)
-                    fits.append([r_squared, coeff, popt, pcov])
+                    try:
+                        popt,pcov=curve_fit(func, x, y, init_param)
+                        residuals= y - func(x, *popt)
+                        rss=np.sum(residuals**2)
+                        tss=np.sum((y - np.mean(y))**2)
+                        r_squared= 1 - (rss / tss)
+                        fits.append([r_squared, coeff, popt, pcov])
+                    except RuntimeError:
+                        log.logger.debug('curve_fit,RuntimeError,coeff=%f' % coeff)
                 fits=sorted(fits)
                 r_squared=fits[-1][0]
                 coeff=fits[-1][1]
