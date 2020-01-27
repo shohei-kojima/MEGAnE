@@ -48,6 +48,7 @@ class load:
             self.fit_gaussian_init_mu_coeff=1
             self.fit_gaussian_init_sigma_coeff=0.33
             self.fit_gaussian_CI_alpha=0.99
+            self.actual_cutoff_rank=0.001
             self.first_filter_eval_threshold=float('1e-15')
             self.first_filter_total_hybrid_read_num=1
             self.second_filter_hybrid_read_num=1
@@ -142,6 +143,8 @@ class load:
                         self.fit_gaussian_init_sigma_coeff=float(ls[1])
                     elif ls[0] == 'fit_gaussian_CI_alpha':
                         self.fit_gaussian_CI_alpha=float(ls[1])
+                    elif ls[0] == 'actual_cutoff_rank':
+                        self.actual_cutoff_rank=float(ls[1])
                     elif ls[0] == 'first_filter_eval_threshold':
                         self.first_filter_eval_threshold=float(ls[1])
                     elif ls[0] == 'first_filter_total_hybrid_read_num':

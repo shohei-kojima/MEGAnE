@@ -7,7 +7,7 @@ See file LICENSE for details.
 '''
 
 
-import os
+import os,math
 from utils import parse_fasta
 from pybedtools import BedTool
 import numpy as np
@@ -33,6 +33,12 @@ def filter(args, params, filenames):
             input_sample=os.path.basename(args.c)
         nts=['A', 'T']
         
+        # determine cutoff from actual 1 perc threshold
+        def determine_cutoff(list_support_read_count):
+            cutoff_pos= math.ceil(len(list_support_read_count) * params.actual_cutoff_rank)
+            cutoff=sorted(list_support_read_count)[cutoff_pos]
+            return cutoff
+
         def gaussian_func_biallelics(coeff):
             def gaussian_func_biallelic(x, a, mu, sigma):
                 return ((1-coeff)*a*np.exp(-(x-mu)**2/(2*sigma**2))) + (coeff*a*np.exp(-(x-(2*mu))**2/(4*sigma**2)))
@@ -150,6 +156,9 @@ def filter(args, params, filenames):
                             for_gaussian_fitting.append(total_read_count)
                             hybrid_num.append(int(ls[12]) + int(ls[13]))
         if len(for_gaussian_fitting) >= 3:
+            cutoff=determine_cutoff(for_gaussian_fitting)
+            log.logger.debug('total_support_read_num_cutoff=%d' % cutoff)
+            
             x,y,popt,pcov,reject1perc,r_squared,coeff=fit_gaussian(for_gaussian_fitting)
             xd=np.arange(min(x), max(x), 0.5)
             if args.monoallelic is False:
@@ -166,18 +175,18 @@ def filter(args, params, filenames):
                 ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
                 ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
             ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
-            ax.axvline(x=round(reject1perc[0]), linewidth=1, alpha=0.5, color='green', linestyle='dashed', label='Auto-determined threshold')
+            ax.axvline(x=round(reject1perc[0]), linewidth=1, alpha=0.5, color='olive', linestyle='dashed', label='Gaussian rejection')
+            ax.axvline(x=round(cutoff), linewidth=1, alpha=0.5, color='darkgreen', linestyle='dashed', label='Cutoff')
             ax.set_xlim(0, popt[1] * 4)
             ax.set_xlabel('Number of support reads per MEI')
             ax.set_ylabel('Number of MEI')
             ax.legend()
-            plt.suptitle('sample=%s,\nn=%d, r_squared=%f,\nreject_cutoff=%f' % (input_sample, len(for_gaussian_fitting), r_squared, reject1perc[0]))  # popt[1] = mean, popt[2] = sigma
+            total_read_threshold= max(cutoff, reject1perc[0])  # parameter setting
+            plt.suptitle('sample=%s,\nn=%d, r_squared=%f,\nreject_cutoff=%f' % (input_sample, len(for_gaussian_fitting), r_squared, total_read_threshold))  # popt[1] = mean, popt[2] = sigma
             plt.savefig(filenames.gaussian_plot)
             plt.close()
-            log.logger.debug('gaussian_fitting_n=%d,r_squared=%f,reject_cutoff=%f' %(len(for_gaussian_fitting), r_squared, reject1perc[0]))
-            # parameter settings
-            total_read_threshold= round(reject1perc[0])
-            zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))
+            zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))  # parameter setting
+            log.logger.debug('gaussian_fitting_n=%d,r_squared=%f,reject_cutoff=%f,zero_hybrid_total_read_threshold=%f' %(len(for_gaussian_fitting), r_squared, total_read_threshold, zero_hybrid_total_read_threshold))
         else:
             log.logger.warning('Not enough data to automatically determine thresholds for MEI filtering. Please check if your data is enough big or contans discordant reads. Proceed anyway.')
             total_read_threshold=3
