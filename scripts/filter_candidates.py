@@ -48,7 +48,11 @@ def filter(args, params, filenames):
                 x.append(i + ((support_read_bin - 1) / 2))
                 y.append(sum([ list_support_read_count.count(i + j) for j in range(support_read_bin) ]))
             init_param_a=max(y)
+            x_few,y_few=[],[]
             for i,j in zip(x,y):
+                if j < (init_param_a / 2):
+                    x_few.append(i)
+                    y_few.append(j)
                 if j == init_param_a:
                     init_param_mu=i
                     break
@@ -61,23 +65,28 @@ def filter(args, params, filenames):
                     func=gaussian_func_biallelics(coeff)
                     try:
                         popt,pcov=curve_fit(func, x, y, init_param)
-                        residuals= y - func(x, *popt)
+                        residuals= y - func(x, *popt)  # all x
                         rss=np.sum(residuals**2)
                         tss=np.sum((y - np.mean(y))**2)
                         r_squared= 1 - (rss / tss)
-                        fits.append([r_squared, coeff, popt, pcov])
+                        residuals= y_few - func(x_few, *popt)  # few x
+                        rss=np.sum(residuals**2)
+                        tss=np.sum((y_few - np.mean(y_few))**2)
+                        r_squared_few= 1 - (rss / tss)
+                        fits.append([r_squared, r_squared_few, coeff, popt, pcov])
                     except RuntimeError:
                         log.logger.debug('curve_fit,RuntimeError,coeff=%f' % coeff)
                 fits=sorted(fits)
                 r_squared=fits[-1][0]
-                coeff=fits[-1][1]
-                popt=fits[-1][2]
-                pcov=fits[-1][3]
+                r_squared_few=fits[-1][1]
+                coeff=fits[-1][2]
+                popt=fits[-1][3]
+                pcov=fits[-1][4]
                 log.logger.debug('r_squared=%f,biallelic_coeff=%f' %(r_squared, coeff))
             elif args.monoallelic is True:
                 coeff=None
                 popt,pcov=curve_fit(gaussian_func, x, y, init_param)
-                residuals= y - gaussian_func(x, popt)
+                residuals= y - gaussian_func(x, *popt)
                 rss=np.sum(residuals**2)
                 tss=np.sum((y - np.mean(y))**2)
                 r_squared= 1 - (rss / tss)
