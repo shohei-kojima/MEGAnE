@@ -68,4 +68,4 @@ def setup(args, base):
                     rep_with_pA.add(line)
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)

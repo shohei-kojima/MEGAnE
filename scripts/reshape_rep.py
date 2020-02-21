@@ -68,7 +68,7 @@ def reshape(args, params, filenames):
         os.remove(filenames.blast_tmp_res)
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def slide_rep_file(args, params, filenames):
@@ -98,7 +98,7 @@ def slide_rep_file(args, params, filenames):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def parse_slide_rep_blastn_res(args, filenames):
@@ -121,7 +121,7 @@ def parse_slide_rep_blastn_res(args, filenames):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def reshape_repout_to_bed(args, filenames):
@@ -140,5 +140,5 @@ def reshape_repout_to_bed(args, filenames):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 

@@ -16,7 +16,7 @@ class empclass:
 
 
 def gzip_or_del(args, params, file):
-    log.logger.debug('started, file=%s' % file)
+    log.logger.debug('started,file=%s' % file)
     try:
         if args.keep is True:
             with open(file, 'rt') as f_in:
@@ -27,11 +27,11 @@ def gzip_or_del(args, params, file):
         os.remove(file)
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def gzip_file(params, file):
-    log.logger.debug('started, file=%s' % file)
+    log.logger.debug('started,file=%s' % file)
     try:
         with open(file, 'rt') as f_in:
             with gzip.open(file +'.gz', 'wt', compresslevel=params.gzip_compresslevel) as f_out:
@@ -41,7 +41,7 @@ def gzip_file(params, file):
         os.remove(file)
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def parse_fasta(path_to_file):

@@ -139,4 +139,4 @@ def find_abs(args, params, filenames):
         outfile_transd.close()
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)

@@ -127,4 +127,4 @@ def process_reads(args, params, filenames):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)

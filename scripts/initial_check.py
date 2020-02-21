@@ -37,19 +37,19 @@ def check(args, argv):
             log.logger.debug('Python version=%d.%d.%d' % (version[0], version[1], version[2]))
         else:
             log.logger.error('Please use Python 3.7 or later. Your Python is version %d.%d.' % (version[0], version[1]))
-            exit()
+            exit(1)
         
         # check cpu num
         cpu_num=multiprocessing.cpu_count()
         if args.p > cpu_num:
             log.logger.error('Too many thread number. Please specify the number less than your cpu cores. You specified = %d, cpu cores = %d.' % (args.p, cpu_num))
-            exit()
+            exit(1)
         
         # check PATH
         for i in ['blastn', 'bedtools']:
             if which(i) is None:
                 log.logger.error('%s not found in $PATH. Please check %s is installed and added to PATH.' % (i, i))
-                exit()
+                exit(1)
 
         # check prerequisite modules
         from Bio.Seq import Seq
@@ -60,4 +60,4 @@ def check(args, argv):
         from Bio.Blast.Applications import NcbiblastnCommandline
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)

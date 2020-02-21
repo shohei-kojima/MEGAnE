@@ -54,7 +54,7 @@ def parse(params, f_blast_res, outfpath):
                 outifle.write(id +'\t'+ hits +'\t'+ eval +'\n')
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def unmapped_to_fa(params, unmapped_fa, blast_res, outfpath):
@@ -113,7 +113,7 @@ def unmapped_to_fa(params, unmapped_fa, blast_res, outfpath):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def find_chimeric_unmapped(args, params, blast_res, outfpath):
@@ -188,5 +188,5 @@ def find_chimeric_unmapped(args, params, blast_res, outfpath):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 

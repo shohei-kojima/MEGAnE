@@ -181,4 +181,4 @@ class load:
             log.logger.debug('parameters:\n'+ '\n'.join(params_for_debug))
         except:
             log.logger.error('\n'+ traceback.format_exc())
-            exit()
+            exit(1)

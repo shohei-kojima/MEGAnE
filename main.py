@@ -115,8 +115,12 @@ filenames.bp_info_single  =os.path.join(args.outdir, 'breakpoint_pairs_in_TE_sin
 filenames.bp_merged       =os.path.join(args.outdir, 'breakpoint_pairs_pooled_merged.txt')
 filenames.hybrid_master   =os.path.join(args.outdir, 'hybrid_reads_master.txt')  # one of the final outputs
 filenames.bp_merged_all   =os.path.join(args.outdir, 'breakpoint_pairs_pooled_all.txt')
-filenames.bp_merged_filt  =os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered.txt')
-filenames.bp_merged_group =os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped.txt')
+filenames.bp_merged_filt_g=os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered_gaussian.txt')
+filenames.bp_merged_filt_p=os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered_percentile.txt')
+filenames.bp_merged_filt_f=os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered_failed.txt')
+filenames.bp_merged_groupg=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_gaussian.txt')
+filenames.bp_merged_groupp=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_percentile.txt')
+filenames.bp_merged_groupf=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_failed.txt')
 filenames.gaussian_plot   =os.path.join(args.outdir, 'plot_gaussian_fitting.pdf')
 
 filenames.abs_res         =os.path.join(args.outdir, 'absent_MEs.bed')
@@ -196,7 +200,7 @@ if do_ins is True:
 
     # 5. identify MEI nested in similar MEs
     import process_mapped_seq
-    log.logger.info('Integration junction search (nested in TEs) starte.')
+    log.logger.info('Integration junction search (nested in TEs) started.')
     process_mapped_seq.retrieve_mapped_seq(params, filenames)
     utils.gzip_or_del(args, params, filenames.mapped_fa)  # del file
     process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
@@ -223,7 +227,12 @@ if do_ins is True:
     utils.gzip_or_del(args, params, filenames.bp_info_single)
     utils.gzip_or_del(args, params, filenames.bp_pair_single)
     utils.gzip_or_del(args, params, filenames.bp_merged)
-    utils.gzip_or_del(args, params, filenames.bp_merged_filt)
+    if os.path.exists(filenames.bp_merged_filt_g) is True:
+        utils.gzip_or_del(args, params, filenames.bp_merged_filt_g)
+    if os.path.exists(filenames.bp_merged_filt_p) is True:
+        utils.gzip_or_del(args, params, filenames.bp_merged_filt_p)
+    if os.path.exists(filenames.bp_merged_filt_f) is True:
+        utils.gzip_or_del(args, params, filenames.bp_merged_filt_f)
     utils.gzip_file(params, filenames.bp_merged_all)
     utils.gzip_file(params, filenames.overhang_MEI)
     utils.gzip_file(params, filenames.unmapped_MEI)
@@ -232,7 +241,7 @@ if do_ins is True:
     utils.gzip_file(params, filenames.hybrid)
     utils.gzip_file(params, filenames.hybrid_master)
     # output comments
-    log.logger.info('%d ME insertion candidates found.' % filter_candidates.ins_n)
+    log.logger.info('%s ME insertion candidates found.' % filter_candidates.ins_ns)
     log.logger.info('ME insertion search finished!')
 
 

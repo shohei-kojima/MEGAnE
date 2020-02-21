@@ -80,4 +80,4 @@ def find(params, blast_res, q_path, outfpath):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)

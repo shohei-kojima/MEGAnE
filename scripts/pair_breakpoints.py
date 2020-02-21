@@ -202,7 +202,7 @@ def pairing(args, params, filenames):
         outfile.close()
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def add_TE_subclass(args, filenames, infpath, outfpath):
@@ -299,7 +299,7 @@ def add_TE_subclass(args, filenames, infpath, outfpath):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def remove_cand_inside_TE(args, params, filenames):
@@ -373,4 +373,4 @@ def remove_cand_inside_TE(args, params, filenames):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)

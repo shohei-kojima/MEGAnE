@@ -18,7 +18,7 @@ def blastn(args, params, q_path, db_path, outfpath):
         NcbiblastnCommandline(db=db_path, query=q_path, evalue=params.blastn_evalue, perc_identity=params.blastn_ident, word_size=params.blastn_word_size, num_threads=args.p, outfmt=6, out=outfpath)()
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def blastn_single_thread(args, params, q_path, db_path, outfpath):
@@ -27,7 +27,7 @@ def blastn_single_thread(args, params, q_path, db_path, outfpath):
         NcbiblastnCommandline(db=db_path, query=q_path, evalue=params.blastn_evalue, perc_identity=params.blastn_ident, word_size=params.blastn_word_size, num_threads=1, outfmt=6, out=outfpath)()
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def blastn_for_unknown_rep_ident(args, params, q_path, db_path, outfpath):
@@ -36,7 +36,7 @@ def blastn_for_unknown_rep_ident(args, params, q_path, db_path, outfpath):
         NcbiblastnCommandline(db=db_path, query=q_path, evalue=params.blastn_evalue, perc_identity=params.blastn_ident, word_size=7, num_threads=args.p, outfmt=6, out=outfpath)()
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def makeblastdb(fasta_file, dbpath):
@@ -45,4 +45,4 @@ def makeblastdb(fasta_file, dbpath):
         NcbimakeblastdbCommandline(input_file=fasta_file, dbtype='nucl', out=dbpath, parse_seqids=True)()
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)

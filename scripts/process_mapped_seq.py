@@ -90,7 +90,7 @@ def retrieve_mapped_seq(params, filenames):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def blastn_for_mapped(args, params, q_path, db_path, outfpath):
@@ -99,7 +99,7 @@ def blastn_for_mapped(args, params, q_path, db_path, outfpath):
         NcbiblastnCommandline(db=db_path, query=q_path, evalue=params.blastn_evalue_for_mapped, perc_identity=params.blastn_ident_for_mapped, word_size=params.blastn_word_size_for_mapped, num_threads=args.p, culling_limit=2, outfmt=6, out=outfpath)()
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def pairing(params, filenames):
@@ -160,5 +160,5 @@ def pairing(params, filenames):
             os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 

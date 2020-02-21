@@ -33,7 +33,7 @@ def filter(args, params, filenames):
             input_sample=os.path.basename(args.c)
         nts=['A', 'T']
         
-        # determine cutoff from actual 1 perc threshold
+        # determine cutoff from actual percentile threshold
         def determine_cutoff(list_support_read_count):
             cutoff_pos= math.ceil(len(list_support_read_count) * params.actual_cutoff_rank)
             cutoff=sorted(list_support_read_count)[cutoff_pos]
@@ -156,10 +156,10 @@ def filter(args, params, filenames):
                             for_gaussian_fitting.append(total_read_count)
                             hybrid_num.append(int(ls[12]) + int(ls[13]))
         if len(for_gaussian_fitting) >= 3:
-            cutoff=determine_cutoff(for_gaussian_fitting)
+            cutoff=determine_cutoff(for_gaussian_fitting)  # percentile cutoff
             log.logger.debug('total_support_read_num_cutoff=%d' % cutoff)
             
-            x,y,popt,pcov,reject1perc,r_squared,coeff=fit_gaussian(for_gaussian_fitting)
+            x,y,popt,pcov,reject1perc,r_squared,coeff=fit_gaussian(for_gaussian_fitting)  # gaussian cutoff
             xd=np.arange(min(x), max(x), 0.5)
             if args.monoallelic is False:
                 estimated_curve=gaussian_func_biallelics(coeff)(xd, popt[0], popt[1], popt[2])
@@ -181,92 +181,102 @@ def filter(args, params, filenames):
             ax.set_xlabel('Number of support reads per MEI')
             ax.set_ylabel('Number of MEI')
             ax.legend()
-            total_read_threshold= max(cutoff, reject1perc[0])  # parameter setting
-            plt.suptitle('sample=%s,\nn=%d, r_squared=%f,\nreject_cutoff=%f' % (input_sample, len(for_gaussian_fitting), r_squared, total_read_threshold))  # popt[1] = mean, popt[2] = sigma
+            total_read_thresholds=[reject1perc[0], cutoff]  # parameter setting
+            plt.suptitle('sample=%s,\nn=%d, r_squared=%f,\ngaussian_cutoff=%f, percentile_cutoff=%f' % (input_sample, len(for_gaussian_fitting), r_squared, total_read_thresholds[0], total_read_thresholds[1]))  # popt[1] = mean, popt[2] = sigma
             plt.savefig(filenames.gaussian_plot)
             plt.close()
             zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))  # parameter setting
-            log.logger.debug('gaussian_fitting_n=%d,r_squared=%f,reject_cutoff=%f,zero_hybrid_total_read_threshold=%f' %(len(for_gaussian_fitting), r_squared, total_read_threshold, zero_hybrid_total_read_threshold))
+            log.logger.debug('gaussian_fitting_n=%d,r_squared=%f,gaussian_cutoff=%f,percentile_cutoff=%f,zero_hybrid_total_read_threshold=%f' %(len(for_gaussian_fitting), r_squared, total_read_thresholds[0], total_read_thresholds[1], zero_hybrid_total_read_threshold))
         else:
-            log.logger.warning('Not enough data to automatically determine thresholds for MEI filtering. Please check if your data is enough big or contans discordant reads. Proceed anyway.')
-            total_read_threshold=3
+            log.logger.warning('Not enough data found. Cannot automatically determine thresholds for MEI filtering. Please check if your data contains discordant reads enough for auto-filtering. Proceed anyway.')
+            total_read_thresholds=[3]
             zero_hybrid_total_read_threshold=5
+            log.logger.debug('cutoff=%d,zero_hybrid_total_read_threshold=%d' %(total_read_thresholds[0], zero_hybrid_total_read_threshold))
 
         # main
-        all=[]
-        high=set()
-        with open(filenames.bp_merged_all) as infile:
-            for line in infile:
-                ls=line.split('\t')
-                r_pos,r_num=ls[3].split(':')
-                l_pos,l_num=ls[4].split(':')
-                r_num=0 if r_num == 'NA' else int(r_num)
-                l_num=0 if l_num == 'NA' else int(l_num)
-                r_pos=0 if r_pos == 'NA' else int(r_pos)
-                l_pos=0 if l_pos == 'NA' else int(l_pos)
-                total_read_count= r_num + l_num
-                R_eval,L_eval=[],[]
-                vs=ls[8].split(';')
-                vs=[ float(v) for v in vs if not (v == 'NA') and not (v == '') ]
-                if len(vs) >= 1:
-                    R_eval.extend(vs)
-                vs=ls[9].split(';')
-                vs=[ float(v) for v in vs if not (v == 'NA') and not (v == '') ]
-                if len(vs) >= 1:
-                    L_eval.extend(vs)
-                retain_count=False
-                if total_read_count >= total_read_threshold:
-                    retain_count=True
-                retain_eval=False
-                for l in [R_eval, L_eval]:
-                    if len(l) >= 1:
-                        vmin=min(l)
-                        if vmin <= params.first_filter_eval_threshold:
-                            retain_eval=True
-                pA_only=True
-                if ls[5] == 'NA':
-                    if ls[6] == 'NA':
+        def main_filter(total_read_threshold, outfilename):
+            all=[]
+            high=set()
+            with open(filenames.bp_merged_all) as infile:
+                for line in infile:
+                    ls=line.split('\t')
+                    r_pos,r_num=ls[3].split(':')
+                    l_pos,l_num=ls[4].split(':')
+                    r_num=0 if r_num == 'NA' else int(r_num)
+                    l_num=0 if l_num == 'NA' else int(l_num)
+                    r_pos=0 if r_pos == 'NA' else int(r_pos)
+                    l_pos=0 if l_pos == 'NA' else int(l_pos)
+                    total_read_count= r_num + l_num
+                    R_eval,L_eval=[],[]
+                    vs=ls[8].split(';')
+                    vs=[ float(v) for v in vs if not (v == 'NA') and not (v == '') ]
+                    if len(vs) >= 1:
+                        R_eval.extend(vs)
+                    vs=ls[9].split(';')
+                    vs=[ float(v) for v in vs if not (v == 'NA') and not (v == '') ]
+                    if len(vs) >= 1:
+                        L_eval.extend(vs)
+                    retain_count=False
+                    if total_read_count >= total_read_threshold:
+                        retain_count=True
+                    retain_eval=False
+                    for l in [R_eval, L_eval]:
+                        if len(l) >= 1:
+                            vmin=min(l)
+                            if vmin <= params.first_filter_eval_threshold:
+                                retain_eval=True
+                    pA_only=True
+                    if ls[5] == 'NA':
+                        if ls[6] == 'NA':
+                            pA_only=False
+                    elif not ls[6] == 'NA':
                         pA_only=False
-                elif not ls[6] == 'NA':
-                    pA_only=False
 
-                # first filter
-                if (retain_count is True) and (retain_eval is True):
-                    if (int(ls[12]) + int(ls[13])) >= params.first_filter_total_hybrid_read_num:
-                        all.append(line)
-                    elif total_read_count >= zero_hybrid_total_read_threshold:
-                        all.append(line)
-                # second filter, 90% accuracy
-                if (retain_count is True) and (retain_eval is True):
-                    if (int(ls[12]) >= params.second_filter_hybrid_read_num) and (int(ls[13]) >= params.second_filter_hybrid_read_num):
-                        if 'L1' in line:
-                            L1_judge=L1_filter(line, r_pos, l_pos)
-                            if L1_judge is True:
-                                high.add(line)
-                        else:
-                            high.add(line)
-                    elif (len(R_eval) >= 1) and (len(L_eval) >= 1):
-                        if (min(R_eval) < params.second_filter_eval_threshold_for_few_hybrid) and (min(L_eval) < params.second_filter_eval_threshold_for_few_hybrid):
+                    # first filter
+                    if (retain_count is True) and (retain_eval is True):
+                        if (int(ls[12]) + int(ls[13])) >= params.first_filter_total_hybrid_read_num:
+                            all.append(line)
+                        elif total_read_count >= zero_hybrid_total_read_threshold:
+                            all.append(line)
+                    # second filter, 90% accuracy
+                    if (retain_count is True) and (retain_eval is True):
+                        if (int(ls[12]) >= params.second_filter_hybrid_read_num) and (int(ls[13]) >= params.second_filter_hybrid_read_num):
                             if 'L1' in line:
                                 L1_judge=L1_filter(line, r_pos, l_pos)
                                 if L1_judge is True:
                                     high.add(line)
                             else:
                                 high.add(line)
-        
-        with open(filenames.bp_merged_filt, 'w') as outfile:
-            for line in all:
-                if line in high:
-                    line=line.strip()
-                    outfile.write(line +'\thigh\n')
-                else:
-                    line=line.strip()
-                    outfile.write(line +'\tlow\n')
-            outfile.flush()
-            os.fdatasync(outfile.fileno())
+                        elif (len(R_eval) >= 1) and (len(L_eval) >= 1):
+                            if (min(R_eval) < params.second_filter_eval_threshold_for_few_hybrid) and (min(L_eval) < params.second_filter_eval_threshold_for_few_hybrid):
+                                if 'L1' in line:
+                                    L1_judge=L1_filter(line, r_pos, l_pos)
+                                    if L1_judge is True:
+                                        high.add(line)
+                                else:
+                                    high.add(line)
+            
+            with open(outfilename, 'w') as outfile:
+                for line in all:
+                    if line in high:
+                        line=line.strip()
+                        outfile.write(line +'\thigh\n')
+                    else:
+                        line=line.strip()
+                        outfile.write(line +'\tlow\n')
+                outfile.flush()
+                os.fdatasync(outfile.fileno())
+
+        # main filtering
+        if len(total_read_thresholds) == 2:
+            main_filter(total_read_thresholds[0], filenames.bp_merged_filt_g)
+            main_filter(total_read_thresholds[1], filenames.bp_merged_filt_p)
+        else:
+            main_filter(total_read_thresholds[0], filenames.bp_merged_filt_f)
+                
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def grouping(args, filenames):
@@ -295,100 +305,114 @@ def grouping(args, filenames):
                 merged=False
             return merged, tmp, unmerged
 
-        # group non-singletons
-        L,R={},{}
-        for chr in args.main_chrs_set:
-            L[chr]={}
-            R[chr]={}
-        with open(filenames.bp_merged_filt) as infile:
-            for line in infile:
-                line=line.strip()
-                ls=line.split()
-                r=ls[3].split(':')[0]
-                l=ls[4].split(':')[0]
-                L[ls[0]][l]=line
-                R[ls[0]][r]=line
-
-        all_0=[]
-        with open(filenames.overhang_MEI) as infile:
-            for line in infile:
-                ls=line.split()
-                poss=ls[0].split(';')[:-1]
-                tmp_s=[]
-                for p in poss:
-                    chr,tmp=p.split(':', 1)
-                    start,tmp=tmp.split('-', 1)
-                    end,dir,_=tmp.split('/', 2)
-                    if dir == 'L':
-                        if start in L[chr]:
-                            tmp_s.append(L[chr][start])
-                    else:
-                        if end in R[chr]:
-                            tmp_s.append(R[chr][end])
-                all_0.append(tmp_s)
-
-        all_1=[]
-        for a in all_0:
-            if not a in all_1:
-                all_1.append(a)
-        del(all_0)
-
-        unmerged=all_1
-        unmerged_len=len(unmerged)
-        final=[]
-        while unmerged_len >= 1:
-            b=True
-            l=unmerged[0]
-            unmerged=unmerged[1:]
-            while b is True:
-                b,l,unmerged=merge(l, unmerged)
-            final.append(l)
-            unmerged_len=len(unmerged)
-
-        singletons,multis={},{}
-        me_clas=set()
-        global ins_n
-        ins_n=0
-        n=1
-        for f in final:
-            if len(f) == 1:
-                ls=f[0].split()
-                if ls[-1] == 'high':
-                    ins_n += 1
-                ls.append('singleton')
-                if not ls[7] in singletons:
-                    singletons[ls[7]]=[]
-                    me_clas.add(ls[7])
-                singletons[ls[7]].append(ls)
-            else:
-                groupname='group%d' % n
-                for line in f:
+        # main grouping; group non-singletons
+        def main_grouping(infilename, outfilename):
+            L,R={},{}
+            for chr in args.main_chrs_set:
+                L[chr]={}
+                R[chr]={}
+            with open(infilename) as infile:
+                for line in infile:
+                    line=line.strip()
                     ls=line.split()
-                    ls.append(groupname)
-                    if not ls[7] in multis:
-                        multis[ls[7]]={}
-                        me_clas.add(ls[7])
-                    if not groupname in multis[ls[7]]:
-                        multis[ls[7]][groupname]=[]
-                    multis[ls[7]][groupname].append(ls)
-                n += 1
-        me_clas=sorted(list(me_clas))
+                    r=ls[3].split(':')[0]
+                    l=ls[4].split(':')[0]
+                    L[ls[0]][l]=line
+                    R[ls[0]][r]=line
 
-        with open(filenames.bp_merged_group, 'w') as outfile:
-            for m in me_clas:
-                if m in singletons:
-                    singletons[m]=sorted(singletons[m], key=lambda x:(x[0], int(x[1]), int(x[2])))
-                    for ls in singletons[m]:
-                        outfile.write('\t'.join(ls) +'\n')
-            for m in me_clas:
-                if m in multis:
-                    for g in multis[m]:
-                        multis[m][g]=sorted(multis[m][g], key=lambda x:(x[0], int(x[1]), int(x[2])))
-                        for ls in multis[m][g]:
+            all_0=[]
+            with open(filenames.overhang_MEI) as infile:
+                for line in infile:
+                    ls=line.split()
+                    poss=ls[0].split(';')[:-1]
+                    tmp_s=[]
+                    for p in poss:
+                        chr,tmp=p.split(':', 1)
+                        start,tmp=tmp.split('-', 1)
+                        end,dir,_=tmp.split('/', 2)
+                        if dir == 'L':
+                            if start in L[chr]:
+                                tmp_s.append(L[chr][start])
+                        else:
+                            if end in R[chr]:
+                                tmp_s.append(R[chr][end])
+                    all_0.append(tmp_s)
+
+            all_1=[]
+            for a in all_0:
+                if not a in all_1:
+                    all_1.append(a)
+            del(all_0)
+
+            unmerged=all_1
+            unmerged_len=len(unmerged)
+            final=[]
+            while unmerged_len >= 1:
+                b=True
+                l=unmerged[0]
+                unmerged=unmerged[1:]
+                while b is True:
+                    b,l,unmerged=merge(l, unmerged)
+                final.append(l)
+                unmerged_len=len(unmerged)
+
+            singletons,multis={},{}
+            me_clas=set()
+            ins_n=0
+            n=1
+            for f in final:
+                if len(f) == 1:
+                    ls=f[0].split()
+                    if ls[-1] == 'high':
+                        ins_n += 1
+                    ls.append('singleton')
+                    if not ls[7] in singletons:
+                        singletons[ls[7]]=[]
+                        me_clas.add(ls[7])
+                    singletons[ls[7]].append(ls)
+                else:
+                    groupname='group%d' % n
+                    for line in f:
+                        ls=line.split()
+                        ls.append(groupname)
+                        if not ls[7] in multis:
+                            multis[ls[7]]={}
+                            me_clas.add(ls[7])
+                        if not groupname in multis[ls[7]]:
+                            multis[ls[7]][groupname]=[]
+                        multis[ls[7]][groupname].append(ls)
+                    n += 1
+            me_clas=sorted(list(me_clas))
+
+            with open(outfilename, 'w') as outfile:
+                for m in me_clas:
+                    if m in singletons:
+                        singletons[m]=sorted(singletons[m], key=lambda x:(x[0], int(x[1]), int(x[2])))
+                        for ls in singletons[m]:
                             outfile.write('\t'.join(ls) +'\n')
-            outfile.flush()
-            os.fdatasync(outfile.fileno())
+                for m in me_clas:
+                    if m in multis:
+                        for g in multis[m]:
+                            multis[m][g]=sorted(multis[m][g], key=lambda x:(x[0], int(x[1]), int(x[2])))
+                            for ls in multis[m][g]:
+                                outfile.write('\t'.join(ls) +'\n')
+                outfile.flush()
+                os.fdatasync(outfile.fileno())
+            return ins_n
+                    
+        global ins_ns
+        ins_ns=[]
+        if os.path.exists(filenames.bp_merged_filt_g) is True:
+            ins_n=main_grouping(filenames.bp_merged_filt_g, filenames.bp_merged_groupg)
+            ins_ns.append(ins_n)
+        if os.path.exists(filenames.bp_merged_filt_p) is True:
+            ins_n=main_grouping(filenames.bp_merged_filt_p, filenames.bp_merged_groupp)
+            ins_ns.append(ins_n)
+        if os.path.exists(filenames.bp_merged_filt_f) is True:
+            ins_n=main_grouping(filenames.bp_merged_filt_f, filenames.bp_merged_groupf)
+            ins_ns.append(ins_n)
+
     except:
         log.logger.error('\n'+ traceback.format_exc())
-        exit()
+        exit(1)
 
