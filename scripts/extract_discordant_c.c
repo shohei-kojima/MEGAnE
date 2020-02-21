@@ -1469,7 +1469,7 @@ static const char __pyx_k_w[] = "w";
 static const char __pyx_k_x[] = "x";
 static const char __pyx_k_00[] = "00";
 static const char __pyx_k_NA[] = "NA";
-static const char __pyx_k__5[] = "";
+static const char __pyx_k__6[] = "";
 static const char __pyx_k_fa[] = "fa";
 static const char __pyx_k_ls[] = "ls";
 static const char __pyx_k_nt[] = "nt";
@@ -1479,13 +1479,13 @@ static const char __pyx_k_rc[] = "rc";
 static const char __pyx_k_ss[] = "ss";
 static const char __pyx_k_xs[] = "xs";
 static const char __pyx_k_1_2[] = "/1";
-static const char __pyx_k__19[] = "\t";
-static const char __pyx_k__20[] = "+";
-static const char __pyx_k__21[] = "-";
-static const char __pyx_k__24[] = ";";
-static const char __pyx_k__26[] = ",";
-static const char __pyx_k__32[] = "=";
-static const char __pyx_k__39[] = "_";
+static const char __pyx_k__20[] = "\t";
+static const char __pyx_k__21[] = "+";
+static const char __pyx_k__22[] = "-";
+static const char __pyx_k__25[] = ";";
+static const char __pyx_k__27[] = ",";
+static const char __pyx_k__33[] = "=";
+static const char __pyx_k__40[] = "_";
 static const char __pyx_k_bin[] = "bin";
 static const char __pyx_k_chr[] = "chr";
 static const char __pyx_k_d_2[] = "d";
@@ -1685,14 +1685,14 @@ static PyObject *__pyx_n_s_T;
 static PyObject *__pyx_n_s_TACG;
 static PyObject *__pyx_n_s_X;
 static PyObject *__pyx_kp_s_XA_Z;
-static PyObject *__pyx_kp_s__19;
 static PyObject *__pyx_kp_s__20;
 static PyObject *__pyx_kp_s__21;
-static PyObject *__pyx_kp_s__24;
-static PyObject *__pyx_kp_s__26;
-static PyObject *__pyx_kp_s__32;
-static PyObject *__pyx_n_s__39;
-static PyObject *__pyx_kp_s__5;
+static PyObject *__pyx_kp_s__22;
+static PyObject *__pyx_kp_s__25;
+static PyObject *__pyx_kp_s__27;
+static PyObject *__pyx_kp_s__33;
+static PyObject *__pyx_n_s__40;
+static PyObject *__pyx_kp_s__6;
 static PyObject *__pyx_n_s_a;
 static PyObject *__pyx_n_s_abs_max_dist;
 static PyObject *__pyx_n_s_abs_min_dist;
@@ -1889,38 +1889,39 @@ static PyObject *__pyx_int_2048;
 static PyObject *__pyx_int_neg_1;
 static PyObject *__pyx_int_neg_2;
 static PyObject *__pyx_int_neg_4;
-static PyObject *__pyx_slice__4;
-static PyObject *__pyx_slice__6;
+static PyObject *__pyx_slice__5;
+static PyObject *__pyx_slice__7;
 static PyObject *__pyx_tuple__2;
 static PyObject *__pyx_tuple__3;
-static PyObject *__pyx_tuple__7;
-static PyObject *__pyx_tuple__9;
-static PyObject *__pyx_slice__22;
-static PyObject *__pyx_slice__25;
-static PyObject *__pyx_slice__28;
+static PyObject *__pyx_tuple__4;
+static PyObject *__pyx_tuple__8;
+static PyObject *__pyx_slice__23;
+static PyObject *__pyx_slice__26;
 static PyObject *__pyx_slice__29;
-static PyObject *__pyx_tuple__11;
-static PyObject *__pyx_tuple__13;
-static PyObject *__pyx_tuple__15;
-static PyObject *__pyx_tuple__17;
-static PyObject *__pyx_tuple__23;
-static PyObject *__pyx_tuple__27;
-static PyObject *__pyx_tuple__30;
+static PyObject *__pyx_slice__30;
+static PyObject *__pyx_tuple__10;
+static PyObject *__pyx_tuple__12;
+static PyObject *__pyx_tuple__14;
+static PyObject *__pyx_tuple__16;
+static PyObject *__pyx_tuple__18;
+static PyObject *__pyx_tuple__24;
+static PyObject *__pyx_tuple__28;
 static PyObject *__pyx_tuple__31;
-static PyObject *__pyx_tuple__33;
-static PyObject *__pyx_tuple__35;
-static PyObject *__pyx_tuple__37;
-static PyObject *__pyx_tuple__40;
-static PyObject *__pyx_codeobj__8;
-static PyObject *__pyx_codeobj__10;
-static PyObject *__pyx_codeobj__12;
-static PyObject *__pyx_codeobj__14;
-static PyObject *__pyx_codeobj__16;
-static PyObject *__pyx_codeobj__18;
-static PyObject *__pyx_codeobj__34;
-static PyObject *__pyx_codeobj__36;
-static PyObject *__pyx_codeobj__38;
-static PyObject *__pyx_codeobj__41;
+static PyObject *__pyx_tuple__32;
+static PyObject *__pyx_tuple__34;
+static PyObject *__pyx_tuple__36;
+static PyObject *__pyx_tuple__38;
+static PyObject *__pyx_tuple__41;
+static PyObject *__pyx_codeobj__9;
+static PyObject *__pyx_codeobj__11;
+static PyObject *__pyx_codeobj__13;
+static PyObject *__pyx_codeobj__15;
+static PyObject *__pyx_codeobj__17;
+static PyObject *__pyx_codeobj__19;
+static PyObject *__pyx_codeobj__35;
+static PyObject *__pyx_codeobj__37;
+static PyObject *__pyx_codeobj__39;
+static PyObject *__pyx_codeobj__42;
 /* Late includes */
 
 /* "extract_discordant_c.pyx":23
@@ -2197,7 +2198,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_flagstat(CYTHON_UNUSED PyObject
  *         return count,interval
  *     except:             # <<<<<<<<<<<<<<
  *         log.logger.error('\n'+ traceback.format_exc())
- *         exit()
+ *         exit(1)
  */
     /*except:*/ {
       __Pyx_AddTraceback("extract_discordant_c.flagstat", __pyx_clineno, __pyx_lineno, __pyx_filename);
@@ -2210,7 +2211,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_flagstat(CYTHON_UNUSED PyObject
  *         return count,interval
  *     except:
  *         log.logger.error('\n'+ traceback.format_exc())             # <<<<<<<<<<<<<<
- *         exit()
+ *         exit(1)
  * 
  */
       __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_log); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 31, __pyx_L5_except_error)
@@ -2265,11 +2266,11 @@ static PyObject *__pyx_pf_20extract_discordant_c_flagstat(CYTHON_UNUSED PyObject
       /* "extract_discordant_c.pyx":32
  *     except:
  *         log.logger.error('\n'+ traceback.format_exc())
- *         exit()             # <<<<<<<<<<<<<<
+ *         exit(1)             # <<<<<<<<<<<<<<
  * 
  * 
  */
-      __pyx_t_3 = __Pyx_PyObject_CallNoArg(__pyx_builtin_exit); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 32, __pyx_L5_except_error)
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_exit, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 32, __pyx_L5_except_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -2906,7 +2907,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_2concat_for_ins(CYTHON_UNUSED P
                     /*finally:*/ {
                       /*normal exit:*/{
                         if (__pyx_t_19) {
-                          __pyx_t_22 = __Pyx_PyObject_Call(__pyx_t_19, __pyx_tuple__2, NULL);
+                          __pyx_t_22 = __Pyx_PyObject_Call(__pyx_t_19, __pyx_tuple__3, NULL);
                           __Pyx_DECREF(__pyx_t_19); __pyx_t_19 = 0;
                           if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 44, __pyx_L17_error)
                           __Pyx_GOTREF(__pyx_t_22);
@@ -3110,7 +3111,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_2concat_for_ins(CYTHON_UNUSED P
           /*finally:*/ {
             /*normal exit:*/{
               if (__pyx_t_13) {
-                __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_13, __pyx_tuple__2, NULL);
+                __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_13, __pyx_tuple__3, NULL);
                 __Pyx_DECREF(__pyx_t_13); __pyx_t_13 = 0;
                 if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 42, __pyx_L3_error)
                 __Pyx_GOTREF(__pyx_t_16);
@@ -3163,7 +3164,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_2concat_for_ins(CYTHON_UNUSED P
  *                 os.fdatasync(outfile.fileno())
  *     except:             # <<<<<<<<<<<<<<
  *         log.logger.error('\n'+ traceback.format_exc())
- *         exit()
+ *         exit(1)
  */
     /*except:*/ {
       __Pyx_AddTraceback("extract_discordant_c.concat_for_ins", __pyx_clineno, __pyx_lineno, __pyx_filename);
@@ -3176,7 +3177,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_2concat_for_ins(CYTHON_UNUSED P
  *                 os.fdatasync(outfile.fileno())
  *     except:
  *         log.logger.error('\n'+ traceback.format_exc())             # <<<<<<<<<<<<<<
- *         exit()
+ *         exit(1)
  * 
  */
       __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_log); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 50, __pyx_L5_except_error)
@@ -3231,11 +3232,11 @@ static PyObject *__pyx_pf_20extract_discordant_c_2concat_for_ins(CYTHON_UNUSED P
       /* "extract_discordant_c.pyx":51
  *     except:
  *         log.logger.error('\n'+ traceback.format_exc())
- *         exit()             # <<<<<<<<<<<<<<
+ *         exit(1)             # <<<<<<<<<<<<<<
  * 
  * 
  */
-      __pyx_t_7 = __Pyx_PyObject_CallNoArg(__pyx_builtin_exit); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 51, __pyx_L5_except_error)
+      __pyx_t_7 = __Pyx_PyObject_Call(__pyx_builtin_exit, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 51, __pyx_L5_except_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
@@ -3843,7 +3844,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_4concat_for_abs(CYTHON_UNUSED P
                     /*finally:*/ {
                       /*normal exit:*/{
                         if (__pyx_t_18) {
-                          __pyx_t_21 = __Pyx_PyObject_Call(__pyx_t_18, __pyx_tuple__2, NULL);
+                          __pyx_t_21 = __Pyx_PyObject_Call(__pyx_t_18, __pyx_tuple__3, NULL);
                           __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
                           if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 62, __pyx_L17_error)
                           __Pyx_GOTREF(__pyx_t_21);
@@ -4046,7 +4047,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_4concat_for_abs(CYTHON_UNUSED P
           /*finally:*/ {
             /*normal exit:*/{
               if (__pyx_t_12) {
-                __pyx_t_15 = __Pyx_PyObject_Call(__pyx_t_12, __pyx_tuple__2, NULL);
+                __pyx_t_15 = __Pyx_PyObject_Call(__pyx_t_12, __pyx_tuple__3, NULL);
                 __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
                 if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 60, __pyx_L3_error)
                 __Pyx_GOTREF(__pyx_t_15);
@@ -4098,7 +4099,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_4concat_for_abs(CYTHON_UNUSED P
  *                 os.fdatasync(outfile.fileno())
  *     except:             # <<<<<<<<<<<<<<
  *         log.logger.error('\n'+ traceback.format_exc())
- *         exit()
+ *         exit(1)
  */
     /*except:*/ {
       __Pyx_AddTraceback("extract_discordant_c.concat_for_abs", __pyx_clineno, __pyx_lineno, __pyx_filename);
@@ -4111,7 +4112,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_4concat_for_abs(CYTHON_UNUSED P
  *                 os.fdatasync(outfile.fileno())
  *     except:
  *         log.logger.error('\n'+ traceback.format_exc())             # <<<<<<<<<<<<<<
- *         exit()
+ *         exit(1)
  * 
  */
       __Pyx_GetModuleGlobalName(__pyx_t_11, __pyx_n_s_log); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 68, __pyx_L5_except_error)
@@ -4166,11 +4167,11 @@ static PyObject *__pyx_pf_20extract_discordant_c_4concat_for_abs(CYTHON_UNUSED P
       /* "extract_discordant_c.pyx":69
  *     except:
  *         log.logger.error('\n'+ traceback.format_exc())
- *         exit()             # <<<<<<<<<<<<<<
+ *         exit(1)             # <<<<<<<<<<<<<<
  * 
  * 
  */
-      __pyx_t_8 = __Pyx_PyObject_CallNoArg(__pyx_builtin_exit); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 69, __pyx_L5_except_error)
+      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_exit, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 69, __pyx_L5_except_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -4368,7 +4369,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_complement(CYTHON_UNUSED 
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)(&PyString_Type)), __pyx_n_s_maketrans); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 99, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_tuple__3, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 99, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_tuple__4, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 99, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_3 = NULL;
@@ -4387,7 +4388,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_complement(CYTHON_UNUSED 
   if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 99, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_slice__4); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 99, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_t_1, __pyx_slice__5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 99, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_seq_c = __pyx_t_2;
@@ -4482,8 +4483,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_2count_clip(CYTHON_UNUSED
  *             for c in cigar:
  *                 if not c in cigar_op:
  */
-  __Pyx_INCREF(__pyx_kp_s__5);
-  __pyx_v_tmp = __pyx_kp_s__5;
+  __Pyx_INCREF(__pyx_kp_s__6);
+  __pyx_v_tmp = __pyx_kp_s__6;
 
   /* "extract_discordant_c.pyx":105
  *             length=0
@@ -4602,8 +4603,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_2count_clip(CYTHON_UNUSED
  *                 else:
  *                     tmp=''
  */
-      __Pyx_INCREF(__pyx_kp_s__5);
-      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__5);
+      __Pyx_INCREF(__pyx_kp_s__6);
+      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__6);
 
       /* "extract_discordant_c.pyx":108
  *                 if not c in cigar_op:
@@ -4623,8 +4624,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_2count_clip(CYTHON_UNUSED
  * 
  */
     /*else*/ {
-      __Pyx_INCREF(__pyx_kp_s__5);
-      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__5);
+      __Pyx_INCREF(__pyx_kp_s__6);
+      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__6);
     }
     __pyx_L5:;
 
@@ -4736,8 +4737,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_4determine_breakpoint_fro
  *             for c in string:
  *                 if not c in cigar_op:
  */
-  __Pyx_INCREF(__pyx_kp_s__5);
-  __pyx_v_tmp = __pyx_kp_s__5;
+  __Pyx_INCREF(__pyx_kp_s__6);
+  __pyx_v_tmp = __pyx_kp_s__6;
 
   /* "extract_discordant_c.pyx":118
  *             left,right=0,0
@@ -4897,8 +4898,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_4determine_breakpoint_fro
  *             if string[-1] == 'S':
  *                 for c in string[-2::-1]:
  */
-  __Pyx_INCREF(__pyx_kp_s__5);
-  __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__5);
+  __Pyx_INCREF(__pyx_kp_s__6);
+  __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__6);
 
   /* "extract_discordant_c.pyx":127
  *                     break
@@ -4920,7 +4921,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_4determine_breakpoint_fro
  *                     if not c in cigar_op:
  *                         tmp = c + tmp
  */
-    __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_v_string, __pyx_slice__6); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 128, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_v_string, __pyx_slice__7); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 128, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
       __pyx_t_7 = __pyx_t_2; __Pyx_INCREF(__pyx_t_7); __pyx_t_3 = 0;
@@ -5228,8 +5229,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_6calc_ref_len(CYTHON_UNUS
  *             for c in cigar:
  *                 if not c in cigar_op:
  */
-  __Pyx_INCREF(__pyx_kp_s__5);
-  __pyx_v_tmp = __pyx_kp_s__5;
+  __Pyx_INCREF(__pyx_kp_s__6);
+  __pyx_v_tmp = __pyx_kp_s__6;
 
   /* "extract_discordant_c.pyx":145
  *             length=0
@@ -5352,8 +5353,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_6calc_ref_len(CYTHON_UNUS
  *                 else:
  *                     tmp=''
  */
-      __Pyx_INCREF(__pyx_kp_s__5);
-      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__5);
+      __Pyx_INCREF(__pyx_kp_s__6);
+      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__6);
 
       /* "extract_discordant_c.pyx":148
  *                 if not c in cigar_op:
@@ -5373,8 +5374,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_6calc_ref_len(CYTHON_UNUS
  * 
  */
     /*else*/ {
-      __Pyx_INCREF(__pyx_kp_s__5);
-      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__5);
+      __Pyx_INCREF(__pyx_kp_s__6);
+      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__6);
     }
     __pyx_L5:;
 
@@ -5478,8 +5479,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_8calc_read_len(CYTHON_UNU
  *             for c in cigar:
  *                 if not c in cigar_op:
  */
-  __Pyx_INCREF(__pyx_kp_s__5);
-  __pyx_v_tmp = __pyx_kp_s__5;
+  __Pyx_INCREF(__pyx_kp_s__6);
+  __pyx_v_tmp = __pyx_kp_s__6;
 
   /* "extract_discordant_c.pyx":158
  *             length=0
@@ -5602,8 +5603,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_8calc_read_len(CYTHON_UNU
  *                 else:
  *                     tmp=''
  */
-      __Pyx_INCREF(__pyx_kp_s__5);
-      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__5);
+      __Pyx_INCREF(__pyx_kp_s__6);
+      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__6);
 
       /* "extract_discordant_c.pyx":161
  *                 if not c in cigar_op:
@@ -5623,8 +5624,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_4main_8calc_read_len(CYTHON_UNU
  * 
  */
     /*else*/ {
-      __Pyx_INCREF(__pyx_kp_s__5);
-      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__5);
+      __Pyx_INCREF(__pyx_kp_s__6);
+      __Pyx_DECREF_SET(__pyx_v_tmp, __pyx_kp_s__6);
     }
     __pyx_L5:;
 
@@ -6563,7 +6564,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             seq_c=string.translate(str.maketrans('ATGC', 'TACG'))[::-1]
  *             return seq_c
  */
-      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_1complement, 0, __pyx_n_s_main_locals_complement, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__8)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 98, __pyx_L3_error)
+      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_1complement, 0, __pyx_n_s_main_locals_complement, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__9)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 98, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_v_complement = __pyx_t_1;
       __pyx_t_1 = 0;
@@ -6575,7 +6576,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             length=0
  *             tmp=''
  */
-      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_3count_clip, 0, __pyx_n_s_main_locals_count_clip, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__10)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 102, __pyx_L3_error)
+      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_3count_clip, 0, __pyx_n_s_main_locals_count_clip, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__11)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 102, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_v_count_clip = __pyx_t_1;
       __pyx_t_1 = 0;
@@ -6587,7 +6588,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             left,right=0,0
  *             tmp=''
  */
-      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_5determine_breakpoint_from_cigar, 0, __pyx_n_s_main_locals_determine_breakpoint, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__12)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 115, __pyx_L3_error)
+      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_5determine_breakpoint_from_cigar, 0, __pyx_n_s_main_locals_determine_breakpoint, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__13)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 115, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_v_determine_breakpoint_from_cigar = __pyx_t_1;
       __pyx_t_1 = 0;
@@ -6599,7 +6600,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             length=0
  *             tmp=''
  */
-      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_7calc_ref_len, 0, __pyx_n_s_main_locals_calc_ref_len, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__14)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 142, __pyx_L3_error)
+      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_7calc_ref_len, 0, __pyx_n_s_main_locals_calc_ref_len, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__15)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 142, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_v_calc_ref_len = __pyx_t_1;
       __pyx_t_1 = 0;
@@ -6611,7 +6612,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             length=0
  *             tmp=''
  */
-      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_9calc_read_len, 0, __pyx_n_s_main_locals_calc_read_len, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__16)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 155, __pyx_L3_error)
+      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_9calc_read_len, 0, __pyx_n_s_main_locals_calc_read_len, NULL, __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__17)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 155, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_v_calc_read_len = __pyx_t_1;
       __pyx_t_1 = 0;
@@ -6623,7 +6624,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             judge=False
  *             seqlen=len(seq)
  */
-      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_11check_repeat, 0, __pyx_n_s_main_locals_check_repeat, ((PyObject*)__pyx_cur_scope), __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__18)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 168, __pyx_L3_error)
+      __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_20extract_discordant_c_4main_11check_repeat, 0, __pyx_n_s_main_locals_check_repeat, ((PyObject*)__pyx_cur_scope), __pyx_n_s_extract_discordant_c, __pyx_d, ((PyObject *)__pyx_codeobj__19)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 168, __pyx_L3_error)
       __Pyx_GOTREF(__pyx_t_1);
       __pyx_v_check_repeat = __pyx_t_1;
       __pyx_t_1 = 0;
@@ -6981,7 +6982,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
             __Pyx_DECREF_SET(__pyx_t_1, function);
           }
         }
-        __pyx_t_11 = (__pyx_t_9) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_9, __pyx_kp_s__19) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_kp_s__19);
+        __pyx_t_11 = (__pyx_t_9) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_9, __pyx_kp_s__20) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_kp_s__20);
         __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
         if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 186, __pyx_L3_error)
         __Pyx_GOTREF(__pyx_t_11);
@@ -7151,7 +7152,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                             f_unmapped.write('>%s%s\n%s\n' % (ls[0], strand, ls[9]))
  *                     else:
  *                         if do_ins is True:             # <<<<<<<<<<<<<<
- *                             if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs
+ *                             if (('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line)) and not ('H' in ls[5]):   # start retrieving overhangs
  *                                 deletion=False
  */
             /*else*/ {
@@ -7161,7 +7162,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                 /* "extract_discordant_c.pyx":196
  *                     else:
  *                         if do_ins is True:
- *                             if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs             # <<<<<<<<<<<<<<
+ *                             if (('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line)) and not ('H' in ls[5]):   # start retrieving overhangs             # <<<<<<<<<<<<<<
  *                                 deletion=False
  *                                 fseq=ls[9].upper()
  */
@@ -7172,25 +7173,34 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                 __pyx_t_15 = (__pyx_t_8 != 0);
                 if (!__pyx_t_15) {
                 } else {
-                  __pyx_t_7 = __pyx_t_15;
-                  goto __pyx_L24_bool_binop_done;
+                  goto __pyx_L25_next_and;
                 }
                 __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_SA_Z, __pyx_v_line, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 196, __pyx_L3_error)
                 __pyx_t_8 = (__pyx_t_15 != 0);
                 if (!__pyx_t_8) {
                 } else {
-                  __pyx_t_7 = __pyx_t_8;
-                  goto __pyx_L24_bool_binop_done;
+                  goto __pyx_L25_next_and;
                 }
                 __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_XA_Z, __pyx_v_line, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 196, __pyx_L3_error)
                 __pyx_t_15 = (__pyx_t_8 != 0);
-                __pyx_t_7 = __pyx_t_15;
+                if (__pyx_t_15) {
+                } else {
+                  __pyx_t_7 = __pyx_t_15;
+                  goto __pyx_L24_bool_binop_done;
+                }
+                __pyx_L25_next_and:;
+                __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_ls, 5, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 196, __pyx_L3_error)
+                __Pyx_GOTREF(__pyx_t_11);
+                __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_H, __pyx_t_11, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 196, __pyx_L3_error)
+                __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                __pyx_t_8 = (__pyx_t_15 != 0);
+                __pyx_t_7 = __pyx_t_8;
                 __pyx_L24_bool_binop_done:;
                 if (__pyx_t_7) {
 
                   /* "extract_discordant_c.pyx":197
  *                         if do_ins is True:
- *                             if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs
+ *                             if (('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line)) and not ('H' in ls[5]):   # start retrieving overhangs
  *                                 deletion=False             # <<<<<<<<<<<<<<
  *                                 fseq=ls[9].upper()
  *                                 strand='+'
@@ -7198,7 +7208,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                   __pyx_v_deletion = 0;
 
                   /* "extract_discordant_c.pyx":198
- *                             if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs
+ *                             if (('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line)) and not ('H' in ls[5]):   # start retrieving overhangs
  *                                 deletion=False
  *                                 fseq=ls[9].upper()             # <<<<<<<<<<<<<<
  *                                 strand='+'
@@ -7234,8 +7244,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                 if b[-5] == '1':
  *                                     strand='-'
  */
-                  __Pyx_INCREF(__pyx_kp_s__20);
-                  __Pyx_XDECREF_SET(__pyx_v_strand, __pyx_kp_s__20);
+                  __Pyx_INCREF(__pyx_kp_s__21);
+                  __Pyx_XDECREF_SET(__pyx_v_strand, __pyx_kp_s__21);
 
                   /* "extract_discordant_c.pyx":200
  *                                 fseq=ls[9].upper()
@@ -7257,8 +7267,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                     fseq=complement(fseq)
  *                                 first_or_second='/1' if b[-7] == '1' else '/2'
  */
-                    __Pyx_INCREF(__pyx_kp_s__21);
-                    __Pyx_DECREF_SET(__pyx_v_strand, __pyx_kp_s__21);
+                    __Pyx_INCREF(__pyx_kp_s__22);
+                    __Pyx_DECREF_SET(__pyx_v_strand, __pyx_kp_s__22);
 
                     /* "extract_discordant_c.pyx":202
  *                                 if b[-5] == '1':
@@ -7328,8 +7338,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                   __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_11, __pyx_t_3, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 205, __pyx_L3_error)
                   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                  __pyx_t_15 = (__pyx_t_7 != 0);
-                  if (__pyx_t_15) {
+                  __pyx_t_8 = (__pyx_t_7 != 0);
+                  if (__pyx_t_8) {
 
                     /* "extract_discordant_c.pyx":206
  *                                 elems=[]
@@ -7340,9 +7350,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                     __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_ls, 5, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 206, __pyx_L3_error)
                     __Pyx_GOTREF(__pyx_t_3);
-                    __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_3, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 206, __pyx_L3_error)
+                    __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_3, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 206, __pyx_L3_error)
                     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                    __pyx_t_7 = (__pyx_t_15 != 0);
+                    __pyx_t_7 = (__pyx_t_8 != 0);
                     if (__pyx_t_7) {
 
                       /* "extract_discordant_c.pyx":207
@@ -7401,8 +7411,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         if 'SA:Z:' in l:
  */
                   __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_SA_Z, __pyx_v_line, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 208, __pyx_L3_error)
-                  __pyx_t_15 = (__pyx_t_7 != 0);
-                  if (__pyx_t_15) {
+                  __pyx_t_8 = (__pyx_t_7 != 0);
+                  if (__pyx_t_8) {
 
                     /* "extract_discordant_c.pyx":209
  *                                         elems.append([ls[2], ls[3], ls[5], strand])  # chr, pos, cigar, strand
@@ -7411,7 +7421,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         if 'SA:Z:' in l:
  *                                             lsp=l.replace('SA:Z:', '').split(';')
  */
-                    __pyx_t_14 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__22, 1, 0, 1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 209, __pyx_L3_error)
+                    __pyx_t_14 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__23, 1, 0, 1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 209, __pyx_L3_error)
                     __Pyx_GOTREF(__pyx_t_14);
                     if (likely(PyList_CheckExact(__pyx_t_14)) || PyTuple_CheckExact(__pyx_t_14)) {
                       __pyx_t_1 = __pyx_t_14; __Pyx_INCREF(__pyx_t_1); __pyx_t_17 = 0;
@@ -7463,8 +7473,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             lsp=l.replace('SA:Z:', '').split(';')
  *                                             for i in lsp[:-1]:
  */
-                      __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_SA_Z, __pyx_v_l, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 210, __pyx_L3_error)
-                      __pyx_t_7 = (__pyx_t_15 != 0);
+                      __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_SA_Z, __pyx_v_l, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 210, __pyx_L3_error)
+                      __pyx_t_7 = (__pyx_t_8 != 0);
                       if (__pyx_t_7) {
 
                         /* "extract_discordant_c.pyx":211
@@ -7476,7 +7486,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                         __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_l, __pyx_n_s_replace); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 211, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_11);
-                        __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_tuple__23, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 211, __pyx_L3_error)
+                        __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_tuple__24, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 211, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_3);
                         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                         __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_split); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 211, __pyx_L3_error)
@@ -7492,7 +7502,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                             __Pyx_DECREF_SET(__pyx_t_11, function);
                           }
                         }
-                        __pyx_t_14 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_11, __pyx_t_3, __pyx_kp_s__24) : __Pyx_PyObject_CallOneArg(__pyx_t_11, __pyx_kp_s__24);
+                        __pyx_t_14 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_11, __pyx_t_3, __pyx_kp_s__25) : __Pyx_PyObject_CallOneArg(__pyx_t_11, __pyx_kp_s__25);
                         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
                         if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 211, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_14);
@@ -7507,7 +7517,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                 isp=i.split(',')
  *                                                 if isp[0] in args.main_chrs_set:
  */
-                        __pyx_t_14 = __Pyx_PyObject_GetSlice(__pyx_v_lsp, 0, -1L, NULL, NULL, &__pyx_slice__25, 0, 1, 1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 212, __pyx_L3_error)
+                        __pyx_t_14 = __Pyx_PyObject_GetSlice(__pyx_v_lsp, 0, -1L, NULL, NULL, &__pyx_slice__26, 0, 1, 1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 212, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_14);
                         if (likely(PyList_CheckExact(__pyx_t_14)) || PyTuple_CheckExact(__pyx_t_14)) {
                           __pyx_t_11 = __pyx_t_14; __Pyx_INCREF(__pyx_t_11); __pyx_t_19 = 0;
@@ -7571,7 +7581,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_DECREF_SET(__pyx_t_3, function);
                             }
                           }
-                          __pyx_t_14 = (__pyx_t_9) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_9, __pyx_kp_s__26) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_s__26);
+                          __pyx_t_14 = (__pyx_t_9) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_9, __pyx_kp_s__27) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_s__27);
                           __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
                           if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 213, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_14);
@@ -7593,8 +7603,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                           __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_14, __pyx_t_3, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 214, __pyx_L3_error)
                           __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
                           __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                          __pyx_t_15 = (__pyx_t_7 != 0);
-                          if (__pyx_t_15) {
+                          __pyx_t_8 = (__pyx_t_7 != 0);
+                          if (__pyx_t_8) {
 
                             /* "extract_discordant_c.pyx":215
  *                                                 isp=i.split(',')
@@ -7654,7 +7664,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                     for chr,pos,_,_ in elems[1:]:
  *                                         if chr == ls[2]:
  */
-                        goto __pyx_L32_break;
+                        goto __pyx_L33_break;
 
                         /* "extract_discordant_c.pyx":210
  *                                 if 'SA:Z:' in line:
@@ -7673,7 +7683,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             lsp=l.replace('SA:Z:', '').split(';')
  */
                     }
-                    __pyx_L32_break:;
+                    __pyx_L33_break:;
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
                     /* "extract_discordant_c.pyx":217
@@ -7739,20 +7749,20 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                         __pyx_t_23 = Py_TYPE(__pyx_t_3)->tp_iternext;
                         for (index=0; index < 4; index++) {
-                          PyObject* item = __pyx_t_23(__pyx_t_3); if (unlikely(!item)) goto __pyx_L39_unpacking_failed;
+                          PyObject* item = __pyx_t_23(__pyx_t_3); if (unlikely(!item)) goto __pyx_L40_unpacking_failed;
                           __Pyx_GOTREF(item);
                           *(temps[index]) = item;
                         }
                         if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_3), 4) < 0) __PYX_ERR(0, 217, __pyx_L3_error)
                         __pyx_t_23 = NULL;
                         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                        goto __pyx_L40_unpacking_done;
-                        __pyx_L39_unpacking_failed:;
+                        goto __pyx_L41_unpacking_done;
+                        __pyx_L40_unpacking_failed:;
                         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                         __pyx_t_23 = NULL;
                         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                         __PYX_ERR(0, 217, __pyx_L3_error)
-                        __pyx_L40_unpacking_done:;
+                        __pyx_L41_unpacking_done:;
                       }
                       __Pyx_XDECREF_SET(__pyx_v_chr, __pyx_t_22);
                       __pyx_t_22 = 0;
@@ -7774,9 +7784,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                       __Pyx_GOTREF(__pyx_t_1);
                       __pyx_t_14 = PyObject_RichCompare(__pyx_v_chr, __pyx_t_1, Py_EQ); __Pyx_XGOTREF(__pyx_t_14); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 218, __pyx_L3_error)
                       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                      __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_14); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 218, __pyx_L3_error)
+                      __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_14); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 218, __pyx_L3_error)
                       __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-                      if (__pyx_t_15) {
+                      if (__pyx_t_8) {
 
                         /* "extract_discordant_c.pyx":219
  *                                     for chr,pos,_,_ in elems[1:]:
@@ -7804,9 +7814,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __pyx_t_1 = PyObject_RichCompare(__pyx_t_14, __pyx_t_9, Py_LT); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 219, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
                         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 219, __pyx_L3_error)
+                        __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 219, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                        if (__pyx_t_15) {
+                        if (__pyx_t_8) {
 
                           /* "extract_discordant_c.pyx":220
  *                                         if chr == ls[2]:
@@ -7824,7 +7834,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                 if deletion is False:
  *                                     if 'XA:Z:' in line:
  */
-                          goto __pyx_L38_break;
+                          goto __pyx_L39_break;
 
                           /* "extract_discordant_c.pyx":219
  *                                     for chr,pos,_,_ in elems[1:]:
@@ -7852,7 +7862,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             if abs(int(ls[3]) - int(pos)) < params.max_TSD_len:
  */
                     }
-                    __pyx_L38_break:;
+                    __pyx_L39_break:;
                     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
                     /* "extract_discordant_c.pyx":208
@@ -7871,8 +7881,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                     if 'XA:Z:' in line:
  *                                         for l in ls[11:]:
  */
-                  __pyx_t_15 = ((__pyx_v_deletion == 0) != 0);
-                  if (__pyx_t_15) {
+                  __pyx_t_8 = ((__pyx_v_deletion == 0) != 0);
+                  if (__pyx_t_8) {
 
                     /* "extract_discordant_c.pyx":223
  *                                                 break
@@ -7881,8 +7891,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         for l in ls[11:]:
  *                                             if 'XA:Z:' in l:
  */
-                    __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_XA_Z, __pyx_v_line, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 223, __pyx_L3_error)
-                    __pyx_t_7 = (__pyx_t_15 != 0);
+                    __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_XA_Z, __pyx_v_line, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 223, __pyx_L3_error)
+                    __pyx_t_7 = (__pyx_t_8 != 0);
                     if (__pyx_t_7) {
 
                       /* "extract_discordant_c.pyx":224
@@ -7892,7 +7902,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             if 'XA:Z:' in l:
  *                                                 lsp=l.replace('XA:Z:', '').split(';')
  */
-                      __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__22, 1, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 224, __pyx_L3_error)
+                      __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__23, 1, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 224, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_11);
                       if (likely(PyList_CheckExact(__pyx_t_11)) || PyTuple_CheckExact(__pyx_t_11)) {
                         __pyx_t_1 = __pyx_t_11; __Pyx_INCREF(__pyx_t_1); __pyx_t_17 = 0;
@@ -7945,8 +7955,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                 for i in lsp[:-1]:
  */
                         __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_XA_Z, __pyx_v_l, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 225, __pyx_L3_error)
-                        __pyx_t_15 = (__pyx_t_7 != 0);
-                        if (__pyx_t_15) {
+                        __pyx_t_8 = (__pyx_t_7 != 0);
+                        if (__pyx_t_8) {
 
                           /* "extract_discordant_c.pyx":226
  *                                         for l in ls[11:]:
@@ -7957,7 +7967,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                           __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_v_l, __pyx_n_s_replace); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 226, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_9);
-                          __pyx_t_14 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_tuple__27, NULL); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 226, __pyx_L3_error)
+                          __pyx_t_14 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_tuple__28, NULL); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 226, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_14);
                           __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                           __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_14, __pyx_n_s_split); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 226, __pyx_L3_error)
@@ -7973,7 +7983,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_DECREF_SET(__pyx_t_9, function);
                             }
                           }
-                          __pyx_t_11 = (__pyx_t_14) ? __Pyx_PyObject_Call2Args(__pyx_t_9, __pyx_t_14, __pyx_kp_s__24) : __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_kp_s__24);
+                          __pyx_t_11 = (__pyx_t_14) ? __Pyx_PyObject_Call2Args(__pyx_t_9, __pyx_t_14, __pyx_kp_s__25) : __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_kp_s__25);
                           __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
                           if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 226, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_11);
@@ -7988,7 +7998,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                     isp=i.split(',')
  *                                                     if isp[0] in args.main_chrs_set:
  */
-                          __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_v_lsp, 0, -1L, NULL, NULL, &__pyx_slice__25, 0, 1, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 227, __pyx_L3_error)
+                          __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_v_lsp, 0, -1L, NULL, NULL, &__pyx_slice__26, 0, 1, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 227, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_11);
                           if (likely(PyList_CheckExact(__pyx_t_11)) || PyTuple_CheckExact(__pyx_t_11)) {
                             __pyx_t_9 = __pyx_t_11; __Pyx_INCREF(__pyx_t_9); __pyx_t_19 = 0;
@@ -8052,7 +8062,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                 __Pyx_DECREF_SET(__pyx_t_14, function);
                               }
                             }
-                            __pyx_t_11 = (__pyx_t_21) ? __Pyx_PyObject_Call2Args(__pyx_t_14, __pyx_t_21, __pyx_kp_s__26) : __Pyx_PyObject_CallOneArg(__pyx_t_14, __pyx_kp_s__26);
+                            __pyx_t_11 = (__pyx_t_21) ? __Pyx_PyObject_Call2Args(__pyx_t_14, __pyx_t_21, __pyx_kp_s__27) : __Pyx_PyObject_CallOneArg(__pyx_t_14, __pyx_kp_s__27);
                             __Pyx_XDECREF(__pyx_t_21); __pyx_t_21 = 0;
                             if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 228, __pyx_L3_error)
                             __Pyx_GOTREF(__pyx_t_11);
@@ -8071,10 +8081,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                             __Pyx_GOTREF(__pyx_t_11);
                             __pyx_t_14 = __Pyx_PyObject_GetAttrStr(__pyx_v_args, __pyx_n_s_main_chrs_set); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 229, __pyx_L3_error)
                             __Pyx_GOTREF(__pyx_t_14);
-                            __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_t_11, __pyx_t_14, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 229, __pyx_L3_error)
+                            __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_t_11, __pyx_t_14, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 229, __pyx_L3_error)
                             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                             __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-                            __pyx_t_7 = (__pyx_t_15 != 0);
+                            __pyx_t_7 = (__pyx_t_8 != 0);
                             if (__pyx_t_7) {
 
                               /* "extract_discordant_c.pyx":230
@@ -8088,7 +8098,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_GOTREF(__pyx_t_14);
                               __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_isp, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 230, __pyx_L3_error)
                               __Pyx_GOTREF(__pyx_t_11);
-                              __pyx_t_21 = __Pyx_PyObject_GetSlice(__pyx_t_11, 1, 0, NULL, NULL, &__pyx_slice__28, 1, 0, 1); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 230, __pyx_L3_error)
+                              __pyx_t_21 = __Pyx_PyObject_GetSlice(__pyx_t_11, 1, 0, NULL, NULL, &__pyx_slice__29, 1, 0, 1); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 230, __pyx_L3_error)
                               __Pyx_GOTREF(__pyx_t_21);
                               __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                               __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_isp, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 230, __pyx_L3_error)
@@ -8141,7 +8151,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                     d={}
  *                                     d_mapped={}
  */
-                          goto __pyx_L46_break;
+                          goto __pyx_L47_break;
 
                           /* "extract_discordant_c.pyx":225
  *                                     if 'XA:Z:' in line:
@@ -8160,7 +8170,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                 lsp=l.replace('XA:Z:', '').split(';')
  */
                       }
-                      __pyx_L46_break:;
+                      __pyx_L47_break:;
                       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
                       /* "extract_discordant_c.pyx":223
@@ -8268,20 +8278,20 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                         __pyx_t_23 = Py_TYPE(__pyx_t_14)->tp_iternext;
                         for (index=0; index < 4; index++) {
-                          PyObject* item = __pyx_t_23(__pyx_t_14); if (unlikely(!item)) goto __pyx_L53_unpacking_failed;
+                          PyObject* item = __pyx_t_23(__pyx_t_14); if (unlikely(!item)) goto __pyx_L54_unpacking_failed;
                           __Pyx_GOTREF(item);
                           *(temps[index]) = item;
                         }
                         if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_14), 4) < 0) __PYX_ERR(0, 235, __pyx_L3_error)
                         __pyx_t_23 = NULL;
                         __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-                        goto __pyx_L54_unpacking_done;
-                        __pyx_L53_unpacking_failed:;
+                        goto __pyx_L55_unpacking_done;
+                        __pyx_L54_unpacking_failed:;
                         __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
                         __pyx_t_23 = NULL;
                         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                         __PYX_ERR(0, 235, __pyx_L3_error)
-                        __pyx_L54_unpacking_done:;
+                        __pyx_L55_unpacking_done:;
                       }
                       __Pyx_XDECREF_SET(__pyx_v_chr, __pyx_t_22);
                       __pyx_t_22 = 0;
@@ -8337,22 +8347,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __Pyx_GOTREF(__pyx_t_22);
                         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                         __pyx_t_23 = Py_TYPE(__pyx_t_22)->tp_iternext;
-                        index = 0; __pyx_t_21 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_21)) goto __pyx_L55_unpacking_failed;
+                        index = 0; __pyx_t_21 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_21)) goto __pyx_L56_unpacking_failed;
                         __Pyx_GOTREF(__pyx_t_21);
-                        index = 1; __pyx_t_11 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_11)) goto __pyx_L55_unpacking_failed;
+                        index = 1; __pyx_t_11 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_11)) goto __pyx_L56_unpacking_failed;
                         __Pyx_GOTREF(__pyx_t_11);
-                        index = 2; __pyx_t_3 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_3)) goto __pyx_L55_unpacking_failed;
+                        index = 2; __pyx_t_3 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_3)) goto __pyx_L56_unpacking_failed;
                         __Pyx_GOTREF(__pyx_t_3);
                         if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_22), 3) < 0) __PYX_ERR(0, 236, __pyx_L3_error)
                         __pyx_t_23 = NULL;
                         __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                        goto __pyx_L56_unpacking_done;
-                        __pyx_L55_unpacking_failed:;
+                        goto __pyx_L57_unpacking_done;
+                        __pyx_L56_unpacking_failed:;
                         __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
                         __pyx_t_23 = NULL;
                         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                         __PYX_ERR(0, 236, __pyx_L3_error)
-                        __pyx_L56_unpacking_done:;
+                        __pyx_L57_unpacking_done:;
                       }
                       __Pyx_XDECREF_SET(__pyx_v_breakpoint, __pyx_t_21);
                       __pyx_t_21 = 0;
@@ -8369,8 +8379,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                 seq=fseq if strand == '+' else rseq
  */
                       __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_NA, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 237, __pyx_L3_error)
-                      __pyx_t_15 = ((!__pyx_t_7) != 0);
-                      if (__pyx_t_15) {
+                      __pyx_t_8 = ((!__pyx_t_7) != 0);
+                      if (__pyx_t_8) {
 
                         /* "extract_discordant_c.pyx":238
  *                                         breakpoint,L_clip_len,R_clip_len=determine_breakpoint_from_cigar(cigar)
@@ -8384,9 +8394,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __Pyx_INCREF(__pyx_v_L_clip_len);
                         __pyx_t_3 = __pyx_v_L_clip_len;
                         __pyx_t_21 = PyObject_RichCompare(__pyx_t_9, __pyx_t_3, Py_GT); __Pyx_XGOTREF(__pyx_t_21); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 238, __pyx_L3_error)
-                        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_21); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 238, __pyx_L3_error)
+                        __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_21); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 238, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                        if (__pyx_t_15) {
+                        if (__pyx_t_8) {
                           __Pyx_INCREF(__pyx_t_9);
                           __pyx_t_11 = __pyx_t_9;
                         } else {
@@ -8400,9 +8410,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __pyx_t_3 = PyObject_RichCompare(__pyx_t_11, __pyx_t_9, Py_GE); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 238, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 238, __pyx_L3_error)
+                        __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 238, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                        if (__pyx_t_15) {
+                        if (__pyx_t_8) {
 
                           /* "extract_discordant_c.pyx":239
  *                                         if not breakpoint == 'NA':
@@ -8411,8 +8421,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                 seqlen=len(seq)
  *                                                 read_seq= seq[L_clip_len:seqlen - R_clip_len]
  */
-                          __pyx_t_15 = (__Pyx_PyString_Equals(__pyx_v_strand, __pyx_kp_s__20, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 239, __pyx_L3_error)
-                          if (__pyx_t_15) {
+                          __pyx_t_8 = (__Pyx_PyString_Equals(__pyx_v_strand, __pyx_kp_s__21, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 239, __pyx_L3_error)
+                          if (__pyx_t_8) {
                             __Pyx_INCREF(__pyx_v_fseq);
                             __pyx_t_3 = __pyx_v_fseq;
                           } else {
@@ -8469,8 +8479,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                     ref_len=calc_ref_len(cigar)
  *                                                     start= int(pos) - 1  # 0-based
  */
-                          __pyx_t_15 = (__pyx_v_rep == Py_False);
-                          __pyx_t_7 = (__pyx_t_15 != 0);
+                          __pyx_t_8 = (__pyx_v_rep == Py_False);
+                          __pyx_t_7 = (__pyx_t_8 != 0);
                           if (__pyx_t_7) {
 
                             /* "extract_discordant_c.pyx":244
@@ -8568,7 +8578,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         clip_seq= seq[0:L_clip_len]
  *                                                         Acount=clip_seq.count('A')
  */
-                              goto __pyx_L60;
+                              goto __pyx_L61;
                             }
 
                             /* "extract_discordant_c.pyx":251
@@ -8614,7 +8624,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_XDECREF_SET(__pyx_v_Acount, __pyx_t_9);
                               __pyx_t_9 = 0;
                             }
-                            __pyx_L60:;
+                            __pyx_L61:;
 
                             /* "extract_discordant_c.pyx":253
  *                                                         clip_seq= seq[seqlen - R_clip_len:]
@@ -8723,8 +8733,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         d_mapped[mapped_seq].append('%s:%d-%d/%s/%s%s/%s' % (chr, start, end, breakpoint, ls[0], first_or_second, strand))
  */
                               __pyx_t_7 = (__Pyx_PyDict_ContainsTF(__pyx_v_mapped_seq, __pyx_v_d_mapped, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 256, __pyx_L3_error)
-                              __pyx_t_15 = (__pyx_t_7 != 0);
-                              if (__pyx_t_15) {
+                              __pyx_t_8 = (__pyx_t_7 != 0);
+                              if (__pyx_t_8) {
 
                                 /* "extract_discordant_c.pyx":257
  *                                                         f_pA.write('%s:%d-%d/%s/%s%s/%s\t%d\n' %(chr, start, end, breakpoint, ls[0], first_or_second, strand, len(clip_seq)))  # reads with pA
@@ -8795,7 +8805,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         f_pA.write('%s:%d-%d/%s/%s%s/%s\t%d\n' %(chr, start, end, breakpoint, ls[0], first_or_second, strand, len(clip_seq)))  # reads with pA
  *                                                         if not mapped_seq in d_mapped:
  */
-                              goto __pyx_L61;
+                              goto __pyx_L62;
                             }
 
                             /* "extract_discordant_c.pyx":260
@@ -8806,8 +8816,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         if not mapped_seq in d_mapped:
  */
                             /*else*/ {
-                              __pyx_t_15 = (__Pyx_PyDict_ContainsTF(__pyx_v_clip_seq, __pyx_v_d, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 260, __pyx_L3_error)
-                              __pyx_t_7 = (__pyx_t_15 != 0);
+                              __pyx_t_8 = (__Pyx_PyDict_ContainsTF(__pyx_v_clip_seq, __pyx_v_d, Py_NE)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 260, __pyx_L3_error)
+                              __pyx_t_7 = (__pyx_t_8 != 0);
                               if (__pyx_t_7) {
 
                                 /* "extract_discordant_c.pyx":261
@@ -8839,8 +8849,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         h='%s:%d-%d/%s/%s%s/%s' % (chr, start, end, breakpoint, ls[0], first_or_second, strand)
  */
                               __pyx_t_7 = (__Pyx_PyDict_ContainsTF(__pyx_v_mapped_seq, __pyx_v_d_mapped, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 262, __pyx_L3_error)
-                              __pyx_t_15 = (__pyx_t_7 != 0);
-                              if (__pyx_t_15) {
+                              __pyx_t_8 = (__pyx_t_7 != 0);
+                              if (__pyx_t_8) {
 
                                 /* "extract_discordant_c.pyx":263
  *                                                             d[clip_seq]=[]
@@ -8925,7 +8935,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __pyx_t_16 = __Pyx_PyObject_Append(__pyx_t_3, __pyx_v_h); if (unlikely(__pyx_t_16 == ((int)-1))) __PYX_ERR(0, 266, __pyx_L3_error)
                               __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                             }
-                            __pyx_L61:;
+                            __pyx_L62:;
 
                             /* "extract_discordant_c.pyx":243
  *                                                 read_seq= seq[L_clip_len:seqlen - R_clip_len]
@@ -8972,8 +8982,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         f_overhang.write(''.join(out_overhang))   # end retrieving overhang seqs
  */
                     __pyx_t_17 = PyDict_Size(__pyx_v_d); if (unlikely(__pyx_t_17 == ((Py_ssize_t)-1))) __PYX_ERR(0, 267, __pyx_L3_error)
-                    __pyx_t_15 = ((__pyx_t_17 >= 1) != 0);
-                    if (__pyx_t_15) {
+                    __pyx_t_8 = ((__pyx_t_17 >= 1) != 0);
+                    if (__pyx_t_8) {
 
                       /* "extract_discordant_c.pyx":268
  *                                                         d_mapped[mapped_seq].append(h)
@@ -8999,7 +9009,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __pyx_t_11 = 0;
                         __pyx_t_11 = __Pyx_PyDict_GetItem(__pyx_v_d, __pyx_v_seq); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 268, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_11);
-                        __pyx_t_21 = __Pyx_PyString_Join(__pyx_kp_s__24, __pyx_t_11); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 268, __pyx_L3_error)
+                        __pyx_t_21 = __Pyx_PyString_Join(__pyx_kp_s__25, __pyx_t_11); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 268, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_21);
                         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                         __pyx_t_11 = PyTuple_New(2); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 268, __pyx_L3_error)
@@ -9030,7 +9040,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                       if (unlikely(!__pyx_v_f_overhang)) { __Pyx_RaiseUnboundLocalError("f_overhang"); __PYX_ERR(0, 269, __pyx_L3_error) }
                       __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_f_overhang, __pyx_n_s_write); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 269, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_3);
-                      __pyx_t_21 = __Pyx_PyString_Join(__pyx_kp_s__5, __pyx_v_out_overhang); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 269, __pyx_L3_error)
+                      __pyx_t_21 = __Pyx_PyString_Join(__pyx_kp_s__6, __pyx_v_out_overhang); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 269, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_21);
                       __pyx_t_11 = NULL;
                       if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -9067,8 +9077,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         f_mapped.write(''.join(out_mapped))   # end retrieving mapped seqs
  */
                     __pyx_t_19 = PyDict_Size(__pyx_v_d_mapped); if (unlikely(__pyx_t_19 == ((Py_ssize_t)-1))) __PYX_ERR(0, 270, __pyx_L3_error)
-                    __pyx_t_15 = ((__pyx_t_19 >= 1) != 0);
-                    if (__pyx_t_15) {
+                    __pyx_t_8 = ((__pyx_t_19 >= 1) != 0);
+                    if (__pyx_t_8) {
 
                       /* "extract_discordant_c.pyx":271
  *                                         f_overhang.write(''.join(out_overhang))   # end retrieving overhang seqs
@@ -9094,7 +9104,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __pyx_t_21 = 0;
                         __pyx_t_21 = __Pyx_PyDict_GetItem(__pyx_v_d_mapped, __pyx_v_seq); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 271, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_21);
-                        __pyx_t_11 = __Pyx_PyString_Join(__pyx_kp_s__24, __pyx_t_21); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 271, __pyx_L3_error)
+                        __pyx_t_11 = __Pyx_PyString_Join(__pyx_kp_s__25, __pyx_t_21); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 271, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_11);
                         __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
                         __pyx_t_21 = PyTuple_New(2); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 271, __pyx_L3_error)
@@ -9125,7 +9135,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                       if (unlikely(!__pyx_v_f_mapped)) { __Pyx_RaiseUnboundLocalError("f_mapped"); __PYX_ERR(0, 272, __pyx_L3_error) }
                       __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_v_f_mapped, __pyx_n_s_write); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 272, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_3);
-                      __pyx_t_11 = __Pyx_PyString_Join(__pyx_kp_s__5, __pyx_v_out_mapped); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 272, __pyx_L3_error)
+                      __pyx_t_11 = __Pyx_PyString_Join(__pyx_kp_s__6, __pyx_v_out_mapped); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 272, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_11);
                       __pyx_t_21 = NULL;
                       if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_3))) {
@@ -9166,7 +9176,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                   /* "extract_discordant_c.pyx":196
  *                     else:
  *                         if do_ins is True:
- *                             if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs             # <<<<<<<<<<<<<<
+ *                             if (('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line)) and not ('H' in ls[5]):   # start retrieving overhangs             # <<<<<<<<<<<<<<
  *                                 deletion=False
  *                                 fseq=ls[9].upper()
  */
@@ -9200,8 +9210,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                 __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                 if (!__pyx_t_7) {
                 } else {
-                  __pyx_t_15 = __pyx_t_7;
-                  goto __pyx_L72_bool_binop_done;
+                  __pyx_t_8 = __pyx_t_7;
+                  goto __pyx_L73_bool_binop_done;
                 }
                 __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_params, __pyx_n_s_read_pair_gap_len); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 275, __pyx_L3_error)
                 __Pyx_GOTREF(__pyx_t_3);
@@ -9214,8 +9224,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                 __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                 if (!__pyx_t_7) {
                 } else {
-                  __pyx_t_15 = __pyx_t_7;
-                  goto __pyx_L72_bool_binop_done;
+                  __pyx_t_8 = __pyx_t_7;
+                  goto __pyx_L73_bool_binop_done;
                 }
                 __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_params, __pyx_n_s_read_pair_gap_len); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 275, __pyx_L3_error)
                 __Pyx_GOTREF(__pyx_t_3);
@@ -9223,9 +9233,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                 __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                 __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 275, __pyx_L3_error)
                 __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                __pyx_t_15 = __pyx_t_7;
-                __pyx_L72_bool_binop_done:;
-                if (__pyx_t_15) {
+                __pyx_t_8 = __pyx_t_7;
+                __pyx_L73_bool_binop_done:;
+                if (__pyx_t_8) {
 
                   /* "extract_discordant_c.pyx":276
  *                             ins=int(ls[8])
@@ -9234,11 +9244,11 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                     retain=False
  *                                     if not 'S' in ls[5]:
  */
-                  __pyx_t_1 = __Pyx_PyObject_GetSlice(__pyx_v_b, -4L, -2L, NULL, NULL, &__pyx_slice__29, 1, 1, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 276, __pyx_L3_error)
+                  __pyx_t_1 = __Pyx_PyObject_GetSlice(__pyx_v_b, -4L, -2L, NULL, NULL, &__pyx_slice__30, 1, 1, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 276, __pyx_L3_error)
                   __Pyx_GOTREF(__pyx_t_1);
-                  __pyx_t_15 = (__Pyx_PyString_Equals(__pyx_t_1, __pyx_kp_s_00, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 276, __pyx_L3_error)
+                  __pyx_t_8 = (__Pyx_PyString_Equals(__pyx_t_1, __pyx_kp_s_00, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 276, __pyx_L3_error)
                   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                  if (__pyx_t_15) {
+                  if (__pyx_t_8) {
 
                     /* "extract_discordant_c.pyx":277
  *                             if (ins == 0) or (ins <= -params.read_pair_gap_len) or (params.read_pair_gap_len <= ins):    # start retrieving distant reads
@@ -9258,9 +9268,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                     __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_ls, 5, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 278, __pyx_L3_error)
                     __Pyx_GOTREF(__pyx_t_1);
-                    __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_1, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 278, __pyx_L3_error)
+                    __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_1, Py_NE)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 278, __pyx_L3_error)
                     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                    __pyx_t_7 = (__pyx_t_15 != 0);
+                    __pyx_t_7 = (__pyx_t_8 != 0);
                     if (__pyx_t_7) {
 
                       /* "extract_discordant_c.pyx":279
@@ -9279,7 +9289,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         retain=True
  *                                     else:
  */
-                      goto __pyx_L76;
+                      goto __pyx_L77;
                     }
 
                     /* "extract_discordant_c.pyx":281
@@ -9331,22 +9341,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __Pyx_GOTREF(__pyx_t_22);
                         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                         __pyx_t_23 = Py_TYPE(__pyx_t_22)->tp_iternext;
-                        index = 0; __pyx_t_1 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_1)) goto __pyx_L77_unpacking_failed;
+                        index = 0; __pyx_t_1 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_1)) goto __pyx_L78_unpacking_failed;
                         __Pyx_GOTREF(__pyx_t_1);
-                        index = 1; __pyx_t_11 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_11)) goto __pyx_L77_unpacking_failed;
+                        index = 1; __pyx_t_11 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_11)) goto __pyx_L78_unpacking_failed;
                         __Pyx_GOTREF(__pyx_t_11);
-                        index = 2; __pyx_t_21 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_21)) goto __pyx_L77_unpacking_failed;
+                        index = 2; __pyx_t_21 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_21)) goto __pyx_L78_unpacking_failed;
                         __Pyx_GOTREF(__pyx_t_21);
                         if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_22), 3) < 0) __PYX_ERR(0, 281, __pyx_L3_error)
                         __pyx_t_23 = NULL;
                         __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                        goto __pyx_L78_unpacking_done;
-                        __pyx_L77_unpacking_failed:;
+                        goto __pyx_L79_unpacking_done;
+                        __pyx_L78_unpacking_failed:;
                         __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
                         __pyx_t_23 = NULL;
                         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                         __PYX_ERR(0, 281, __pyx_L3_error)
-                        __pyx_L78_unpacking_done:;
+                        __pyx_L79_unpacking_done:;
                       }
                       __Pyx_XDECREF_SET(__pyx_v_breakpoint, __pyx_t_1);
                       __pyx_t_1 = 0;
@@ -9381,7 +9391,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             retain=True
  *                                         elif max(left, right) < params.discordant_reads_clip_len:
  */
-                        goto __pyx_L79;
+                        goto __pyx_L80;
                       }
 
                       /* "extract_discordant_c.pyx":284
@@ -9433,9 +9443,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                     if retain is True:
  */
                       }
-                      __pyx_L79:;
+                      __pyx_L80:;
                     }
-                    __pyx_L76:;
+                    __pyx_L77:;
 
                     /* "extract_discordant_c.pyx":286
  *                                         elif max(left, right) < params.discordant_reads_clip_len:
@@ -9473,8 +9483,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                       __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_21, __pyx_t_3, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 288, __pyx_L3_error)
                       __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
                       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                      __pyx_t_15 = (__pyx_t_7 != 0);
-                      if (__pyx_t_15) {
+                      __pyx_t_8 = (__pyx_t_7 != 0);
+                      if (__pyx_t_8) {
 
                         /* "extract_discordant_c.pyx":289
  *                                         tmp=[]
@@ -9485,14 +9495,14 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                         __pyx_t_21 = __Pyx_GetItemInt(__pyx_v_b, -5L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 289, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_21);
-                        __pyx_t_15 = (__Pyx_PyString_Equals(__pyx_t_21, __pyx_kp_s_0, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 289, __pyx_L3_error)
+                        __pyx_t_8 = (__Pyx_PyString_Equals(__pyx_t_21, __pyx_kp_s_0, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 289, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                        if (__pyx_t_15) {
-                          __Pyx_INCREF(__pyx_kp_s__20);
-                          __pyx_t_3 = __pyx_kp_s__20;
-                        } else {
+                        if (__pyx_t_8) {
                           __Pyx_INCREF(__pyx_kp_s__21);
                           __pyx_t_3 = __pyx_kp_s__21;
+                        } else {
+                          __Pyx_INCREF(__pyx_kp_s__22);
+                          __pyx_t_3 = __pyx_kp_s__22;
                         }
                         __Pyx_XDECREF_SET(__pyx_v_dir, __pyx_t_3);
                         __pyx_t_3 = 0;
@@ -9578,8 +9588,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             for l in ls[11:]:
  *                                                 if 'XA:Z:' in l:
  */
-                      __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_XA_Z, __pyx_v_line, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 293, __pyx_L3_error)
-                      __pyx_t_7 = (__pyx_t_15 != 0);
+                      __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_XA_Z, __pyx_v_line, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 293, __pyx_L3_error)
+                      __pyx_t_7 = (__pyx_t_8 != 0);
                       if (__pyx_t_7) {
 
                         /* "extract_discordant_c.pyx":294
@@ -9589,7 +9599,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                 if 'XA:Z:' in l:
  *                                                     xs=l.replace('XA:Z:', '').split(';')[:-1]
  */
-                        __pyx_t_3 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__22, 1, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 294, __pyx_L3_error)
+                        __pyx_t_3 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__23, 1, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 294, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_3);
                         if (likely(PyList_CheckExact(__pyx_t_3)) || PyTuple_CheckExact(__pyx_t_3)) {
                           __pyx_t_21 = __pyx_t_3; __Pyx_INCREF(__pyx_t_21); __pyx_t_17 = 0;
@@ -9642,8 +9652,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                     break
  */
                           __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_XA_Z, __pyx_v_l, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 295, __pyx_L3_error)
-                          __pyx_t_15 = (__pyx_t_7 != 0);
-                          if (__pyx_t_15) {
+                          __pyx_t_8 = (__pyx_t_7 != 0);
+                          if (__pyx_t_8) {
 
                             /* "extract_discordant_c.pyx":296
  *                                             for l in ls[11:]:
@@ -9654,7 +9664,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                             __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_v_l, __pyx_n_s_replace); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 296, __pyx_L3_error)
                             __Pyx_GOTREF(__pyx_t_11);
-                            __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_tuple__27, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 296, __pyx_L3_error)
+                            __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_tuple__28, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 296, __pyx_L3_error)
                             __Pyx_GOTREF(__pyx_t_1);
                             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                             __pyx_t_11 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_split); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 296, __pyx_L3_error)
@@ -9670,12 +9680,12 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                 __Pyx_DECREF_SET(__pyx_t_11, function);
                               }
                             }
-                            __pyx_t_3 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_11, __pyx_t_1, __pyx_kp_s__24) : __Pyx_PyObject_CallOneArg(__pyx_t_11, __pyx_kp_s__24);
+                            __pyx_t_3 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_11, __pyx_t_1, __pyx_kp_s__25) : __Pyx_PyObject_CallOneArg(__pyx_t_11, __pyx_kp_s__25);
                             __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
                             if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 296, __pyx_L3_error)
                             __Pyx_GOTREF(__pyx_t_3);
                             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                            __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_t_3, 0, -1L, NULL, NULL, &__pyx_slice__25, 0, 1, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 296, __pyx_L3_error)
+                            __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_t_3, 0, -1L, NULL, NULL, &__pyx_slice__26, 0, 1, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 296, __pyx_L3_error)
                             __Pyx_GOTREF(__pyx_t_11);
                             __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                             __Pyx_XDECREF_SET(__pyx_v_xs, __pyx_t_11);
@@ -9688,7 +9698,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             for x in xs:
  *                                                 chr,pos,xcigar,_=x.split(',')
  */
-                            goto __pyx_L84_break;
+                            goto __pyx_L85_break;
 
                             /* "extract_discordant_c.pyx":295
  *                                         if 'XA:Z:' in line:
@@ -9707,7 +9717,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                     xs=l.replace('XA:Z:', '').split(';')[:-1]
  */
                         }
-                        __pyx_L84_break:;
+                        __pyx_L85_break:;
                         __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
 
                         /* "extract_discordant_c.pyx":298
@@ -9779,7 +9789,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_DECREF_SET(__pyx_t_3, function);
                             }
                           }
-                          __pyx_t_11 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_1, __pyx_kp_s__26) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_s__26);
+                          __pyx_t_11 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_1, __pyx_kp_s__27) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_s__27);
                           __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
                           if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 299, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_11);
@@ -9828,20 +9838,20 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                             __pyx_t_23 = Py_TYPE(__pyx_t_14)->tp_iternext;
                             for (index=0; index < 4; index++) {
-                              PyObject* item = __pyx_t_23(__pyx_t_14); if (unlikely(!item)) goto __pyx_L88_unpacking_failed;
+                              PyObject* item = __pyx_t_23(__pyx_t_14); if (unlikely(!item)) goto __pyx_L89_unpacking_failed;
                               __Pyx_GOTREF(item);
                               *(temps[index]) = item;
                             }
                             if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_14), 4) < 0) __PYX_ERR(0, 299, __pyx_L3_error)
                             __pyx_t_23 = NULL;
                             __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-                            goto __pyx_L89_unpacking_done;
-                            __pyx_L88_unpacking_failed:;
+                            goto __pyx_L90_unpacking_done;
+                            __pyx_L89_unpacking_failed:;
                             __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
                             __pyx_t_23 = NULL;
                             if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                             __PYX_ERR(0, 299, __pyx_L3_error)
-                            __pyx_L89_unpacking_done:;
+                            __pyx_L90_unpacking_done:;
                           }
                           __Pyx_XDECREF_SET(__pyx_v_chr, __pyx_t_3);
                           __pyx_t_3 = 0;
@@ -9868,8 +9878,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                     retain=True
  *                                                 else:
  */
-                          __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_v_xcigar, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 301, __pyx_L3_error)
-                          __pyx_t_7 = (__pyx_t_15 != 0);
+                          __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_v_xcigar, Py_NE)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 301, __pyx_L3_error)
+                          __pyx_t_7 = (__pyx_t_8 != 0);
                           if (__pyx_t_7) {
 
                             /* "extract_discordant_c.pyx":302
@@ -9888,7 +9898,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                     retain=True
  *                                                 else:
  */
-                            goto __pyx_L90;
+                            goto __pyx_L91;
                           }
 
                           /* "extract_discordant_c.pyx":304
@@ -9940,22 +9950,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_GOTREF(__pyx_t_3);
                               __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                               __pyx_t_23 = Py_TYPE(__pyx_t_3)->tp_iternext;
-                              index = 0; __pyx_t_11 = __pyx_t_23(__pyx_t_3); if (unlikely(!__pyx_t_11)) goto __pyx_L91_unpacking_failed;
+                              index = 0; __pyx_t_11 = __pyx_t_23(__pyx_t_3); if (unlikely(!__pyx_t_11)) goto __pyx_L92_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_11);
-                              index = 1; __pyx_t_22 = __pyx_t_23(__pyx_t_3); if (unlikely(!__pyx_t_22)) goto __pyx_L91_unpacking_failed;
+                              index = 1; __pyx_t_22 = __pyx_t_23(__pyx_t_3); if (unlikely(!__pyx_t_22)) goto __pyx_L92_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_22);
-                              index = 2; __pyx_t_1 = __pyx_t_23(__pyx_t_3); if (unlikely(!__pyx_t_1)) goto __pyx_L91_unpacking_failed;
+                              index = 2; __pyx_t_1 = __pyx_t_23(__pyx_t_3); if (unlikely(!__pyx_t_1)) goto __pyx_L92_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_1);
                               if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_3), 3) < 0) __PYX_ERR(0, 304, __pyx_L3_error)
                               __pyx_t_23 = NULL;
                               __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                              goto __pyx_L92_unpacking_done;
-                              __pyx_L91_unpacking_failed:;
+                              goto __pyx_L93_unpacking_done;
+                              __pyx_L92_unpacking_failed:;
                               __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                               __pyx_t_23 = NULL;
                               if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                               __PYX_ERR(0, 304, __pyx_L3_error)
-                              __pyx_L92_unpacking_done:;
+                              __pyx_L93_unpacking_done:;
                             }
                             __Pyx_XDECREF_SET(__pyx_v_breakpoint, __pyx_t_11);
                             __pyx_t_11 = 0;
@@ -9990,7 +10000,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         retain=True
  *                                                     elif max(left, right) < params.discordant_reads_clip_len:
  */
-                              goto __pyx_L93;
+                              goto __pyx_L94;
                             }
 
                             /* "extract_discordant_c.pyx":307
@@ -10042,9 +10052,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                 if retain is True:
  */
                             }
-                            __pyx_L93:;
+                            __pyx_L94:;
                           }
-                          __pyx_L90:;
+                          __pyx_L91:;
 
                           /* "extract_discordant_c.pyx":309
  *                                                     elif max(left, right) < params.discordant_reads_clip_len:
@@ -10067,8 +10077,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                             __Pyx_GOTREF(__pyx_t_1);
                             __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_v_chr, __pyx_t_1, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 310, __pyx_L3_error)
                             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                            __pyx_t_15 = (__pyx_t_7 != 0);
-                            if (__pyx_t_15) {
+                            __pyx_t_8 = (__pyx_t_7 != 0);
+                            if (__pyx_t_8) {
 
                               /* "extract_discordant_c.pyx":311
  *                                                 if retain is True:
@@ -10077,7 +10087,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         end= start + calc_ref_len(xcigar)
  *                                                         tmp.append('%s:%d-%d/%s' % (chr, start, end, pos[0]))
  */
-                              __pyx_t_1 = __Pyx_PyObject_GetSlice(__pyx_v_pos, 1, 0, NULL, NULL, &__pyx_slice__28, 1, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 311, __pyx_L3_error)
+                              __pyx_t_1 = __Pyx_PyObject_GetSlice(__pyx_v_pos, 1, 0, NULL, NULL, &__pyx_slice__29, 1, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 311, __pyx_L3_error)
                               __Pyx_GOTREF(__pyx_t_1);
                               __pyx_t_9 = __Pyx_PyNumber_Int(__pyx_t_1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 311, __pyx_L3_error)
                               __Pyx_GOTREF(__pyx_t_9);
@@ -10177,8 +10187,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             readname= ls[0] + first_or_second
  */
                       __pyx_t_17 = PyList_GET_SIZE(__pyx_v_tmp); if (unlikely(__pyx_t_17 == ((Py_ssize_t)-1))) __PYX_ERR(0, 314, __pyx_L3_error)
-                      __pyx_t_15 = ((__pyx_t_17 >= 1) != 0);
-                      if (__pyx_t_15) {
+                      __pyx_t_8 = ((__pyx_t_17 >= 1) != 0);
+                      if (__pyx_t_8) {
 
                         /* "extract_discordant_c.pyx":315
  *                                                         tmp.append('%s:%d-%d/%s' % (chr, start, end, pos[0]))
@@ -10189,9 +10199,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                         __pyx_t_9 = __Pyx_GetItemInt(__pyx_v_b, -7L, long, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 315, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_9);
-                        __pyx_t_15 = (__Pyx_PyString_Equals(__pyx_t_9, __pyx_kp_s_1, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 315, __pyx_L3_error)
+                        __pyx_t_8 = (__Pyx_PyString_Equals(__pyx_t_9, __pyx_kp_s_1, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 315, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                        if (__pyx_t_15) {
+                        if (__pyx_t_8) {
                           __Pyx_INCREF(__pyx_kp_s_1_2);
                           __pyx_t_21 = __pyx_kp_s_1_2;
                         } else {
@@ -10226,9 +10236,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         if (unlikely(!__pyx_v_f_distant)) { __Pyx_RaiseUnboundLocalError("f_distant"); __PYX_ERR(0, 317, __pyx_L3_error) }
                         __pyx_t_21 = __Pyx_PyObject_GetAttrStr(__pyx_v_f_distant, __pyx_n_s_write); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 317, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_21);
-                        __pyx_t_1 = PyNumber_Add(__pyx_v_readname, __pyx_kp_s__19); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 317, __pyx_L3_error)
+                        __pyx_t_1 = PyNumber_Add(__pyx_v_readname, __pyx_kp_s__20); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 317, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_1);
-                        __pyx_t_22 = __Pyx_PyString_Join(__pyx_kp_s__24, __pyx_v_tmp); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 317, __pyx_L3_error)
+                        __pyx_t_22 = __Pyx_PyString_Join(__pyx_kp_s__25, __pyx_v_tmp); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 317, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_22);
                         __pyx_t_11 = PyNumber_Add(__pyx_t_1, __pyx_t_22); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 317, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_11);
@@ -10295,7 +10305,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                             f_unmapped.write('>%s%s\n%s\n' % (ls[0], strand, ls[9]))
  *                     else:
  *                         if do_ins is True:             # <<<<<<<<<<<<<<
- *                             if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs
+ *                             if (('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line)) and not ('H' in ls[5]):   # start retrieving overhangs
  *                                 deletion=False
  */
               }
@@ -10307,8 +10317,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                             if 'SA:Z:' in line:
  *                                 first_or_second='/1' if b[-7] == '1' else '/2'
  */
-              __pyx_t_15 = ((__pyx_v_do_abs == 1) != 0);
-              if (__pyx_t_15) {
+              __pyx_t_8 = ((__pyx_v_do_abs == 1) != 0);
+              if (__pyx_t_8) {
 
                 /* "extract_discordant_c.pyx":320
  * 
@@ -10317,8 +10327,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                 first_or_second='/1' if b[-7] == '1' else '/2'
  *                                 saz,xaz={},{}
  */
-                __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_SA_Z, __pyx_v_line, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 320, __pyx_L3_error)
-                __pyx_t_7 = (__pyx_t_15 != 0);
+                __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_SA_Z, __pyx_v_line, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 320, __pyx_L3_error)
+                __pyx_t_7 = (__pyx_t_8 != 0);
                 if (__pyx_t_7) {
 
                   /* "extract_discordant_c.pyx":321
@@ -10347,7 +10357,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                 first_or_second='/1' if b[-7] == '1' else '/2'
  *                                 saz,xaz={},{}             # <<<<<<<<<<<<<<
  *                                 saz['+'],xaz['+'],saz['-'],xaz['-']={},{},{},{}
- *                                 if 'S' in ls[5]:
+ *                                 if ('S' in ls[5]) and not ('H' in ls[5]):
  */
                   __pyx_t_9 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 322, __pyx_L3_error)
                   __Pyx_GOTREF(__pyx_t_9);
@@ -10362,7 +10372,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                 first_or_second='/1' if b[-7] == '1' else '/2'
  *                                 saz,xaz={},{}
  *                                 saz['+'],xaz['+'],saz['-'],xaz['-']={},{},{},{}             # <<<<<<<<<<<<<<
- *                                 if 'S' in ls[5]:
+ *                                 if ('S' in ls[5]) and not ('H' in ls[5]):
  *                                     if ls[2] in args.main_chrs_set:
  */
                   __pyx_t_21 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 323, __pyx_L3_error)
@@ -10373,32 +10383,44 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                   __Pyx_GOTREF(__pyx_t_22);
                   __pyx_t_11 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 323, __pyx_L3_error)
                   __Pyx_GOTREF(__pyx_t_11);
-                  if (unlikely(PyDict_SetItem(__pyx_v_saz, __pyx_kp_s__20, __pyx_t_21) < 0)) __PYX_ERR(0, 323, __pyx_L3_error)
+                  if (unlikely(PyDict_SetItem(__pyx_v_saz, __pyx_kp_s__21, __pyx_t_21) < 0)) __PYX_ERR(0, 323, __pyx_L3_error)
                   __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                  if (unlikely(PyDict_SetItem(__pyx_v_xaz, __pyx_kp_s__20, __pyx_t_9) < 0)) __PYX_ERR(0, 323, __pyx_L3_error)
+                  if (unlikely(PyDict_SetItem(__pyx_v_xaz, __pyx_kp_s__21, __pyx_t_9) < 0)) __PYX_ERR(0, 323, __pyx_L3_error)
                   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                  if (unlikely(PyDict_SetItem(__pyx_v_saz, __pyx_kp_s__21, __pyx_t_22) < 0)) __PYX_ERR(0, 323, __pyx_L3_error)
+                  if (unlikely(PyDict_SetItem(__pyx_v_saz, __pyx_kp_s__22, __pyx_t_22) < 0)) __PYX_ERR(0, 323, __pyx_L3_error)
                   __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                  if (unlikely(PyDict_SetItem(__pyx_v_xaz, __pyx_kp_s__21, __pyx_t_11) < 0)) __PYX_ERR(0, 323, __pyx_L3_error)
+                  if (unlikely(PyDict_SetItem(__pyx_v_xaz, __pyx_kp_s__22, __pyx_t_11) < 0)) __PYX_ERR(0, 323, __pyx_L3_error)
                   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
                   /* "extract_discordant_c.pyx":324
  *                                 saz,xaz={},{}
  *                                 saz['+'],xaz['+'],saz['-'],xaz['-']={},{},{},{}
- *                                 if 'S' in ls[5]:             # <<<<<<<<<<<<<<
+ *                                 if ('S' in ls[5]) and not ('H' in ls[5]):             # <<<<<<<<<<<<<<
  *                                     if ls[2] in args.main_chrs_set:
  *                                         breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ls[5])
  */
                   __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_ls, 5, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 324, __pyx_L3_error)
                   __Pyx_GOTREF(__pyx_t_11);
-                  __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_11, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 324, __pyx_L3_error)
+                  __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_11, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 324, __pyx_L3_error)
                   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                  __pyx_t_15 = (__pyx_t_7 != 0);
+                  __pyx_t_15 = (__pyx_t_8 != 0);
                   if (__pyx_t_15) {
+                  } else {
+                    __pyx_t_7 = __pyx_t_15;
+                    goto __pyx_L101_bool_binop_done;
+                  }
+                  __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_ls, 5, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 324, __pyx_L3_error)
+                  __Pyx_GOTREF(__pyx_t_11);
+                  __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_H, __pyx_t_11, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 324, __pyx_L3_error)
+                  __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
+                  __pyx_t_8 = (__pyx_t_15 != 0);
+                  __pyx_t_7 = __pyx_t_8;
+                  __pyx_L101_bool_binop_done:;
+                  if (__pyx_t_7) {
 
                     /* "extract_discordant_c.pyx":325
  *                                 saz['+'],xaz['+'],saz['-'],xaz['-']={},{},{},{}
- *                                 if 'S' in ls[5]:
+ *                                 if ('S' in ls[5]) and not ('H' in ls[5]):
  *                                     if ls[2] in args.main_chrs_set:             # <<<<<<<<<<<<<<
  *                                         breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ls[5])
  *                                         if not breakpoint == 'NA':
@@ -10407,14 +10429,14 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                     __Pyx_GOTREF(__pyx_t_11);
                     __pyx_t_22 = __Pyx_PyObject_GetAttrStr(__pyx_v_args, __pyx_n_s_main_chrs_set); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 325, __pyx_L3_error)
                     __Pyx_GOTREF(__pyx_t_22);
-                    __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_t_11, __pyx_t_22, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 325, __pyx_L3_error)
+                    __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_11, __pyx_t_22, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 325, __pyx_L3_error)
                     __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                     __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                    __pyx_t_7 = (__pyx_t_15 != 0);
-                    if (__pyx_t_7) {
+                    __pyx_t_8 = (__pyx_t_7 != 0);
+                    if (__pyx_t_8) {
 
                       /* "extract_discordant_c.pyx":326
- *                                 if 'S' in ls[5]:
+ *                                 if ('S' in ls[5]) and not ('H' in ls[5]):
  *                                     if ls[2] in args.main_chrs_set:
  *                                         breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ls[5])             # <<<<<<<<<<<<<<
  *                                         if not breakpoint == 'NA':
@@ -10461,22 +10483,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __Pyx_GOTREF(__pyx_t_1);
                         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                         __pyx_t_23 = Py_TYPE(__pyx_t_1)->tp_iternext;
-                        index = 0; __pyx_t_22 = __pyx_t_23(__pyx_t_1); if (unlikely(!__pyx_t_22)) goto __pyx_L101_unpacking_failed;
+                        index = 0; __pyx_t_22 = __pyx_t_23(__pyx_t_1); if (unlikely(!__pyx_t_22)) goto __pyx_L104_unpacking_failed;
                         __Pyx_GOTREF(__pyx_t_22);
-                        index = 1; __pyx_t_9 = __pyx_t_23(__pyx_t_1); if (unlikely(!__pyx_t_9)) goto __pyx_L101_unpacking_failed;
+                        index = 1; __pyx_t_9 = __pyx_t_23(__pyx_t_1); if (unlikely(!__pyx_t_9)) goto __pyx_L104_unpacking_failed;
                         __Pyx_GOTREF(__pyx_t_9);
-                        index = 2; __pyx_t_21 = __pyx_t_23(__pyx_t_1); if (unlikely(!__pyx_t_21)) goto __pyx_L101_unpacking_failed;
+                        index = 2; __pyx_t_21 = __pyx_t_23(__pyx_t_1); if (unlikely(!__pyx_t_21)) goto __pyx_L104_unpacking_failed;
                         __Pyx_GOTREF(__pyx_t_21);
                         if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_1), 3) < 0) __PYX_ERR(0, 326, __pyx_L3_error)
                         __pyx_t_23 = NULL;
                         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                        goto __pyx_L102_unpacking_done;
-                        __pyx_L101_unpacking_failed:;
+                        goto __pyx_L105_unpacking_done;
+                        __pyx_L104_unpacking_failed:;
                         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                         __pyx_t_23 = NULL;
                         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                         __PYX_ERR(0, 326, __pyx_L3_error)
-                        __pyx_L102_unpacking_done:;
+                        __pyx_L105_unpacking_done:;
                       }
                       __Pyx_XDECREF_SET(__pyx_v_breakpoint, __pyx_t_22);
                       __pyx_t_22 = 0;
@@ -10492,9 +10514,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             clip_len=l_len if breakpoint == 'L' else r_len
  *                                             if clip_len > params.discordant_reads_clip_len:
  */
-                      __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_NA, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 327, __pyx_L3_error)
-                      __pyx_t_15 = ((!__pyx_t_7) != 0);
-                      if (__pyx_t_15) {
+                      __pyx_t_8 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_NA, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 327, __pyx_L3_error)
+                      __pyx_t_7 = ((!__pyx_t_8) != 0);
+                      if (__pyx_t_7) {
 
                         /* "extract_discordant_c.pyx":328
  *                                         breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ls[5])
@@ -10503,8 +10525,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                             if clip_len > params.discordant_reads_clip_len:
  *                                                 strand='+' if b[-5] == 0 else '-'
  */
-                        __pyx_t_15 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 328, __pyx_L3_error)
-                        if (__pyx_t_15) {
+                        __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 328, __pyx_L3_error)
+                        if (__pyx_t_7) {
                           __Pyx_INCREF(__pyx_v_l_len);
                           __pyx_t_11 = __pyx_v_l_len;
                         } else {
@@ -10525,9 +10547,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __Pyx_GOTREF(__pyx_t_11);
                         __pyx_t_21 = PyObject_RichCompare(__pyx_v_clip_len, __pyx_t_11, Py_GT); __Pyx_XGOTREF(__pyx_t_21); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 329, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                        __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_21); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 329, __pyx_L3_error)
+                        __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_21); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 329, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                        if (__pyx_t_15) {
+                        if (__pyx_t_7) {
 
                           /* "extract_discordant_c.pyx":330
  *                                             clip_len=l_len if breakpoint == 'L' else r_len
@@ -10541,14 +10563,14 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                           __pyx_t_9 = __Pyx_PyInt_EqObjC(__pyx_t_11, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 330, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_9);
                           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                          __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 330, __pyx_L3_error)
+                          __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 330, __pyx_L3_error)
                           __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                          if (__pyx_t_15) {
-                            __Pyx_INCREF(__pyx_kp_s__20);
-                            __pyx_t_21 = __pyx_kp_s__20;
-                          } else {
+                          if (__pyx_t_7) {
                             __Pyx_INCREF(__pyx_kp_s__21);
                             __pyx_t_21 = __pyx_kp_s__21;
+                          } else {
+                            __Pyx_INCREF(__pyx_kp_s__22);
+                            __pyx_t_21 = __pyx_kp_s__22;
                           }
                           __Pyx_XDECREF_SET(__pyx_v_strand, __pyx_t_21);
                           __pyx_t_21 = 0;
@@ -10629,11 +10651,11 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                           __Pyx_GOTREF(__pyx_t_21);
                           __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_xaz, __pyx_v_strand); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 334, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_9);
-                          __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_t_21, __pyx_t_9, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 334, __pyx_L3_error)
+                          __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_21, __pyx_t_9, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 334, __pyx_L3_error)
                           __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
                           __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                          __pyx_t_7 = (__pyx_t_15 != 0);
-                          if (__pyx_t_7) {
+                          __pyx_t_8 = (__pyx_t_7 != 0);
+                          if (__pyx_t_8) {
 
                             /* "extract_discordant_c.pyx":335
  *                                                 cigar_reshape= '%d-%d' % (l_len, l_len + calc_read_len(ls[5]))
@@ -10669,8 +10691,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                     if not 'L' in xaz[strand][ls[2]]:
  *                                                         xaz[strand][ls[2]]['L']=[]
  */
-                          __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 336, __pyx_L3_error)
-                          if (__pyx_t_7) {
+                          __pyx_t_8 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 336, __pyx_L3_error)
+                          if (__pyx_t_8) {
 
                             /* "extract_discordant_c.pyx":337
  *                                                     xaz[strand][ls[2]]={}
@@ -10687,10 +10709,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                             __Pyx_GOTREF(__pyx_t_21);
                             __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                            __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_21, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 337, __pyx_L3_error)
+                            __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_21, Py_NE)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 337, __pyx_L3_error)
                             __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                            __pyx_t_15 = (__pyx_t_7 != 0);
-                            if (__pyx_t_15) {
+                            __pyx_t_7 = (__pyx_t_8 != 0);
+                            if (__pyx_t_7) {
 
                               /* "extract_discordant_c.pyx":338
  *                                                 if breakpoint == 'L':
@@ -10762,7 +10784,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                     if not 'L' in xaz[strand][ls[2]]:
  *                                                         xaz[strand][ls[2]]['L']=[]
  */
-                            goto __pyx_L106;
+                            goto __pyx_L109;
                           }
 
                           /* "extract_discordant_c.pyx":341
@@ -10781,10 +10803,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                             __Pyx_GOTREF(__pyx_t_21);
                             __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                             __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                            __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_21, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 341, __pyx_L3_error)
+                            __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_21, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 341, __pyx_L3_error)
                             __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                            __pyx_t_7 = (__pyx_t_15 != 0);
-                            if (__pyx_t_7) {
+                            __pyx_t_8 = (__pyx_t_7 != 0);
+                            if (__pyx_t_8) {
 
                               /* "extract_discordant_c.pyx":342
  *                                                 else:
@@ -10849,7 +10871,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                             __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                           }
-                          __pyx_L106:;
+                          __pyx_L109:;
 
                           /* "extract_discordant_c.pyx":329
  *                                         if not breakpoint == 'NA':
@@ -10871,7 +10893,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
 
                       /* "extract_discordant_c.pyx":325
  *                                 saz['+'],xaz['+'],saz['-'],xaz['-']={},{},{},{}
- *                                 if 'S' in ls[5]:
+ *                                 if ('S' in ls[5]) and not ('H' in ls[5]):
  *                                     if ls[2] in args.main_chrs_set:             # <<<<<<<<<<<<<<
  *                                         breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ls[5])
  *                                         if not breakpoint == 'NA':
@@ -10881,7 +10903,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                     /* "extract_discordant_c.pyx":324
  *                                 saz,xaz={},{}
  *                                 saz['+'],xaz['+'],saz['-'],xaz['-']={},{},{},{}
- *                                 if 'S' in ls[5]:             # <<<<<<<<<<<<<<
+ *                                 if ('S' in ls[5]) and not ('H' in ls[5]):             # <<<<<<<<<<<<<<
  *                                     if ls[2] in args.main_chrs_set:
  *                                         breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ls[5])
  */
@@ -10894,7 +10916,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                     if 'SA:Z:' in l:
  *                                         ss=l.replace('SA:Z:', '').split(';')[:-1]
  */
-                  __pyx_t_9 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__22, 1, 0, 1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 344, __pyx_L3_error)
+                  __pyx_t_9 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__23, 1, 0, 1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 344, __pyx_L3_error)
                   __Pyx_GOTREF(__pyx_t_9);
                   if (likely(PyList_CheckExact(__pyx_t_9)) || PyTuple_CheckExact(__pyx_t_9)) {
                     __pyx_t_11 = __pyx_t_9; __Pyx_INCREF(__pyx_t_11); __pyx_t_17 = 0;
@@ -10946,9 +10968,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         ss=l.replace('SA:Z:', '').split(';')[:-1]
  *                                         for i in ss:
  */
-                    __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_SA_Z, __pyx_v_l, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 345, __pyx_L3_error)
-                    __pyx_t_15 = (__pyx_t_7 != 0);
-                    if (__pyx_t_15) {
+                    __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_SA_Z, __pyx_v_l, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 345, __pyx_L3_error)
+                    __pyx_t_7 = (__pyx_t_8 != 0);
+                    if (__pyx_t_7) {
 
                       /* "extract_discordant_c.pyx":346
  *                                 for l in ls[11:]:
@@ -10959,7 +10981,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                       __pyx_t_21 = __Pyx_PyObject_GetAttrStr(__pyx_v_l, __pyx_n_s_replace); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 346, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_21);
-                      __pyx_t_22 = __Pyx_PyObject_Call(__pyx_t_21, __pyx_tuple__23, NULL); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 346, __pyx_L3_error)
+                      __pyx_t_22 = __Pyx_PyObject_Call(__pyx_t_21, __pyx_tuple__24, NULL); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 346, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_22);
                       __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
                       __pyx_t_21 = __Pyx_PyObject_GetAttrStr(__pyx_t_22, __pyx_n_s_split); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 346, __pyx_L3_error)
@@ -10975,12 +10997,12 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                           __Pyx_DECREF_SET(__pyx_t_21, function);
                         }
                       }
-                      __pyx_t_9 = (__pyx_t_22) ? __Pyx_PyObject_Call2Args(__pyx_t_21, __pyx_t_22, __pyx_kp_s__24) : __Pyx_PyObject_CallOneArg(__pyx_t_21, __pyx_kp_s__24);
+                      __pyx_t_9 = (__pyx_t_22) ? __Pyx_PyObject_Call2Args(__pyx_t_21, __pyx_t_22, __pyx_kp_s__25) : __Pyx_PyObject_CallOneArg(__pyx_t_21, __pyx_kp_s__25);
                       __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
                       if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 346, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_9);
                       __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                      __pyx_t_21 = __Pyx_PyObject_GetSlice(__pyx_t_9, 0, -1L, NULL, NULL, &__pyx_slice__25, 0, 1, 1); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 346, __pyx_L3_error)
+                      __pyx_t_21 = __Pyx_PyObject_GetSlice(__pyx_t_9, 0, -1L, NULL, NULL, &__pyx_slice__26, 0, 1, 1); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 346, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_21);
                       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                       __Pyx_XDECREF_SET(__pyx_v_ss, __pyx_t_21);
@@ -11054,7 +11076,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                             __Pyx_DECREF_SET(__pyx_t_22, function);
                           }
                         }
-                        __pyx_t_9 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_22, __pyx_t_1, __pyx_kp_s__26) : __Pyx_PyObject_CallOneArg(__pyx_t_22, __pyx_kp_s__26);
+                        __pyx_t_9 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_22, __pyx_t_1, __pyx_kp_s__27) : __Pyx_PyObject_CallOneArg(__pyx_t_22, __pyx_kp_s__27);
                         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
                         if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 348, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_9);
@@ -11071,10 +11093,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                         __pyx_t_9 = __Pyx_GetItemInt(__pyx_v_ispl, 3, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 349, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_9);
-                        __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_9, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 349, __pyx_L3_error)
+                        __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_9, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 349, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                        __pyx_t_7 = (__pyx_t_15 != 0);
-                        if (__pyx_t_7) {
+                        __pyx_t_8 = (__pyx_t_7 != 0);
+                        if (__pyx_t_8) {
 
                           /* "extract_discordant_c.pyx":350
  *                                             ispl=i.split(',')
@@ -11087,11 +11109,11 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                           __Pyx_GOTREF(__pyx_t_9);
                           __pyx_t_22 = __Pyx_PyObject_GetAttrStr(__pyx_v_args, __pyx_n_s_main_chrs_set); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 350, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_22);
-                          __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_9, __pyx_t_22, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 350, __pyx_L3_error)
+                          __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_t_9, __pyx_t_22, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 350, __pyx_L3_error)
                           __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                           __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                          __pyx_t_15 = (__pyx_t_7 != 0);
-                          if (__pyx_t_15) {
+                          __pyx_t_7 = (__pyx_t_8 != 0);
+                          if (__pyx_t_7) {
 
                             /* "extract_discordant_c.pyx":351
  *                                             if 'S' in ispl[3]:
@@ -11141,22 +11163,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_GOTREF(__pyx_t_14);
                               __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                               __pyx_t_23 = Py_TYPE(__pyx_t_14)->tp_iternext;
-                              index = 0; __pyx_t_22 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_22)) goto __pyx_L116_unpacking_failed;
+                              index = 0; __pyx_t_22 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_22)) goto __pyx_L119_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_22);
-                              index = 1; __pyx_t_1 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_1)) goto __pyx_L116_unpacking_failed;
+                              index = 1; __pyx_t_1 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_1)) goto __pyx_L119_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_1);
-                              index = 2; __pyx_t_3 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_3)) goto __pyx_L116_unpacking_failed;
+                              index = 2; __pyx_t_3 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_3)) goto __pyx_L119_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_3);
                               if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_14), 3) < 0) __PYX_ERR(0, 351, __pyx_L3_error)
                               __pyx_t_23 = NULL;
                               __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-                              goto __pyx_L117_unpacking_done;
-                              __pyx_L116_unpacking_failed:;
+                              goto __pyx_L120_unpacking_done;
+                              __pyx_L119_unpacking_failed:;
                               __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
                               __pyx_t_23 = NULL;
                               if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                               __PYX_ERR(0, 351, __pyx_L3_error)
-                              __pyx_L117_unpacking_done:;
+                              __pyx_L120_unpacking_done:;
                             }
                             __Pyx_XDECREF_SET(__pyx_v_breakpoint, __pyx_t_22);
                             __pyx_t_22 = 0;
@@ -11172,9 +11194,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         clip_len=l_len if breakpoint == 'L' else r_len
  *                                                         if clip_len > params.discordant_reads_clip_len:
  */
-                            __pyx_t_15 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_NA, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 352, __pyx_L3_error)
-                            __pyx_t_7 = ((!__pyx_t_15) != 0);
-                            if (__pyx_t_7) {
+                            __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_NA, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 352, __pyx_L3_error)
+                            __pyx_t_8 = ((!__pyx_t_7) != 0);
+                            if (__pyx_t_8) {
 
                               /* "extract_discordant_c.pyx":353
  *                                                     breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ispl[3])
@@ -11183,8 +11205,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         if clip_len > params.discordant_reads_clip_len:
  *                                                             start= int(ispl[1]) - 1  # 0-based
  */
-                              __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 353, __pyx_L3_error)
-                              if (__pyx_t_7) {
+                              __pyx_t_8 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 353, __pyx_L3_error)
+                              if (__pyx_t_8) {
                                 __Pyx_INCREF(__pyx_v_l_len);
                                 __pyx_t_9 = __pyx_v_l_len;
                               } else {
@@ -11205,9 +11227,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_GOTREF(__pyx_t_9);
                               __pyx_t_3 = PyObject_RichCompare(__pyx_v_clip_len, __pyx_t_9, Py_GT); __Pyx_XGOTREF(__pyx_t_3); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 354, __pyx_L3_error)
                               __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                              __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 354, __pyx_L3_error)
+                              __pyx_t_8 = __Pyx_PyObject_IsTrue(__pyx_t_3); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 354, __pyx_L3_error)
                               __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                              if (__pyx_t_7) {
+                              if (__pyx_t_8) {
 
                                 /* "extract_discordant_c.pyx":355
  *                                                         clip_len=l_len if breakpoint == 'L' else r_len
@@ -11288,11 +11310,11 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                 __pyx_t_1 = __Pyx_PyDict_GetItem(__pyx_v_saz, __pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 358, __pyx_L3_error)
                                 __Pyx_GOTREF(__pyx_t_1);
                                 __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                                __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_3, __pyx_t_1, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 358, __pyx_L3_error)
+                                __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_t_3, __pyx_t_1, Py_NE)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 358, __pyx_L3_error)
                                 __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                                 __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                                __pyx_t_15 = (__pyx_t_7 != 0);
-                                if (__pyx_t_15) {
+                                __pyx_t_7 = (__pyx_t_8 != 0);
+                                if (__pyx_t_7) {
 
                                   /* "extract_discordant_c.pyx":359
  *                                                             cigar_reshape= '%d-%d' % (l_len, l_len + calc_read_len(ispl[3]))
@@ -11331,8 +11353,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                                 if not 'L' in saz[ispl[2]][ispl[0]]:
  *                                                                     saz[ispl[2]][ispl[0]]['L']=[]
  */
-                                __pyx_t_15 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 360, __pyx_L3_error)
-                                if (__pyx_t_15) {
+                                __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 360, __pyx_L3_error)
+                                if (__pyx_t_7) {
 
                                   /* "extract_discordant_c.pyx":361
  *                                                                 saz[ispl[2]][ispl[0]]={}
@@ -11352,10 +11374,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                   __Pyx_GOTREF(__pyx_t_9);
                                   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                                   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                                  __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_9, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 361, __pyx_L3_error)
+                                  __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_9, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 361, __pyx_L3_error)
                                   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                                  __pyx_t_7 = (__pyx_t_15 != 0);
-                                  if (__pyx_t_7) {
+                                  __pyx_t_8 = (__pyx_t_7 != 0);
+                                  if (__pyx_t_8) {
 
                                     /* "extract_discordant_c.pyx":362
  *                                                             if breakpoint == 'L':
@@ -11433,7 +11455,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                                 if not 'L' in saz[ispl[2]][ispl[0]]:
  *                                                                     saz[ispl[2]][ispl[0]]['L']=[]
  */
-                                  goto __pyx_L121;
+                                  goto __pyx_L124;
                                 }
 
                                 /* "extract_discordant_c.pyx":365
@@ -11455,10 +11477,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                   __Pyx_GOTREF(__pyx_t_22);
                                   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                                   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                                  __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_22, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 365, __pyx_L3_error)
+                                  __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_22, Py_NE)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 365, __pyx_L3_error)
                                   __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                                  __pyx_t_15 = (__pyx_t_7 != 0);
-                                  if (__pyx_t_15) {
+                                  __pyx_t_7 = (__pyx_t_8 != 0);
+                                  if (__pyx_t_7) {
 
                                     /* "extract_discordant_c.pyx":366
  *                                                             else:
@@ -11529,7 +11551,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                   __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
                                   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                                 }
-                                __pyx_L121:;
+                                __pyx_L124:;
 
                                 /* "extract_discordant_c.pyx":354
  *                                                     if not breakpoint == 'NA':
@@ -11584,7 +11606,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                 for l in ls[11:]:
  *                                     if 'XA:Z:' in l:
  */
-                      goto __pyx_L110_break;
+                      goto __pyx_L113_break;
 
                       /* "extract_discordant_c.pyx":345
  *                                                     xaz[strand][ls[2]]['R'].append((start, end, cigar_reshape))
@@ -11603,7 +11625,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         ss=l.replace('SA:Z:', '').split(';')[:-1]
  */
                   }
-                  __pyx_L110_break:;
+                  __pyx_L113_break:;
                   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
 
                   /* "extract_discordant_c.pyx":369
@@ -11613,7 +11635,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                     if 'XA:Z:' in l:
  *                                         ss=l.replace('XA:Z:', '').split(';')[:-1]
  */
-                  __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__22, 1, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 369, __pyx_L3_error)
+                  __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_v_ls, 11, 0, NULL, NULL, &__pyx_slice__23, 1, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 369, __pyx_L3_error)
                   __Pyx_GOTREF(__pyx_t_11);
                   if (likely(PyList_CheckExact(__pyx_t_11)) || PyTuple_CheckExact(__pyx_t_11)) {
                     __pyx_t_21 = __pyx_t_11; __Pyx_INCREF(__pyx_t_21); __pyx_t_17 = 0;
@@ -11665,9 +11687,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         ss=l.replace('XA:Z:', '').split(';')[:-1]
  *                                         for i in ss:
  */
-                    __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_XA_Z, __pyx_v_l, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 370, __pyx_L3_error)
-                    __pyx_t_7 = (__pyx_t_15 != 0);
-                    if (__pyx_t_7) {
+                    __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_kp_s_XA_Z, __pyx_v_l, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 370, __pyx_L3_error)
+                    __pyx_t_8 = (__pyx_t_7 != 0);
+                    if (__pyx_t_8) {
 
                       /* "extract_discordant_c.pyx":371
  *                                 for l in ls[11:]:
@@ -11678,7 +11700,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                       __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_l, __pyx_n_s_replace); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 371, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_1);
-                      __pyx_t_22 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__27, NULL); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 371, __pyx_L3_error)
+                      __pyx_t_22 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__28, NULL); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 371, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_22);
                       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
                       __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_22, __pyx_n_s_split); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 371, __pyx_L3_error)
@@ -11694,12 +11716,12 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                           __Pyx_DECREF_SET(__pyx_t_1, function);
                         }
                       }
-                      __pyx_t_11 = (__pyx_t_22) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_22, __pyx_kp_s__24) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_kp_s__24);
+                      __pyx_t_11 = (__pyx_t_22) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_22, __pyx_kp_s__25) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_kp_s__25);
                       __Pyx_XDECREF(__pyx_t_22); __pyx_t_22 = 0;
                       if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 371, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_11);
                       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-                      __pyx_t_1 = __Pyx_PyObject_GetSlice(__pyx_t_11, 0, -1L, NULL, NULL, &__pyx_slice__25, 0, 1, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 371, __pyx_L3_error)
+                      __pyx_t_1 = __Pyx_PyObject_GetSlice(__pyx_t_11, 0, -1L, NULL, NULL, &__pyx_slice__26, 0, 1, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 371, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_1);
                       __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                       __Pyx_XDECREF_SET(__pyx_v_ss, __pyx_t_1);
@@ -11773,7 +11795,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                             __Pyx_DECREF_SET(__pyx_t_22, function);
                           }
                         }
-                        __pyx_t_11 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_22, __pyx_t_3, __pyx_kp_s__26) : __Pyx_PyObject_CallOneArg(__pyx_t_22, __pyx_kp_s__26);
+                        __pyx_t_11 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_22, __pyx_t_3, __pyx_kp_s__27) : __Pyx_PyObject_CallOneArg(__pyx_t_22, __pyx_kp_s__27);
                         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
                         if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 373, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_11);
@@ -11790,10 +11812,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                         __pyx_t_11 = __Pyx_GetItemInt(__pyx_v_ispl, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 374, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_11);
-                        __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_11, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 374, __pyx_L3_error)
+                        __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_S, __pyx_t_11, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 374, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                        __pyx_t_15 = (__pyx_t_7 != 0);
-                        if (__pyx_t_15) {
+                        __pyx_t_7 = (__pyx_t_8 != 0);
+                        if (__pyx_t_7) {
 
                           /* "extract_discordant_c.pyx":375
  *                                             ispl=i.split(',')
@@ -11806,11 +11828,11 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                           __Pyx_GOTREF(__pyx_t_11);
                           __pyx_t_22 = __Pyx_PyObject_GetAttrStr(__pyx_v_args, __pyx_n_s_main_chrs_set); if (unlikely(!__pyx_t_22)) __PYX_ERR(0, 375, __pyx_L3_error)
                           __Pyx_GOTREF(__pyx_t_22);
-                          __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_t_11, __pyx_t_22, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 375, __pyx_L3_error)
+                          __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_11, __pyx_t_22, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 375, __pyx_L3_error)
                           __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                           __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                          __pyx_t_7 = (__pyx_t_15 != 0);
-                          if (__pyx_t_7) {
+                          __pyx_t_8 = (__pyx_t_7 != 0);
+                          if (__pyx_t_8) {
 
                             /* "extract_discordant_c.pyx":376
  *                                             if 'S' in ispl[2]:
@@ -11860,22 +11882,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_GOTREF(__pyx_t_14);
                               __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                               __pyx_t_23 = Py_TYPE(__pyx_t_14)->tp_iternext;
-                              index = 0; __pyx_t_22 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_22)) goto __pyx_L131_unpacking_failed;
+                              index = 0; __pyx_t_22 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_22)) goto __pyx_L134_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_22);
-                              index = 1; __pyx_t_3 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_3)) goto __pyx_L131_unpacking_failed;
+                              index = 1; __pyx_t_3 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_3)) goto __pyx_L134_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_3);
-                              index = 2; __pyx_t_9 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_9)) goto __pyx_L131_unpacking_failed;
+                              index = 2; __pyx_t_9 = __pyx_t_23(__pyx_t_14); if (unlikely(!__pyx_t_9)) goto __pyx_L134_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_9);
                               if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_14), 3) < 0) __PYX_ERR(0, 376, __pyx_L3_error)
                               __pyx_t_23 = NULL;
                               __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-                              goto __pyx_L132_unpacking_done;
-                              __pyx_L131_unpacking_failed:;
+                              goto __pyx_L135_unpacking_done;
+                              __pyx_L134_unpacking_failed:;
                               __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
                               __pyx_t_23 = NULL;
                               if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                               __PYX_ERR(0, 376, __pyx_L3_error)
-                              __pyx_L132_unpacking_done:;
+                              __pyx_L135_unpacking_done:;
                             }
                             __Pyx_XDECREF_SET(__pyx_v_breakpoint, __pyx_t_22);
                             __pyx_t_22 = 0;
@@ -11891,9 +11913,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         clip_len=l_len if breakpoint == 'L' else r_len
  *                                                         if clip_len > params.discordant_reads_clip_len:
  */
-                            __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_NA, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 377, __pyx_L3_error)
-                            __pyx_t_15 = ((!__pyx_t_7) != 0);
-                            if (__pyx_t_15) {
+                            __pyx_t_8 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_NA, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 377, __pyx_L3_error)
+                            __pyx_t_7 = ((!__pyx_t_8) != 0);
+                            if (__pyx_t_7) {
 
                               /* "extract_discordant_c.pyx":378
  *                                                     breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ispl[2])
@@ -11902,8 +11924,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                         if clip_len > params.discordant_reads_clip_len:
  *                                                             start= int(ispl[1][1:]) - 1  # 0-based
  */
-                              __pyx_t_15 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 378, __pyx_L3_error)
-                              if (__pyx_t_15) {
+                              __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 378, __pyx_L3_error)
+                              if (__pyx_t_7) {
                                 __Pyx_INCREF(__pyx_v_l_len);
                                 __pyx_t_11 = __pyx_v_l_len;
                               } else {
@@ -11924,9 +11946,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_GOTREF(__pyx_t_11);
                               __pyx_t_9 = PyObject_RichCompare(__pyx_v_clip_len, __pyx_t_11, Py_GT); __Pyx_XGOTREF(__pyx_t_9); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 379, __pyx_L3_error)
                               __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                              __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 379, __pyx_L3_error)
+                              __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_9); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 379, __pyx_L3_error)
                               __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                              if (__pyx_t_15) {
+                              if (__pyx_t_7) {
 
                                 /* "extract_discordant_c.pyx":380
  *                                                         clip_len=l_len if breakpoint == 'L' else r_len
@@ -11937,7 +11959,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                                 __pyx_t_9 = __Pyx_GetItemInt(__pyx_v_ispl, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 380, __pyx_L3_error)
                                 __Pyx_GOTREF(__pyx_t_9);
-                                __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_t_9, 1, 0, NULL, NULL, &__pyx_slice__28, 1, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 380, __pyx_L3_error)
+                                __pyx_t_11 = __Pyx_PyObject_GetSlice(__pyx_t_9, 1, 0, NULL, NULL, &__pyx_slice__29, 1, 0, 1); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 380, __pyx_L3_error)
                                 __Pyx_GOTREF(__pyx_t_11);
                                 __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                                 __pyx_t_9 = __Pyx_PyNumber_Int(__pyx_t_11); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 380, __pyx_L3_error)
@@ -12013,11 +12035,11 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                 __pyx_t_9 = __Pyx_PyDict_GetItem(__pyx_v_xaz, __pyx_t_3); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 383, __pyx_L3_error)
                                 __Pyx_GOTREF(__pyx_t_9);
                                 __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                                __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_t_11, __pyx_t_9, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 383, __pyx_L3_error)
+                                __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_t_11, __pyx_t_9, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 383, __pyx_L3_error)
                                 __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
                                 __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-                                __pyx_t_7 = (__pyx_t_15 != 0);
-                                if (__pyx_t_7) {
+                                __pyx_t_8 = (__pyx_t_7 != 0);
+                                if (__pyx_t_8) {
 
                                   /* "extract_discordant_c.pyx":384
  *                                                             cigar_reshape= '%d-%d' % (l_len, l_len + calc_read_len(ispl[2]))
@@ -12059,8 +12081,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                                 if not 'L' in xaz[ispl[1][0]][ispl[0]]:
  *                                                                     xaz[ispl[1][0]][ispl[0]]['L']=[]
  */
-                                __pyx_t_7 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 385, __pyx_L3_error)
-                                if (__pyx_t_7) {
+                                __pyx_t_8 = (__Pyx_PyString_Equals(__pyx_v_breakpoint, __pyx_n_s_L, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 385, __pyx_L3_error)
+                                if (__pyx_t_8) {
 
                                   /* "extract_discordant_c.pyx":386
  *                                                                 xaz[ispl[1][0]][ispl[0]]={}
@@ -12083,10 +12105,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                   __Pyx_GOTREF(__pyx_t_11);
                                   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                                   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                                  __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_11, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 386, __pyx_L3_error)
+                                  __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_11, Py_NE)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 386, __pyx_L3_error)
                                   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                                  __pyx_t_15 = (__pyx_t_7 != 0);
-                                  if (__pyx_t_15) {
+                                  __pyx_t_7 = (__pyx_t_8 != 0);
+                                  if (__pyx_t_7) {
 
                                     /* "extract_discordant_c.pyx":387
  *                                                             if breakpoint == 'L':
@@ -12170,7 +12192,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                                                 if not 'L' in xaz[ispl[1][0]][ispl[0]]:
  *                                                                     xaz[ispl[1][0]][ispl[0]]['L']=[]
  */
-                                  goto __pyx_L136;
+                                  goto __pyx_L139;
                                 }
 
                                 /* "extract_discordant_c.pyx":390
@@ -12195,10 +12217,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                   __Pyx_GOTREF(__pyx_t_11);
                                   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                                   __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                                  __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_11, Py_NE)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 390, __pyx_L3_error)
+                                  __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_11, Py_NE)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 390, __pyx_L3_error)
                                   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                                  __pyx_t_7 = (__pyx_t_15 != 0);
-                                  if (__pyx_t_7) {
+                                  __pyx_t_8 = (__pyx_t_7 != 0);
+                                  if (__pyx_t_8) {
 
                                     /* "extract_discordant_c.pyx":391
  *                                                             else:
@@ -12275,7 +12297,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                                   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
                                 }
-                                __pyx_L136:;
+                                __pyx_L139:;
 
                                 /* "extract_discordant_c.pyx":379
  *                                                     if not breakpoint == 'NA':
@@ -12330,7 +12352,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                 for strand in strands:
  *                                     for chr in saz[strand]:
  */
-                      goto __pyx_L125_break;
+                      goto __pyx_L128_break;
 
                       /* "extract_discordant_c.pyx":370
  *                                         break
@@ -12349,7 +12371,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *                                         ss=l.replace('XA:Z:', '').split(';')[:-1]
  */
                   }
-                  __pyx_L125_break:;
+                  __pyx_L128_break:;
                   __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
 
                   /* "extract_discordant_c.pyx":394
@@ -12465,10 +12487,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  */
                       __pyx_t_21 = __Pyx_PyDict_GetItem(__pyx_v_xaz, __pyx_v_strand); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 396, __pyx_L3_error)
                       __Pyx_GOTREF(__pyx_t_21);
-                      __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_v_chr, __pyx_t_21, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 396, __pyx_L3_error)
+                      __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_v_chr, __pyx_t_21, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 396, __pyx_L3_error)
                       __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                      __pyx_t_15 = (__pyx_t_7 != 0);
-                      if (__pyx_t_15) {
+                      __pyx_t_7 = (__pyx_t_8 != 0);
+                      if (__pyx_t_7) {
 
                         /* "extract_discordant_c.pyx":397
  *                                     for chr in saz[strand]:
@@ -12482,25 +12504,25 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_21, __pyx_v_chr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 397, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_3);
                         __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                        __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_3, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 397, __pyx_L3_error)
+                        __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_3, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 397, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                        __pyx_t_8 = (__pyx_t_7 != 0);
-                        if (__pyx_t_8) {
+                        __pyx_t_15 = (__pyx_t_8 != 0);
+                        if (__pyx_t_15) {
                         } else {
-                          __pyx_t_15 = __pyx_t_8;
-                          goto __pyx_L145_bool_binop_done;
+                          __pyx_t_7 = __pyx_t_15;
+                          goto __pyx_L148_bool_binop_done;
                         }
                         __pyx_t_3 = __Pyx_PyDict_GetItem(__pyx_v_xaz, __pyx_v_strand); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 397, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_3);
                         __pyx_t_21 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_chr); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 397, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_21);
                         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                        __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_21, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 397, __pyx_L3_error)
+                        __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_21, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 397, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
-                        __pyx_t_7 = (__pyx_t_8 != 0);
-                        __pyx_t_15 = __pyx_t_7;
-                        __pyx_L145_bool_binop_done:;
-                        if (__pyx_t_15) {
+                        __pyx_t_8 = (__pyx_t_15 != 0);
+                        __pyx_t_7 = __pyx_t_8;
+                        __pyx_L148_bool_binop_done:;
+                        if (__pyx_t_7) {
 
                           /* "extract_discordant_c.pyx":398
  *                                         if chr in xaz[strand]:
@@ -12593,22 +12615,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_GOTREF(__pyx_t_27);
                               __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
                               __pyx_t_23 = Py_TYPE(__pyx_t_27)->tp_iternext;
-                              index = 0; __pyx_t_11 = __pyx_t_23(__pyx_t_27); if (unlikely(!__pyx_t_11)) goto __pyx_L149_unpacking_failed;
+                              index = 0; __pyx_t_11 = __pyx_t_23(__pyx_t_27); if (unlikely(!__pyx_t_11)) goto __pyx_L152_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_11);
-                              index = 1; __pyx_t_22 = __pyx_t_23(__pyx_t_27); if (unlikely(!__pyx_t_22)) goto __pyx_L149_unpacking_failed;
+                              index = 1; __pyx_t_22 = __pyx_t_23(__pyx_t_27); if (unlikely(!__pyx_t_22)) goto __pyx_L152_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_22);
-                              index = 2; __pyx_t_14 = __pyx_t_23(__pyx_t_27); if (unlikely(!__pyx_t_14)) goto __pyx_L149_unpacking_failed;
+                              index = 2; __pyx_t_14 = __pyx_t_23(__pyx_t_27); if (unlikely(!__pyx_t_14)) goto __pyx_L152_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_14);
                               if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_27), 3) < 0) __PYX_ERR(0, 398, __pyx_L3_error)
                               __pyx_t_23 = NULL;
                               __Pyx_DECREF(__pyx_t_27); __pyx_t_27 = 0;
-                              goto __pyx_L150_unpacking_done;
-                              __pyx_L149_unpacking_failed:;
+                              goto __pyx_L153_unpacking_done;
+                              __pyx_L152_unpacking_failed:;
                               __Pyx_DECREF(__pyx_t_27); __pyx_t_27 = 0;
                               __pyx_t_23 = NULL;
                               if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                               __PYX_ERR(0, 398, __pyx_L3_error)
-                              __pyx_L150_unpacking_done:;
+                              __pyx_L153_unpacking_done:;
                             }
                             __Pyx_XDECREF_SET(__pyx_v_r_s, __pyx_t_11);
                             __pyx_t_11 = 0;
@@ -12708,22 +12730,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                 __Pyx_GOTREF(__pyx_t_30);
                                 __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
                                 __pyx_t_23 = Py_TYPE(__pyx_t_30)->tp_iternext;
-                                index = 0; __pyx_t_22 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_22)) goto __pyx_L153_unpacking_failed;
+                                index = 0; __pyx_t_22 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_22)) goto __pyx_L156_unpacking_failed;
                                 __Pyx_GOTREF(__pyx_t_22);
-                                index = 1; __pyx_t_11 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_11)) goto __pyx_L153_unpacking_failed;
+                                index = 1; __pyx_t_11 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_11)) goto __pyx_L156_unpacking_failed;
                                 __Pyx_GOTREF(__pyx_t_11);
-                                index = 2; __pyx_t_27 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_27)) goto __pyx_L153_unpacking_failed;
+                                index = 2; __pyx_t_27 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_27)) goto __pyx_L156_unpacking_failed;
                                 __Pyx_GOTREF(__pyx_t_27);
                                 if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_30), 3) < 0) __PYX_ERR(0, 399, __pyx_L3_error)
                                 __pyx_t_23 = NULL;
                                 __Pyx_DECREF(__pyx_t_30); __pyx_t_30 = 0;
-                                goto __pyx_L154_unpacking_done;
-                                __pyx_L153_unpacking_failed:;
+                                goto __pyx_L157_unpacking_done;
+                                __pyx_L156_unpacking_failed:;
                                 __Pyx_DECREF(__pyx_t_30); __pyx_t_30 = 0;
                                 __pyx_t_23 = NULL;
                                 if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                                 __PYX_ERR(0, 399, __pyx_L3_error)
-                                __pyx_L154_unpacking_done:;
+                                __pyx_L157_unpacking_done:;
                               }
                               __Pyx_XDECREF_SET(__pyx_v_l_s, __pyx_t_22);
                               __pyx_t_22 = 0;
@@ -12753,9 +12775,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               }
                               __Pyx_DECREF(__pyx_t_21); __pyx_t_21 = 0;
                               __Pyx_DECREF(__pyx_t_27); __pyx_t_27 = 0;
-                              __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_11); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 400, __pyx_L3_error)
+                              __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_11); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 400, __pyx_L3_error)
                               __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                              if (__pyx_t_15) {
+                              if (__pyx_t_7) {
 
                                 /* "extract_discordant_c.pyx":401
  *                                                     for l_s,l_e,l_pos in xaz[strand][chr]['L']:
@@ -12881,25 +12903,25 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                         __pyx_t_14 = __Pyx_PyObject_GetItem(__pyx_t_3, __pyx_v_chr); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 402, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_14);
                         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                        __pyx_t_7 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_14, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 402, __pyx_L3_error)
+                        __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_R, __pyx_t_14, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 402, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-                        __pyx_t_8 = (__pyx_t_7 != 0);
-                        if (__pyx_t_8) {
+                        __pyx_t_15 = (__pyx_t_8 != 0);
+                        if (__pyx_t_15) {
                         } else {
-                          __pyx_t_15 = __pyx_t_8;
-                          goto __pyx_L157_bool_binop_done;
+                          __pyx_t_7 = __pyx_t_15;
+                          goto __pyx_L160_bool_binop_done;
                         }
                         __pyx_t_14 = __Pyx_PyDict_GetItem(__pyx_v_saz, __pyx_v_strand); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 402, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_14);
                         __pyx_t_3 = __Pyx_PyObject_GetItem(__pyx_t_14, __pyx_v_chr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 402, __pyx_L3_error)
                         __Pyx_GOTREF(__pyx_t_3);
                         __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-                        __pyx_t_8 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_3, Py_EQ)); if (unlikely(__pyx_t_8 < 0)) __PYX_ERR(0, 402, __pyx_L3_error)
+                        __pyx_t_15 = (__Pyx_PySequence_ContainsTF(__pyx_n_s_L, __pyx_t_3, Py_EQ)); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 402, __pyx_L3_error)
                         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-                        __pyx_t_7 = (__pyx_t_8 != 0);
-                        __pyx_t_15 = __pyx_t_7;
-                        __pyx_L157_bool_binop_done:;
-                        if (__pyx_t_15) {
+                        __pyx_t_8 = (__pyx_t_15 != 0);
+                        __pyx_t_7 = __pyx_t_8;
+                        __pyx_L160_bool_binop_done:;
+                        if (__pyx_t_7) {
 
                           /* "extract_discordant_c.pyx":403
  *                                                             f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\t%s\t%s\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e, r_pos, l_pos))
@@ -12992,22 +13014,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               __Pyx_GOTREF(__pyx_t_22);
                               __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                               __pyx_t_23 = Py_TYPE(__pyx_t_22)->tp_iternext;
-                              index = 0; __pyx_t_11 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_11)) goto __pyx_L161_unpacking_failed;
+                              index = 0; __pyx_t_11 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_11)) goto __pyx_L164_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_11);
-                              index = 1; __pyx_t_27 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_27)) goto __pyx_L161_unpacking_failed;
+                              index = 1; __pyx_t_27 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_27)) goto __pyx_L164_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_27);
-                              index = 2; __pyx_t_21 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_21)) goto __pyx_L161_unpacking_failed;
+                              index = 2; __pyx_t_21 = __pyx_t_23(__pyx_t_22); if (unlikely(!__pyx_t_21)) goto __pyx_L164_unpacking_failed;
                               __Pyx_GOTREF(__pyx_t_21);
                               if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_22), 3) < 0) __PYX_ERR(0, 403, __pyx_L3_error)
                               __pyx_t_23 = NULL;
                               __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                              goto __pyx_L162_unpacking_done;
-                              __pyx_L161_unpacking_failed:;
+                              goto __pyx_L165_unpacking_done;
+                              __pyx_L164_unpacking_failed:;
                               __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
                               __pyx_t_23 = NULL;
                               if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                               __PYX_ERR(0, 403, __pyx_L3_error)
-                              __pyx_L162_unpacking_done:;
+                              __pyx_L165_unpacking_done:;
                             }
                             __Pyx_XDECREF_SET(__pyx_v_r_s, __pyx_t_11);
                             __pyx_t_11 = 0;
@@ -13107,22 +13129,22 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                                 __Pyx_GOTREF(__pyx_t_30);
                                 __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                                 __pyx_t_23 = Py_TYPE(__pyx_t_30)->tp_iternext;
-                                index = 0; __pyx_t_27 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_27)) goto __pyx_L165_unpacking_failed;
+                                index = 0; __pyx_t_27 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_27)) goto __pyx_L168_unpacking_failed;
                                 __Pyx_GOTREF(__pyx_t_27);
-                                index = 1; __pyx_t_11 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_11)) goto __pyx_L165_unpacking_failed;
+                                index = 1; __pyx_t_11 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_11)) goto __pyx_L168_unpacking_failed;
                                 __Pyx_GOTREF(__pyx_t_11);
-                                index = 2; __pyx_t_22 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_22)) goto __pyx_L165_unpacking_failed;
+                                index = 2; __pyx_t_22 = __pyx_t_23(__pyx_t_30); if (unlikely(!__pyx_t_22)) goto __pyx_L168_unpacking_failed;
                                 __Pyx_GOTREF(__pyx_t_22);
                                 if (__Pyx_IternextUnpackEndCheck(__pyx_t_23(__pyx_t_30), 3) < 0) __PYX_ERR(0, 404, __pyx_L3_error)
                                 __pyx_t_23 = NULL;
                                 __Pyx_DECREF(__pyx_t_30); __pyx_t_30 = 0;
-                                goto __pyx_L166_unpacking_done;
-                                __pyx_L165_unpacking_failed:;
+                                goto __pyx_L169_unpacking_done;
+                                __pyx_L168_unpacking_failed:;
                                 __Pyx_DECREF(__pyx_t_30); __pyx_t_30 = 0;
                                 __pyx_t_23 = NULL;
                                 if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
                                 __PYX_ERR(0, 404, __pyx_L3_error)
-                                __pyx_L166_unpacking_done:;
+                                __pyx_L169_unpacking_done:;
                               }
                               __Pyx_XDECREF_SET(__pyx_v_l_s, __pyx_t_27);
                               __pyx_t_27 = 0;
@@ -13152,9 +13174,9 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
                               }
                               __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
                               __Pyx_DECREF(__pyx_t_22); __pyx_t_22 = 0;
-                              __pyx_t_15 = __Pyx_PyObject_IsTrue(__pyx_t_11); if (unlikely(__pyx_t_15 < 0)) __PYX_ERR(0, 405, __pyx_L3_error)
+                              __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_11); if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 405, __pyx_L3_error)
                               __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-                              if (__pyx_t_15) {
+                              if (__pyx_t_7) {
 
                                 /* "extract_discordant_c.pyx":406
  *                                                     for l_s,l_e,l_pos in saz[strand][chr]['L']:
@@ -13352,8 +13374,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             f_overhang.flush()
  *             f_pA.flush()
  */
-      __pyx_t_15 = ((__pyx_v_do_ins == 1) != 0);
-      if (__pyx_t_15) {
+      __pyx_t_7 = ((__pyx_v_do_ins == 1) != 0);
+      if (__pyx_t_7) {
 
         /* "extract_discordant_c.pyx":408
  *                                                             f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\t%s\t%s\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e, r_pos, l_pos))   # end retrieving reads with absent ME
@@ -13881,8 +13903,8 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             f_abs.flush()
  *             os.fdatasync(f_abs.fileno())
  */
-      __pyx_t_15 = ((__pyx_v_do_abs == 1) != 0);
-      if (__pyx_t_15) {
+      __pyx_t_7 = ((__pyx_v_do_abs == 1) != 0);
+      if (__pyx_t_7) {
 
         /* "extract_discordant_c.pyx":424
  *             f_mapped.close()
@@ -14024,7 +14046,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             f_abs.close()
  *     except:             # <<<<<<<<<<<<<<
  *         log.logger.error('\n'+ traceback.format_exc())
- *         exit()
+ *         exit(1)
  */
     /*except:*/ {
       __Pyx_AddTraceback("extract_discordant_c.main", __pyx_clineno, __pyx_lineno, __pyx_filename);
@@ -14037,7 +14059,7 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
  *             f_abs.close()
  *     except:
  *         log.logger.error('\n'+ traceback.format_exc())             # <<<<<<<<<<<<<<
- *         exit()
+ *         exit(1)
  * 
  */
       __Pyx_GetModuleGlobalName(__pyx_t_21, __pyx_n_s_log); if (unlikely(!__pyx_t_21)) __PYX_ERR(0, 428, __pyx_L5_except_error)
@@ -14092,10 +14114,10 @@ static PyObject *__pyx_pf_20extract_discordant_c_6main(CYTHON_UNUSED PyObject *_
       /* "extract_discordant_c.pyx":429
  *     except:
  *         log.logger.error('\n'+ traceback.format_exc())
- *         exit()             # <<<<<<<<<<<<<<
+ *         exit(1)             # <<<<<<<<<<<<<<
  * 
  */
-      __pyx_t_14 = __Pyx_PyObject_CallNoArg(__pyx_builtin_exit); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 429, __pyx_L5_except_error)
+      __pyx_t_14 = __Pyx_PyObject_Call(__pyx_builtin_exit, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 429, __pyx_L5_except_error)
       __Pyx_GOTREF(__pyx_t_14);
       __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
       __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -14409,14 +14431,14 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_TACG, __pyx_k_TACG, sizeof(__pyx_k_TACG), 0, 0, 1, 1},
   {&__pyx_n_s_X, __pyx_k_X, sizeof(__pyx_k_X), 0, 0, 1, 1},
   {&__pyx_kp_s_XA_Z, __pyx_k_XA_Z, sizeof(__pyx_k_XA_Z), 0, 0, 1, 0},
-  {&__pyx_kp_s__19, __pyx_k__19, sizeof(__pyx_k__19), 0, 0, 1, 0},
   {&__pyx_kp_s__20, __pyx_k__20, sizeof(__pyx_k__20), 0, 0, 1, 0},
   {&__pyx_kp_s__21, __pyx_k__21, sizeof(__pyx_k__21), 0, 0, 1, 0},
-  {&__pyx_kp_s__24, __pyx_k__24, sizeof(__pyx_k__24), 0, 0, 1, 0},
-  {&__pyx_kp_s__26, __pyx_k__26, sizeof(__pyx_k__26), 0, 0, 1, 0},
-  {&__pyx_kp_s__32, __pyx_k__32, sizeof(__pyx_k__32), 0, 0, 1, 0},
-  {&__pyx_n_s__39, __pyx_k__39, sizeof(__pyx_k__39), 0, 0, 1, 1},
-  {&__pyx_kp_s__5, __pyx_k__5, sizeof(__pyx_k__5), 0, 0, 1, 0},
+  {&__pyx_kp_s__22, __pyx_k__22, sizeof(__pyx_k__22), 0, 0, 1, 0},
+  {&__pyx_kp_s__25, __pyx_k__25, sizeof(__pyx_k__25), 0, 0, 1, 0},
+  {&__pyx_kp_s__27, __pyx_k__27, sizeof(__pyx_k__27), 0, 0, 1, 0},
+  {&__pyx_kp_s__33, __pyx_k__33, sizeof(__pyx_k__33), 0, 0, 1, 0},
+  {&__pyx_n_s__40, __pyx_k__40, sizeof(__pyx_k__40), 0, 0, 1, 1},
+  {&__pyx_kp_s__6, __pyx_k__6, sizeof(__pyx_k__6), 0, 0, 1, 0},
   {&__pyx_n_s_a, __pyx_k_a, sizeof(__pyx_k_a), 0, 0, 1, 1},
   {&__pyx_n_s_abs_max_dist, __pyx_k_abs_max_dist, sizeof(__pyx_k_abs_max_dist), 0, 0, 1, 1},
   {&__pyx_n_s_abs_min_dist, __pyx_k_abs_min_dist, sizeof(__pyx_k_abs_min_dist), 0, 0, 1, 1},
@@ -14611,6 +14633,17 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
+  /* "extract_discordant_c.pyx":32
+ *     except:
+ *         log.logger.error('\n'+ traceback.format_exc())
+ *         exit(1)             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_int_1); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__2);
+  __Pyx_GIVEREF(__pyx_tuple__2);
+
   /* "extract_discordant_c.pyx":44
  *             with open(file_base, 'a') as outfile:
  *                 for n in range(1, args.p):
@@ -14618,9 +14651,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                         shutil.copyfileobj(infile, outfile)
  *                     os.remove(file_base + str(n) +'.txt')
  */
-  __pyx_tuple__2 = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 44, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__2);
-  __Pyx_GIVEREF(__pyx_tuple__2);
+  __pyx_tuple__3 = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__3);
+  __Pyx_GIVEREF(__pyx_tuple__3);
 
   /* "extract_discordant_c.pyx":99
  * 
@@ -14629,12 +14662,12 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *             return seq_c
  * 
  */
-  __pyx_tuple__3 = PyTuple_Pack(2, __pyx_n_s_ATGC, __pyx_n_s_TACG); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 99, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__3);
-  __Pyx_GIVEREF(__pyx_tuple__3);
-  __pyx_slice__4 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__4)) __PYX_ERR(0, 99, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_slice__4);
-  __Pyx_GIVEREF(__pyx_slice__4);
+  __pyx_tuple__4 = PyTuple_Pack(2, __pyx_n_s_ATGC, __pyx_n_s_TACG); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 99, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__4);
+  __Pyx_GIVEREF(__pyx_tuple__4);
+  __pyx_slice__5 = PySlice_New(Py_None, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__5)) __PYX_ERR(0, 99, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_slice__5);
+  __Pyx_GIVEREF(__pyx_slice__5);
 
   /* "extract_discordant_c.pyx":128
  *             tmp=''
@@ -14643,9 +14676,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                     if not c in cigar_op:
  *                         tmp = c + tmp
  */
-  __pyx_slice__6 = PySlice_New(__pyx_int_neg_2, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__6)) __PYX_ERR(0, 128, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_slice__6);
-  __Pyx_GIVEREF(__pyx_slice__6);
+  __pyx_slice__7 = PySlice_New(__pyx_int_neg_2, Py_None, __pyx_int_neg_1); if (unlikely(!__pyx_slice__7)) __PYX_ERR(0, 128, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_slice__7);
+  __Pyx_GIVEREF(__pyx_slice__7);
 
   /* "extract_discordant_c.pyx":98
  *                 f_abs       =open(filenames.abs_txt    , 'w')
@@ -14654,10 +14687,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *             seq_c=string.translate(str.maketrans('ATGC', 'TACG'))[::-1]
  *             return seq_c
  */
-  __pyx_tuple__7 = PyTuple_Pack(2, __pyx_n_s_string, __pyx_n_s_seq_c); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 98, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__7);
-  __Pyx_GIVEREF(__pyx_tuple__7);
-  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_complement, 98, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 98, __pyx_L1_error)
+  __pyx_tuple__8 = PyTuple_Pack(2, __pyx_n_s_string, __pyx_n_s_seq_c); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(0, 98, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__8);
+  __Pyx_GIVEREF(__pyx_tuple__8);
+  __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__8, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_complement, 98, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) __PYX_ERR(0, 98, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":102
  *             return seq_c
@@ -14666,10 +14699,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *             length=0
  *             tmp=''
  */
-  __pyx_tuple__9 = PyTuple_Pack(4, __pyx_n_s_cigar, __pyx_n_s_length, __pyx_n_s_tmp, __pyx_n_s_c); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 102, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__9);
-  __Pyx_GIVEREF(__pyx_tuple__9);
-  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_count_clip, 102, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 102, __pyx_L1_error)
+  __pyx_tuple__10 = PyTuple_Pack(4, __pyx_n_s_cigar, __pyx_n_s_length, __pyx_n_s_tmp, __pyx_n_s_c); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 102, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__10);
+  __Pyx_GIVEREF(__pyx_tuple__10);
+  __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_count_clip, 102, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 102, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":115
  *             return length
@@ -14678,10 +14711,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *             left,right=0,0
  *             tmp=''
  */
-  __pyx_tuple__11 = PyTuple_Pack(6, __pyx_n_s_string, __pyx_n_s_left, __pyx_n_s_right, __pyx_n_s_tmp, __pyx_n_s_c, __pyx_n_s_breakpoint); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 115, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__11);
-  __Pyx_GIVEREF(__pyx_tuple__11);
-  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_determine_breakpoint_from_cigar, 115, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 115, __pyx_L1_error)
+  __pyx_tuple__12 = PyTuple_Pack(6, __pyx_n_s_string, __pyx_n_s_left, __pyx_n_s_right, __pyx_n_s_tmp, __pyx_n_s_c, __pyx_n_s_breakpoint); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 115, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__12);
+  __Pyx_GIVEREF(__pyx_tuple__12);
+  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_determine_breakpoint_from_cigar, 115, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 115, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":142
  *             return breakpoint,left,right
@@ -14690,10 +14723,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *             length=0
  *             tmp=''
  */
-  __pyx_tuple__13 = PyTuple_Pack(4, __pyx_n_s_cigar, __pyx_n_s_length, __pyx_n_s_tmp, __pyx_n_s_c); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 142, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__13);
-  __Pyx_GIVEREF(__pyx_tuple__13);
-  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_calc_ref_len, 142, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 142, __pyx_L1_error)
+  __pyx_tuple__14 = PyTuple_Pack(4, __pyx_n_s_cigar, __pyx_n_s_length, __pyx_n_s_tmp, __pyx_n_s_c); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 142, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__14);
+  __Pyx_GIVEREF(__pyx_tuple__14);
+  __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__14, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_calc_ref_len, 142, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 142, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":155
  *             return length
@@ -14702,10 +14735,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *             length=0
  *             tmp=''
  */
-  __pyx_tuple__15 = PyTuple_Pack(4, __pyx_n_s_cigar, __pyx_n_s_length, __pyx_n_s_tmp, __pyx_n_s_c); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(0, 155, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__15);
-  __Pyx_GIVEREF(__pyx_tuple__15);
-  __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_calc_read_len, 155, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __pyx_tuple__16 = PyTuple_Pack(4, __pyx_n_s_cigar, __pyx_n_s_length, __pyx_n_s_tmp, __pyx_n_s_c); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 155, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__16);
+  __Pyx_GIVEREF(__pyx_tuple__16);
+  __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__16, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_calc_read_len, 155, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(0, 155, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":168
  *             return length
@@ -14714,10 +14747,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *             judge=False
  *             seqlen=len(seq)
  */
-  __pyx_tuple__17 = PyTuple_Pack(5, __pyx_n_s_seq, __pyx_n_s_judge, __pyx_n_s_seqlen, __pyx_n_s_n, __pyx_n_s_c); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 168, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__17);
-  __Pyx_GIVEREF(__pyx_tuple__17);
-  __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_check_repeat, 168, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(0, 168, __pyx_L1_error)
+  __pyx_tuple__18 = PyTuple_Pack(5, __pyx_n_s_seq, __pyx_n_s_judge, __pyx_n_s_seqlen, __pyx_n_s_n, __pyx_n_s_c); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 168, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__18);
+  __Pyx_GIVEREF(__pyx_tuple__18);
+  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_check_repeat, 168, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 168, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":209
  *                                         elems.append([ls[2], ls[3], ls[5], strand])  # chr, pos, cigar, strand
@@ -14726,9 +14759,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                                         if 'SA:Z:' in l:
  *                                             lsp=l.replace('SA:Z:', '').split(';')
  */
-  __pyx_slice__22 = PySlice_New(__pyx_int_11, Py_None, Py_None); if (unlikely(!__pyx_slice__22)) __PYX_ERR(0, 209, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_slice__22);
-  __Pyx_GIVEREF(__pyx_slice__22);
+  __pyx_slice__23 = PySlice_New(__pyx_int_11, Py_None, Py_None); if (unlikely(!__pyx_slice__23)) __PYX_ERR(0, 209, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_slice__23);
+  __Pyx_GIVEREF(__pyx_slice__23);
 
   /* "extract_discordant_c.pyx":211
  *                                     for l in ls[11:]:
@@ -14737,9 +14770,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                                             for i in lsp[:-1]:
  *                                                 isp=i.split(',')
  */
-  __pyx_tuple__23 = PyTuple_Pack(2, __pyx_kp_s_SA_Z, __pyx_kp_s__5); if (unlikely(!__pyx_tuple__23)) __PYX_ERR(0, 211, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__23);
-  __Pyx_GIVEREF(__pyx_tuple__23);
+  __pyx_tuple__24 = PyTuple_Pack(2, __pyx_kp_s_SA_Z, __pyx_kp_s__6); if (unlikely(!__pyx_tuple__24)) __PYX_ERR(0, 211, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__24);
+  __Pyx_GIVEREF(__pyx_tuple__24);
 
   /* "extract_discordant_c.pyx":212
  *                                         if 'SA:Z:' in l:
@@ -14748,9 +14781,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                                                 isp=i.split(',')
  *                                                 if isp[0] in args.main_chrs_set:
  */
-  __pyx_slice__25 = PySlice_New(Py_None, __pyx_int_neg_1, Py_None); if (unlikely(!__pyx_slice__25)) __PYX_ERR(0, 212, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_slice__25);
-  __Pyx_GIVEREF(__pyx_slice__25);
+  __pyx_slice__26 = PySlice_New(Py_None, __pyx_int_neg_1, Py_None); if (unlikely(!__pyx_slice__26)) __PYX_ERR(0, 212, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_slice__26);
+  __Pyx_GIVEREF(__pyx_slice__26);
 
   /* "extract_discordant_c.pyx":226
  *                                         for l in ls[11:]:
@@ -14759,9 +14792,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                                                 for i in lsp[:-1]:
  *                                                     isp=i.split(',')
  */
-  __pyx_tuple__27 = PyTuple_Pack(2, __pyx_kp_s_XA_Z, __pyx_kp_s__5); if (unlikely(!__pyx_tuple__27)) __PYX_ERR(0, 226, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__27);
-  __Pyx_GIVEREF(__pyx_tuple__27);
+  __pyx_tuple__28 = PyTuple_Pack(2, __pyx_kp_s_XA_Z, __pyx_kp_s__6); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 226, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__28);
+  __Pyx_GIVEREF(__pyx_tuple__28);
 
   /* "extract_discordant_c.pyx":230
  *                                                     isp=i.split(',')
@@ -14770,9 +14803,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                                                 break
  *                                     d={}
  */
-  __pyx_slice__28 = PySlice_New(__pyx_int_1, Py_None, Py_None); if (unlikely(!__pyx_slice__28)) __PYX_ERR(0, 230, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_slice__28);
-  __Pyx_GIVEREF(__pyx_slice__28);
+  __pyx_slice__29 = PySlice_New(__pyx_int_1, Py_None, Py_None); if (unlikely(!__pyx_slice__29)) __PYX_ERR(0, 230, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_slice__29);
+  __Pyx_GIVEREF(__pyx_slice__29);
 
   /* "extract_discordant_c.pyx":276
  *                             ins=int(ls[8])
@@ -14781,9 +14814,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                                     retain=False
  *                                     if not 'S' in ls[5]:
  */
-  __pyx_slice__29 = PySlice_New(__pyx_int_neg_4, __pyx_int_neg_2, Py_None); if (unlikely(!__pyx_slice__29)) __PYX_ERR(0, 276, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_slice__29);
-  __Pyx_GIVEREF(__pyx_slice__29);
+  __pyx_slice__30 = PySlice_New(__pyx_int_neg_4, __pyx_int_neg_2, Py_None); if (unlikely(!__pyx_slice__30)) __PYX_ERR(0, 276, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_slice__30);
+  __Pyx_GIVEREF(__pyx_slice__30);
 
   /* "extract_discordant_c.pyx":14
  * 
@@ -14792,9 +14825,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * strands=('+', '-')
  * 
  */
-  __pyx_tuple__30 = PyTuple_Pack(4, __pyx_n_s_A, __pyx_n_s_T, __pyx_n_s_G, __pyx_n_s_C); if (unlikely(!__pyx_tuple__30)) __PYX_ERR(0, 14, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__30);
-  __Pyx_GIVEREF(__pyx_tuple__30);
+  __pyx_tuple__31 = PyTuple_Pack(4, __pyx_n_s_A, __pyx_n_s_T, __pyx_n_s_G, __pyx_n_s_C); if (unlikely(!__pyx_tuple__31)) __PYX_ERR(0, 14, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__31);
+  __Pyx_GIVEREF(__pyx_tuple__31);
 
   /* "extract_discordant_c.pyx":15
  * 
@@ -14803,9 +14836,9 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * 
  * cigar_op={'M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X'}
  */
-  __pyx_tuple__31 = PyTuple_Pack(2, __pyx_kp_s__20, __pyx_kp_s__21); if (unlikely(!__pyx_tuple__31)) __PYX_ERR(0, 15, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__31);
-  __Pyx_GIVEREF(__pyx_tuple__31);
+  __pyx_tuple__32 = PyTuple_Pack(2, __pyx_kp_s__21, __pyx_kp_s__22); if (unlikely(!__pyx_tuple__32)) __PYX_ERR(0, 15, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__32);
+  __Pyx_GIVEREF(__pyx_tuple__32);
 
   /* "extract_discordant_c.pyx":23
  * 
@@ -14814,10 +14847,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     log.logger.debug('started')
  *     try:
  */
-  __pyx_tuple__33 = PyTuple_Pack(4, __pyx_n_s_args, __pyx_n_s_flag, __pyx_n_s_count, __pyx_n_s_interval); if (unlikely(!__pyx_tuple__33)) __PYX_ERR(0, 23, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__33);
-  __Pyx_GIVEREF(__pyx_tuple__33);
-  __pyx_codeobj__34 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__33, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_flagstat, 23, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__34)) __PYX_ERR(0, 23, __pyx_L1_error)
+  __pyx_tuple__34 = PyTuple_Pack(4, __pyx_n_s_args, __pyx_n_s_flag, __pyx_n_s_count, __pyx_n_s_interval); if (unlikely(!__pyx_tuple__34)) __PYX_ERR(0, 23, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__34);
+  __Pyx_GIVEREF(__pyx_tuple__34);
+  __pyx_codeobj__35 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__34, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_flagstat, 23, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__35)) __PYX_ERR(0, 23, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":36
  * 
@@ -14826,10 +14859,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     log.logger.debug('started')
  *     try:
  */
-  __pyx_tuple__35 = PyTuple_Pack(7, __pyx_n_s_args, __pyx_n_s_filenames, __pyx_n_s_outfiles, __pyx_n_s_file_base, __pyx_n_s_outfile, __pyx_n_s_n, __pyx_n_s_infile); if (unlikely(!__pyx_tuple__35)) __PYX_ERR(0, 36, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__35);
-  __Pyx_GIVEREF(__pyx_tuple__35);
-  __pyx_codeobj__36 = (PyObject*)__Pyx_PyCode_New(2, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__35, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_concat_for_ins, 36, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__36)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __pyx_tuple__36 = PyTuple_Pack(7, __pyx_n_s_args, __pyx_n_s_filenames, __pyx_n_s_outfiles, __pyx_n_s_file_base, __pyx_n_s_outfile, __pyx_n_s_n, __pyx_n_s_infile); if (unlikely(!__pyx_tuple__36)) __PYX_ERR(0, 36, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__36);
+  __Pyx_GIVEREF(__pyx_tuple__36);
+  __pyx_codeobj__37 = (PyObject*)__Pyx_PyCode_New(2, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__36, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_concat_for_ins, 36, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__37)) __PYX_ERR(0, 36, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":54
  * 
@@ -14838,10 +14871,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     log.logger.debug('started')
  *     try:
  */
-  __pyx_tuple__37 = PyTuple_Pack(7, __pyx_n_s_args, __pyx_n_s_filenames, __pyx_n_s_outfiles, __pyx_n_s_file_base, __pyx_n_s_outfile, __pyx_n_s_n, __pyx_n_s_infile); if (unlikely(!__pyx_tuple__37)) __PYX_ERR(0, 54, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__37);
-  __Pyx_GIVEREF(__pyx_tuple__37);
-  __pyx_codeobj__38 = (PyObject*)__Pyx_PyCode_New(2, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__37, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_concat_for_abs, 54, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__38)) __PYX_ERR(0, 54, __pyx_L1_error)
+  __pyx_tuple__38 = PyTuple_Pack(7, __pyx_n_s_args, __pyx_n_s_filenames, __pyx_n_s_outfiles, __pyx_n_s_file_base, __pyx_n_s_outfile, __pyx_n_s_n, __pyx_n_s_infile); if (unlikely(!__pyx_tuple__38)) __PYX_ERR(0, 54, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__38);
+  __Pyx_GIVEREF(__pyx_tuple__38);
+  __pyx_codeobj__39 = (PyObject*)__Pyx_PyCode_New(2, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__38, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_concat_for_abs, 54, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__39)) __PYX_ERR(0, 54, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":73
  * 
@@ -14850,10 +14883,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     log.logger.debug('started')
  *     try:
  */
-  __pyx_tuple__40 = PyTuple_Pack(84, __pyx_n_s_args, __pyx_n_s_params, __pyx_n_s_filenames, __pyx_n_s_n, __pyx_n_s_do_ins, __pyx_n_s_do_abs, __pyx_n_s_f_overhang, __pyx_n_s_f_pA, __pyx_n_s_f_distant, __pyx_n_s_f_unmapped, __pyx_n_s_f_mapped, __pyx_n_s_f_abs, __pyx_n_s_complement, __pyx_n_s_complement, __pyx_n_s_count_clip, __pyx_n_s_count_clip, __pyx_n_s_determine_breakpoint_from_cigar, __pyx_n_s_determine_breakpoint_from_cigar, __pyx_n_s_calc_ref_len, __pyx_n_s_calc_ref_len, __pyx_n_s_calc_read_len, __pyx_n_s_calc_read_len, __pyx_n_s_check_repeat, __pyx_n_s_check_repeat, __pyx_n_s_infile, __pyx_n_s_line, __pyx_n_s_ls, __pyx_n_s_b, __pyx_n_s_strand, __pyx_n_s_deletion, __pyx_n_s_fseq, __pyx_n_s_first_or_second, __pyx_n_s_elems, __pyx_n_s_l, __pyx_n_s_lsp, __pyx_n_s_i, __pyx_n_s_isp, __pyx_n_s_chr, __pyx_n_s_pos, __pyx_n_s__39, __pyx_n_s_d_2, __pyx_n_s_d_mapped, __pyx_n_s_rseq, __pyx_n_s_cigar, __pyx_n_s_breakpoint, __pyx_n_s_L_clip_len, __pyx_n_s_R_clip_len, __pyx_n_s_seq, __pyx_n_s_seqlen, __pyx_n_s_read_seq, __pyx_n_s_rep, __pyx_n_s_ref_len, __pyx_n_s_start, __pyx_n_s_end, __pyx_n_s_clip_seq, __pyx_n_s_Acount, __pyx_n_s_mapped_seq, __pyx_n_s_h, __pyx_n_s_out_overhang, __pyx_n_s_out_mapped, __pyx_n_s_ins, __pyx_n_s_retain, __pyx_n_s_left, __pyx_n_s_right, __pyx_n_s_tmp, __pyx_n_s_dir, __pyx_n_s_xs, __pyx_n_s_x, __pyx_n_s_xcigar, __pyx_n_s_readname, __pyx_n_s_saz, __pyx_n_s_xaz, __pyx_n_s_l_len, __pyx_n_s_r_len, __pyx_n_s_clip_len, __pyx_n_s_cigar_reshape, __pyx_n_s_ss, __pyx_n_s_ispl, __pyx_n_s_r_s, __pyx_n_s_r_e, __pyx_n_s_r_pos, __pyx_n_s_l_s, __pyx_n_s_l_e, __pyx_n_s_l_pos); if (unlikely(!__pyx_tuple__40)) __PYX_ERR(0, 73, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__40);
-  __Pyx_GIVEREF(__pyx_tuple__40);
-  __pyx_codeobj__41 = (PyObject*)__Pyx_PyCode_New(4, 0, 84, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__40, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_main_2, 73, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__41)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __pyx_tuple__41 = PyTuple_Pack(84, __pyx_n_s_args, __pyx_n_s_params, __pyx_n_s_filenames, __pyx_n_s_n, __pyx_n_s_do_ins, __pyx_n_s_do_abs, __pyx_n_s_f_overhang, __pyx_n_s_f_pA, __pyx_n_s_f_distant, __pyx_n_s_f_unmapped, __pyx_n_s_f_mapped, __pyx_n_s_f_abs, __pyx_n_s_complement, __pyx_n_s_complement, __pyx_n_s_count_clip, __pyx_n_s_count_clip, __pyx_n_s_determine_breakpoint_from_cigar, __pyx_n_s_determine_breakpoint_from_cigar, __pyx_n_s_calc_ref_len, __pyx_n_s_calc_ref_len, __pyx_n_s_calc_read_len, __pyx_n_s_calc_read_len, __pyx_n_s_check_repeat, __pyx_n_s_check_repeat, __pyx_n_s_infile, __pyx_n_s_line, __pyx_n_s_ls, __pyx_n_s_b, __pyx_n_s_strand, __pyx_n_s_deletion, __pyx_n_s_fseq, __pyx_n_s_first_or_second, __pyx_n_s_elems, __pyx_n_s_l, __pyx_n_s_lsp, __pyx_n_s_i, __pyx_n_s_isp, __pyx_n_s_chr, __pyx_n_s_pos, __pyx_n_s__40, __pyx_n_s_d_2, __pyx_n_s_d_mapped, __pyx_n_s_rseq, __pyx_n_s_cigar, __pyx_n_s_breakpoint, __pyx_n_s_L_clip_len, __pyx_n_s_R_clip_len, __pyx_n_s_seq, __pyx_n_s_seqlen, __pyx_n_s_read_seq, __pyx_n_s_rep, __pyx_n_s_ref_len, __pyx_n_s_start, __pyx_n_s_end, __pyx_n_s_clip_seq, __pyx_n_s_Acount, __pyx_n_s_mapped_seq, __pyx_n_s_h, __pyx_n_s_out_overhang, __pyx_n_s_out_mapped, __pyx_n_s_ins, __pyx_n_s_retain, __pyx_n_s_left, __pyx_n_s_right, __pyx_n_s_tmp, __pyx_n_s_dir, __pyx_n_s_xs, __pyx_n_s_x, __pyx_n_s_xcigar, __pyx_n_s_readname, __pyx_n_s_saz, __pyx_n_s_xaz, __pyx_n_s_l_len, __pyx_n_s_r_len, __pyx_n_s_clip_len, __pyx_n_s_cigar_reshape, __pyx_n_s_ss, __pyx_n_s_ispl, __pyx_n_s_r_s, __pyx_n_s_r_e, __pyx_n_s_r_pos, __pyx_n_s_l_s, __pyx_n_s_l_e, __pyx_n_s_l_pos); if (unlikely(!__pyx_tuple__41)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__41);
+  __Pyx_GIVEREF(__pyx_tuple__41);
+  __pyx_codeobj__42 = (PyObject*)__Pyx_PyCode_New(4, 0, 84, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__41, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_extract_discordant_c_pyx, __pyx_n_s_main_2, 73, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__42)) __PYX_ERR(0, 73, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -15206,7 +15239,7 @@ if (!__Pyx_RefNanny) {
  * strands=('+', '-')
  * 
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_nt, __pyx_tuple__30) < 0) __PYX_ERR(0, 14, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_nt, __pyx_tuple__31) < 0) __PYX_ERR(0, 14, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":15
  * 
@@ -15215,7 +15248,7 @@ if (!__Pyx_RefNanny) {
  * 
  * cigar_op={'M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X'}
  */
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_strands, __pyx_tuple__31) < 0) __PYX_ERR(0, 15, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_strands, __pyx_tuple__32) < 0) __PYX_ERR(0, 15, __pyx_L1_error)
 
   /* "extract_discordant_c.pyx":17
  * strands=('+', '-')
@@ -15233,7 +15266,7 @@ if (!__Pyx_RefNanny) {
   if (PySet_Add(__pyx_t_1, __pyx_n_s_S) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
   if (PySet_Add(__pyx_t_1, __pyx_n_s_H) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
   if (PySet_Add(__pyx_t_1, __pyx_n_s_P) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
-  if (PySet_Add(__pyx_t_1, __pyx_kp_s__32) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
+  if (PySet_Add(__pyx_t_1, __pyx_kp_s__33) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
   if (PySet_Add(__pyx_t_1, __pyx_n_s_X) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_cigar_op, __pyx_t_1) < 0) __PYX_ERR(0, 17, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -15250,7 +15283,7 @@ if (!__Pyx_RefNanny) {
   if (PySet_Add(__pyx_t_1, __pyx_n_s_M) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
   if (PySet_Add(__pyx_t_1, __pyx_n_s_D) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
   if (PySet_Add(__pyx_t_1, __pyx_n_s_N) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
-  if (PySet_Add(__pyx_t_1, __pyx_kp_s__32) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
+  if (PySet_Add(__pyx_t_1, __pyx_kp_s__33) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
   if (PySet_Add(__pyx_t_1, __pyx_n_s_X) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_cigar_ref_retain, __pyx_t_1) < 0) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -15266,7 +15299,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_GOTREF(__pyx_t_1);
   if (PySet_Add(__pyx_t_1, __pyx_n_s_M) < 0) __PYX_ERR(0, 19, __pyx_L1_error)
   if (PySet_Add(__pyx_t_1, __pyx_n_s_I) < 0) __PYX_ERR(0, 19, __pyx_L1_error)
-  if (PySet_Add(__pyx_t_1, __pyx_kp_s__32) < 0) __PYX_ERR(0, 19, __pyx_L1_error)
+  if (PySet_Add(__pyx_t_1, __pyx_kp_s__33) < 0) __PYX_ERR(0, 19, __pyx_L1_error)
   if (PySet_Add(__pyx_t_1, __pyx_n_s_X) < 0) __PYX_ERR(0, 19, __pyx_L1_error)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_cigar_read_retain, __pyx_t_1) < 0) __PYX_ERR(0, 19, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;

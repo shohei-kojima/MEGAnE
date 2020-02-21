@@ -193,7 +193,7 @@ def main(args, params, filenames, n):
                             f_unmapped.write('>%s%s\n%s\n' % (ls[0], strand, ls[9]))
                     else:
                         if do_ins is True:
-                            if ('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line):   # start retrieving overhangs
+                            if (('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line)) and not ('H' in ls[5]):   # start retrieving overhangs
                                 deletion=False
                                 fseq=ls[9].upper()
                                 strand='+'
@@ -321,7 +321,7 @@ def main(args, params, filenames, n):
                                 first_or_second='/1' if b[-7] == '1' else '/2'
                                 saz,xaz={},{}
                                 saz['+'],xaz['+'],saz['-'],xaz['-']={},{},{},{}
-                                if 'S' in ls[5]:
+                                if ('S' in ls[5]) and not ('H' in ls[5]):
                                     if ls[2] in args.main_chrs_set:
                                         breakpoint,l_len,r_len=determine_breakpoint_from_cigar(ls[5])
                                         if not breakpoint == 'NA':
