@@ -25,7 +25,15 @@ def parse(params, f_blast_res, outfpath):
                 hits=[]
                 for l in list:
                     if float(l[10]) == eval:
-                        hits.append(l[1])
+                        if int(l[8]) <= int(l[9]):
+                            sstart= int(l[8]) - 1  # 0-base
+                            send= int(l[9])
+                            strand='+'
+                        else:
+                            sstart= int(l[9]) - 1  # 0-base
+                            send= int(l[8])
+                            strand='-'
+                        hits.append('%s,%d,%d,%s' % (l[1], sstart, send, strand))
                 return l[0], ';'.join(hits), str(eval)
             else:
                 return 'NA', 'NA', 'NA'
@@ -87,9 +95,11 @@ def unmapped_to_fa(params, unmapped_fa, blast_res, outfpath):
                 for line in res[id]:
                     ls=line.split()
                     qstart,qend= int(ls[6]) - 1, int(ls[7])  # 1-base to 0-base
-                    sstart,send= int(ls[8]) - 1, int(ls[9])  # 1-base to 0-base
-                    strand='+'
-                    if sstart >= send:
+                    if int(ls[8]) <= int(ls[9]):
+                        sstart,send= int(ls[8]) - 1, int(ls[9])  # 1-base to 0-base
+                        strand='+'
+                    else:
+                        sstart,send= int(ls[9]) - 1, int(ls[8])  # 1-base to 0-base
                         strand='-'
                     rc= seqlen - qend
                     if (qstart >= params.discordant_reads_clip_len) or (rc >= params.discordant_reads_clip_len):
@@ -103,7 +113,7 @@ def unmapped_to_fa(params, unmapped_fa, blast_res, outfpath):
                         if len(clipseq) >= 1:
                             if not clipseq in tmp:
                                 tmp[clipseq]=[]
-                            tmp[clipseq].append(id +'/'+ dir +'/'+ ls[1] +'/'+ strand)
+                            tmp[clipseq].append('%s/%s/%s,%d,%d/%s' %(id, dir, ls[1], sstart, send, strand))
                 if len(tmp) >= 1:
                     for cs in tmp:
                         hs='>' + ';'.join(tmp[cs])
@@ -151,31 +161,29 @@ def find_chimeric_unmapped(args, params, blast_res, outfpath):
                 tmp,dir=i.rsplit('/', 1)
                 tmp,te=tmp.rsplit('/', 1)
                 readname,breakpoint=tmp.rsplit('/', 1)
-                if breakpoint == 'L':
-                    breakpoint='R'
-                elif breakpoint == 'R':
-                    breakpoint='L'
-                meis.append([breakpoint +'/'+ readname, dir, te])
+                breakpoint='R' if breakpoint == 'L' else 'L'
+                meis.append([breakpoint, readname, dir, te])
             for line in res_few[id]:
                 ls=line.split()
                 if ls[1] in args.main_chrs_set:
-                    sstart,send= int(ls[8]) - 1, int(ls[9])  # 1-base to 0-base
-                    dir='+'
-                    if sstart > send:
-                        dir='-'
-                        sstart,send=send,sstart
-                    refs.append([ls[1] +':'+ str(sstart) +'-'+ str(send), dir, ls[10]])
-            for mid,mdir,te in meis:
-                for rid,rdir,eval in refs:
-                    dir='-'
-                    if mdir == rdir:
+                    if int(ls[8]) <= int(ls[9]):
+                        sstart,send= int(ls[8]) - 1, int(ls[9])  # 1-base to 0-base
                         dir='+'
-                    finalid= rid +'/'+ mid +'/'+ dir +';'
+                    else:
+                        sstart,send= int(ls[9]) - 1, int(ls[8])  # 1-base to 0-base
+                        dir='-'
+                    refs.append([ls[1] +':'+ str(sstart) +'-'+ str(send), dir, ls[10]])
+            for breakpoint,mid,mdir,te in meis:
+                for rid,rdir,eval in refs:
+                    if rdir == '-':
+                        breakpoint='R' if breakpoint == 'L' else 'L'
+                    mdir='+' if mdir == rdir else '-'
+                    finalid= rid +'/'+ breakpoint +'/'+ mid +'/'+ rdir +';'
                     if not finalid in tmp_d:
                         tmp_d[finalid]={}
                     if not eval in tmp_d[finalid]:
                         tmp_d[finalid][eval]=[]
-                    tmp_d[finalid][eval].append(te)
+                    tmp_d[finalid][eval].append('%s,%s' % (te, mdir))
 
         # group same eval hits
         with open(outfpath, 'w') as outfile:

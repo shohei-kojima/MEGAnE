@@ -49,6 +49,7 @@ def pairing(args, params, filenames):
                     ls=line.split()
                     cposs=ls[0].split(';')[:-1]
                     mposs=ls[1].split(';')
+                    mposs=[ m.split(',')[0] for m in mposs ]
                     mposs=[ mes[m] for m in mposs ]
                     mposs=set(mposs)
                     for c in cposs:
@@ -148,7 +149,7 @@ def pairing(args, params, filenames):
                             elif (r - l) >= params.max_TSD_len:
                                 break
 
-        # antisense-direction, long pA
+        # sense-direction, long pA
         for m in args.rep_with_pA:
             if m in all_clas:
                 for chr in args.main_chrs_set:
@@ -233,13 +234,14 @@ def add_TE_subclass(args, filenames, infpath, outfpath):
                 for line in infile:
                     ls=line.split()
                     poss=ls[0].split(';')
-                    meis=ls[1].split(';')
+                    meis_full=ls[1].split(';')
+                    meis=[ m.split(',')[0] for m in meis_full ]
                     meis_d={}
-                    for m in meis:
+                    for m,mf in zip(meis, meis_full):
                         c=mes[m]
                         if not c in meis_d:
                             meis_d[c]=''
-                        meis_d[c] += m +';'
+                        meis_d[c] += mf +';'
                     for p in poss[:-1]:
                         chr,tmp=p.split(':', 1)
                         start,tmp=tmp.split('-', 1)
@@ -315,7 +317,8 @@ def remove_cand_inside_TE(args, params, filenames):
                 for l in ls[10:12]:
                     for i in l.split(';'):
                         if not (i == '') and not (i == 'NA'):
-                            tmp.add(i)
+                            te,_=i.split(',', 1)
+                            tmp.add(te)
                 tmp=sorted(list(tmp))
                 tmp=';'.join(tmp)
                 breakpoints.add('\t'.join(ls[:3]) +'\t'+ tmp)

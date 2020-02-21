@@ -176,7 +176,7 @@ def add_hybrid(params, filenames):
                     if not t == 'NA':
                         for i in t.split(';'):
                             if not i == '':
-                                te.add(i)
+                                te.add(i.split(',')[0])
                 te=';'.join(list(te))
                 id=ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7]
                 bed_up += ls[0] +'\t'+ str(s) +'\t'+ str(r) +'\t'+ id +'\t'+ te +'\n'
