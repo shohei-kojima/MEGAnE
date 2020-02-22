@@ -6,13 +6,14 @@ All Rights Reserved
 See file LICENSE for details.
 '''
 
-import os
+import os,gzip
 import math
 from statistics import mean
+from pybedtools import BedTool
 import log,traceback
 
 
-def grouped_mei_to_bed(filenames):
+def grouped_mei_to_bed(params, filenames):
     log.logger.debug('started')
     
     try:
@@ -39,11 +40,106 @@ def grouped_mei_to_bed(filenames):
                     cands.append('%s,%d/%d,%s/%s' % (te, d[te][0], d[te][1], r_strand, l_strand))
             return cands
 
+        def search_transduction(params, infilename):
+            bed=[]
+            with gzip.open(filenames.distant_txt +'.gz') as infile:
+                for line in infile:
+                    line=line.decode()
+                    ls=line.split()
+                    for pos in ls[1].split(';'):
+                        chr,tmp=pos.split(':', 1)
+                        start,tmp=tmp.split('-', 1)
+                        end,dir=tmp.split('/', 1)
+                        bed.append('%s\t%s\t%s\t%s\t.\t%s\n' % (chr, start, end, ls[0], dir))
+            bed=BedTool(''.join(bed), from_string=True)
+
+            def retrieve_read_names(bedobj):
+                names_1,names_2={},{}
+                for line in bedobj:
+                    line=str(line)
+                    ls=line.split()
+                    read_name,num=ls[9].rsplit('/', 1)
+                    if num == '1':
+                        names_1[read_name]=line
+                    else:
+                        names_2[read_name]=line
+                return names_1, names_2
+
+            def summarize_trans_pos(list):
+                bed=[]
+                for poss in list:
+                    for pos in poss.split(';'):
+                        chr,tmp=pos.split(':', 1)
+                        start,tmp=tmp.split('-', 1)
+                        end,dir=tmp.split('/', 1)
+                        bed.append('\t'.join([chr, start, end, '.', '.', dir +'\n']))
+                bed=BedTool(''.join(bed), from_string=True).sort().merge(s=True, c='6', o='distinct')
+                pos=[]
+                for line in bed:
+                    line=str(line)
+                    ls=line.split()
+                    pos.append('%s:%s-%s(%s)' % (ls[0], ls[1], ls[2], ls[3]))
+                return '|'.join(pos)
+
+            def search(infilename):
+                flank=[]
+                with open(infilename) as infile:
+                    for line in infile:
+                        ls=line.split()
+                        if ls[8] == 'NA':
+                            start=int(ls[1]) - params.length_for_3transduction_search
+                            start='0' if start < 0 else str(start)
+                            flank.append('\t'.join([ls[0], start, ls[1], ls[7], '.', '+\n']))
+                        elif ls[9] == 'NA':
+                            end=int(ls[2]) + params.length_for_3transduction_search
+                            end=str(end)
+                            flank.append('\t'.join([ls[0], ls[1], end, ls[7], '.', '-\n']))
+                flank=BedTool(''.join(flank), from_string=True)
+                flank_intersect=flank.intersect(bed, s=True, wa=True, wb=True)
+                flank_read_names_d1,flank_read_names_d2=retrieve_read_names(flank_intersect)
+                trans_d={}
+                with gzip.open(filenames.distant_txt +'.gz') as infile:
+                    for line in infile:
+                        line=line.decode()
+                        ls=line.split()
+                        read_name,read_num=ls[0].rsplit('/', 1)
+                        if (read_name in flank_read_names_d1) and (read_num == '2'):
+                            mei_line=flank_read_names_d1[read_name]
+                            mls=mei_line.split()
+                            if mls[5] == '+':
+                                id='\t'.join([mls[0], mls[2], mls[3], mls[5]])
+                            else:
+                                id='\t'.join([mls[0], mls[1], mls[3], mls[5]])
+                            if not id in trans_d:
+                                trans_d[id]=[]
+                            trans_d[id].append(ls[1])
+                        elif (read_name in flank_read_names_d2) and (read_num == '1'):
+                            mei_line=flank_read_names_d2[read_name]
+                            mls=mei_line.split()
+                            if mls[5] == '+':
+                                id='\t'.join([mls[0], mls[2], mls[3], mls[5]])
+                            else:
+                                id='\t'.join([mls[0], mls[1], mls[3], mls[5]])
+                            if not id in trans_d:
+                                trans_d[id]=[]
+                            trans_d[id].append(ls[1])
+                for id in trans_d:
+                    trans_d[id]=summarize_trans_pos(trans_d[id])
+                return trans_d
+
+            # search_transduction, main
+            trans_d=search(infilename)
+            return trans_d
+        
         def convert_to_bed(infilename, outfilename):
+            # search transduction
+            trans_d=search_transduction(params, infilename)
+            # summarize
             with open(outfilename, 'w') as outfile:
                 with open(infilename) as infile:
                     for line in infile:
                         ls=line.split()
+                        transd_status='3transduction:no'
                         # if breakpoints are not pA
                         if not (ls[8] == 'NA') and not (ls[9] == 'NA'):
                             # find shared TE between R and L
@@ -195,6 +291,9 @@ def grouped_mei_to_bed(filenames):
                                 pred_res='MEI_left_breakpoint=' + '|'.join(R_str_l) +';'+ 'MEI_right_breakpoint=' + '|'.join(L_str_l)
                         # if either end is pA
                         elif ls[9] == 'NA':
+                            id='\t'.join([ls[0], ls[2], ls[3], '-'])
+                            if id in trans_d:
+                                transd_status='3transduction:yes,%s' % trans_d[id]
                             bp_plus,bp_minus=[],[]
                             # R breakpoint
                             evals=[ float(i) for i in ls[8].split(';') ]
@@ -282,7 +381,7 @@ def grouped_mei_to_bed(filenames):
                         l_chim= int(l_num) - int(ls[12])
                         r_chim= int(r_num) - int(ls[13])
                         uniq='yes' if ls[15] == 'singleton' else 'no,%s' % ls[15]
-                        tmp=[ls[0], ls[1], ls[2], ls[7], 'MEI_left:ref_pos=%s,chimeric=%d,hybrid=%s' % (l_pos, l_chim, ls[12]), 'MEI_right:ref_pos=%s,chimeric=%d,hybrid=%s' % (r_pos, r_chim, ls[13]), 'confidence:%s' % ls[14], 'unique:%s' % uniq, 'subfamily_pred:status=%s,%s' % (pred_status, pred_res)]
+                        tmp=[ls[0], ls[1], ls[2], ls[7], 'MEI_left:ref_pos=%s,chimeric=%d,hybrid=%s' % (l_pos, l_chim, ls[12]), 'MEI_right:ref_pos=%s,chimeric=%d,hybrid=%s' % (r_pos, r_chim, ls[13]), 'confidence:%s' % ls[14], 'unique:%s' % uniq, 'subfamily_pred:status=%s,%s' % (pred_status, pred_res), transd_status]
                         tmp= [ str(i) for i in tmp ]
                         outfile.write('\t'.join(tmp) +'\n')
                 outfile.flush()

@@ -192,7 +192,7 @@ if do_ins is True:
     log.logger.info('Hybrid read processing started.')
     process_distant_read.process_reads(args, params, filenames)
     # del files
-    utils.gzip_or_del(args, params, filenames.distant_txt)
+    utils.gzip_file(params, filenames.distant_txt)
 
     # 4. merge all results, identify MEI outside of similar MEs
     import pair_breakpoints
@@ -222,7 +222,7 @@ if do_ins is True:
     filter_candidates.filter(args, params, filenames)
     filter_candidates.grouping(args, filenames)
     import after_processing
-    after_processing.grouped_mei_to_bed(filenames)
+    after_processing.grouped_mei_to_bed(params, filenames)
     # del files
     utils.gzip_or_del(args, params, filenames.overhang_fa)
     utils.gzip_or_del(args, params, filenames.similar_rep_list)
@@ -251,6 +251,8 @@ if do_ins is True:
     utils.gzip_file(params, filenames.additional_pA)
     utils.gzip_file(params, filenames.hybrid)
     utils.gzip_file(params, filenames.hybrid_master)
+    if args.keep is not True:
+        os.remove(filenames.distant_txt +'.gz')
     # output comments
     log.logger.info('%s ME insertion candidates found.' % filter_candidates.ins_ns)
     log.logger.info('ME insertion search finished!')

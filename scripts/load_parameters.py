@@ -64,6 +64,7 @@ class load:
             self.non_ME_len_ratio=0.5
             self.transduction_pA_len=12
             self.transduction_pA_ratio=0.75
+            self.length_for_3transduction_search=1000
             # read parameter setting file
             with open(f) as infile:
                 for line in infile:
@@ -175,6 +176,8 @@ class load:
                         self.non_ME_len_ratio=float(ls[1])
                     elif ls[0] == 'transduction_pA_ratio':
                         self.transduction_pA_ratio=float(ls[1])
+                    elif ls[0] == 'length_for_3transduction_search':
+                        self.length_for_3transduction_search=int(ls[1])
             params_for_debug=[]
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))
