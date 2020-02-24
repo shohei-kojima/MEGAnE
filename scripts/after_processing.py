@@ -139,8 +139,8 @@ def grouped_mei_to_bed(params, filenames):
             return trans_d
         
         def convert_to_bed(params, filenames, infilename, outfilename):
-            # search transduction
-            trans_d=search_transduction(params, filenames, infilename)
+            # search transduction, deprecated
+#            trans_d=search_transduction(params, filenames, infilename)
             # summarize
             with open(outfilename, 'w') as outfile:
                 with open(infilename) as infile:
@@ -298,10 +298,8 @@ def grouped_mei_to_bed(params, filenames):
                                 pred_res='MEI_left_breakpoint=' + '|'.join(R_str_l) +';'+ 'MEI_right_breakpoint=' + '|'.join(L_str_l)
                         # if either end is pA
                         elif len(l_evals) == 0:
-                            l_bp=ls[4].split(':')[0]
-                            id='\t'.join([ls[0], l_bp, ls[7], '-'])
-                            if id in trans_d:
-                                transd_status='3transduction:yes,%s' % trans_d[id]
+                            if ls[13] == '0':
+                                transd_status='3transduction:need_check'
                             bp_plus,bp_minus=[],[]
                             # R breakpoint
                             evals=[ float(i) for i in ls[8].split(';') if not i == 'NA' and not i == '' ]
@@ -343,10 +341,8 @@ def grouped_mei_to_bed(params, filenames):
                                 pred_status='complex_structure'
                                 pred_res='MEI_left_breakpoint=' + '|'.join(bp_str_l) +';'+ 'MEI_right_breakpoint=pA'
                         elif len(r_evals) == 0:
-                            r_bp=ls[3].split(':')[0]
-                            id='\t'.join([ls[0], r_bp, ls[7], '+'])
-                            if id in trans_d:
-                                transd_status='3transduction:yes,%s' % trans_d[id]
+                            if ls[12] == '0':
+                                transd_status='3transduction:need_check'
                             bp_plus,bp_minus=[],[]
                             # L breakpoint
                             evals=[ float(i) for i in ls[9].split(';') if not i == 'NA' and not i == '' ]
