@@ -122,6 +122,7 @@ filenames.bp_merged_groupg=os.path.join(args.outdir, 'breakpoint_pairs_pooled_gr
 filenames.bp_merged_groupp=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_percentile.txt')
 filenames.bp_merged_groupf=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_failed.txt')
 filenames.gaussian_plot   =os.path.join(args.outdir, 'plot_gaussian_fitting.pdf')
+filenames.tmp_for_3transd =os.path.join(args.outdir, 'tmp_for_3transd.bed')
 filenames.bp_final_g      =os.path.join(args.outdir, 'MEI_final_gaussian.bed')
 filenames.bp_final_p      =os.path.join(args.outdir, 'MEI_final_percentile.bed')
 filenames.bp_final_f      =os.path.join(args.outdir, 'MEI_final_failed.bed')

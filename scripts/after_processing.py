@@ -31,27 +31,30 @@ def grouped_mei_to_bed(params, filenames):
                 for te in tes:
                     d[te]=[[], []]
                 for te,s,_,_ in R_list:
-                    d[te][0].append(int(s))
+                    if te in tes:
+                        d[te][0].append(int(s))
                 for te,_,e,_ in L_list:
-                    d[te][1].append(int(e))
+                    if te in tes:
+                        d[te][1].append(int(e))
                 for te in d:
                     d[te][0]=round(mean(d[te][0]))
                     d[te][1]=round(mean(d[te][1]))
                     cands.append('%s,%d/%d,%s/%s' % (te, d[te][0], d[te][1], r_strand, l_strand))
             return cands
 
-        def search_transduction(params, infilename):
+        def search_transduction(params, filenames, infilename):
             bed=[]
-            with gzip.open(filenames.distant_txt +'.gz') as infile:
-                for line in infile:
-                    line=line.decode()
-                    ls=line.split()
-                    for pos in ls[1].split(';'):
-                        chr,tmp=pos.split(':', 1)
-                        start,tmp=tmp.split('-', 1)
-                        end,dir=tmp.split('/', 1)
-                        bed.append('%s\t%s\t%s\t%s\t.\t%s\n' % (chr, start, end, ls[0], dir))
-            bed=BedTool(''.join(bed), from_string=True)
+            with open(filenames.tmp_for_3transd, 'w') as outfile:
+                with gzip.open(filenames.distant_txt +'.gz') as infile:
+                    for line in infile:
+                        line=line.decode()
+                        ls=line.split()
+                        for pos in ls[1].split(';'):
+                            chr,tmp=pos.split(':', 1)
+                            start,tmp=tmp.split('-', 1)
+                            end,dir=tmp.split('/', 1)
+                            outfile.write('%s\t%s\t%s\t%s\t.\t%s\n' % (chr, start, end, ls[0], dir))
+            bed=BedTool(filenames.tmp_for_3transd)
 
             def retrieve_read_names(bedobj):
                 names_1,names_2={},{}
@@ -86,14 +89,18 @@ def grouped_mei_to_bed(params, filenames):
                 with open(infilename) as infile:
                     for line in infile:
                         ls=line.split()
-                        if ls[8] == 'NA':
-                            start=int(ls[1]) - params.length_for_3transduction_search
+                        r_evals=[ float(i) for i in ls[8].split(';') if not i == 'NA' and not i == '' ]
+                        l_evals=[ float(i) for i in ls[9].split(';') if not i == 'NA' and not i == '' ]
+                        if len(r_evals) == 0:
+                            r_bp=ls[3].split(':')[0]
+                            start= int(r_bp) - params.length_for_3transduction_search
                             start='0' if start < 0 else str(start)
-                            flank.append('\t'.join([ls[0], start, ls[1], ls[7], '.', '+\n']))
-                        elif ls[9] == 'NA':
-                            end=int(ls[2]) + params.length_for_3transduction_search
+                            flank.append('\t'.join([ls[0], start, r_bp, ls[7], '.', '+\n']))
+                        elif len(l_evals) == 0:
+                            l_bp=ls[4].split(':')[0]
+                            end= int(l_bp) + params.length_for_3transduction_search
                             end=str(end)
-                            flank.append('\t'.join([ls[0], ls[1], end, ls[7], '.', '-\n']))
+                            flank.append('\t'.join([ls[0], l_bp, end, ls[7], '.', '-\n']))
                 flank=BedTool(''.join(flank), from_string=True)
                 flank_intersect=flank.intersect(bed, s=True, wa=True, wb=True)
                 flank_read_names_d1,flank_read_names_d2=retrieve_read_names(flank_intersect)
@@ -131,9 +138,9 @@ def grouped_mei_to_bed(params, filenames):
             trans_d=search(infilename)
             return trans_d
         
-        def convert_to_bed(infilename, outfilename):
+        def convert_to_bed(params, filenames, infilename, outfilename):
             # search transduction
-            trans_d=search_transduction(params, infilename)
+            trans_d=search_transduction(params, filenames, infilename)
             # summarize
             with open(outfilename, 'w') as outfile:
                 with open(infilename) as infile:
@@ -141,17 +148,19 @@ def grouped_mei_to_bed(params, filenames):
                         ls=line.split()
                         transd_status='3transduction:no'
                         # if breakpoints are not pA
-                        if not (ls[8] == 'NA') and not (ls[9] == 'NA'):
+                        r_evals=[ float(i) for i in ls[8].split(';') if not i == 'NA' and not i == '' ]
+                        l_evals=[ float(i) for i in ls[9].split(';') if not i == 'NA' and not i == '' ]
+                        if (len(r_evals) >= 1) and (len(l_evals) >= 1):
                             # find shared TE between R and L
                             R_tes,L_tes=set(),set()
                             for tes in ls[10].split(';;'):
                                 for te in tes.split(';'):
-                                    if not te == '':
+                                    if not te == 'NA' and not te == '':
                                         ts=te.split(',')
                                         R_tes.add(ts[0])
                             for tes in ls[11].split(';;'):
                                 for te in tes.split(';'):
-                                    if not te == '':
+                                    if not te == 'NA' and not te == '':
                                         ts=te.split(',')
                                         L_tes.add(ts[0])
                             shared_tes= R_tes & L_tes
@@ -161,16 +170,16 @@ def grouped_mei_to_bed(params, filenames):
                                 for te in shared_tes:
                                     evals_d[te]=[]
                                 for eval,tes in zip(ls[8].split(';'), ls[10].split(';;')):
-                                    if not eval == 'NA':
+                                    if not eval == 'NA' and not eval == '':
                                         for te in tes.split(';'):
-                                            if not te == '':
+                                            if not te == 'NA' and not te == '':
                                                 te_name=te.split(',')[0]
                                                 if te_name in evals_d:
                                                     evals_d[te_name].append(float(eval))
                                 for eval,tes in zip(ls[9].split(';'), ls[11].split(';;')):
-                                    if not eval == 'NA':
+                                    if not eval == 'NA' and not eval == '':
                                         for te in tes.split(';'):
-                                            if not te == '':
+                                            if not te == 'NA' and not te == '':
                                                 te_name=te.split(',')[0]
                                                 if te_name in evals_d:
                                                     evals_d[te_name].append(float(eval))
@@ -187,7 +196,7 @@ def grouped_mei_to_bed(params, filenames):
                                 # R breakpoint
                                 for tes in ls[10].split(';;'):
                                     for te in tes.split(';'):
-                                        if not te == '':
+                                        if not te == 'NA' and not te == '':
                                             ts=te.split(',')
                                             if ts[0] in tes_min_eval:
                                                 if ts[3] == '+':
@@ -197,7 +206,7 @@ def grouped_mei_to_bed(params, filenames):
                                 # L breakpoint
                                 for tes in ls[11].split(';;'):
                                     for te in tes.split(';'):
-                                        if not te == '':
+                                        if not te == 'NA' and not te == '':
                                             ts=te.split(',')
                                             if ts[0] in tes_min_eval:
                                                 if ts[3] == '+':
@@ -224,12 +233,11 @@ def grouped_mei_to_bed(params, filenames):
                                 R_plus,L_plus=[],[]
                                 R_minus,L_minus=[],[]
                                 # R breakpoint
-                                evals=[ float(i) for i in ls[8].split(';') ]
-                                min_eval=min(evals)
+                                min_eval=min(r_evals)
                                 for eval,tes in zip(ls[8].split(';'), ls[10].split(';;')):
-                                    if not eval == 'NA':
+                                    if not eval == 'NA' and not eval == '':
                                         for te in tes.split(';'):
-                                            if not te == '':
+                                            if not te == 'NA' and not te == '':
                                                 ts=te.split(',')
                                                 if float(eval) == min_eval:
                                                     if ts[3] == '+':
@@ -237,12 +245,11 @@ def grouped_mei_to_bed(params, filenames):
                                                     else:
                                                         R_minus.append(ts)
                                 # L breakpoint
-                                evals=[ float(i) for i in ls[9].split(';') ]
-                                min_eval=min(evals)
+                                min_eval=min(l_evals)
                                 for eval,tes in zip(ls[9].split(';'), ls[11].split(';;')):
-                                    if not eval == 'NA':
+                                    if not eval == 'NA' and not eval == '':
                                         for te in tes.split(';'):
-                                            if not te == '':
+                                            if not te == 'NA' and not te == '':
                                                 ts=te.split(',')
                                                 if float(eval) == min_eval:
                                                     if ts[3] == '+':
@@ -290,18 +297,19 @@ def grouped_mei_to_bed(params, filenames):
                                 pred_status='Complex_structure'
                                 pred_res='MEI_left_breakpoint=' + '|'.join(R_str_l) +';'+ 'MEI_right_breakpoint=' + '|'.join(L_str_l)
                         # if either end is pA
-                        elif ls[9] == 'NA':
-                            id='\t'.join([ls[0], ls[2], ls[3], '-'])
+                        elif len(l_evals) == 0:
+                            l_bp=ls[4].split(':')[0]
+                            id='\t'.join([ls[0], l_bp, ls[7], '-'])
                             if id in trans_d:
                                 transd_status='3transduction:yes,%s' % trans_d[id]
                             bp_plus,bp_minus=[],[]
                             # R breakpoint
-                            evals=[ float(i) for i in ls[8].split(';') ]
+                            evals=[ float(i) for i in ls[8].split(';') if not i == 'NA' and not i == '' ]
                             min_eval=min(evals)
                             for eval,tes in zip(ls[8].split(';'), ls[10].split(';;')):
-                                if not eval == 'NA':
+                                if not eval == 'NA' and not eval == '':
                                     for te in tes.split(';'):
-                                        if not te == '':
+                                        if not te == 'NA' and not te == '':
                                             ts=te.split(',')
                                             if float(eval) == min_eval:
                                                 if ts[3] == '+':
@@ -334,13 +342,17 @@ def grouped_mei_to_bed(params, filenames):
                                     bp_str_l.append('%s,%d,-' % (te, breapoint))
                                 pred_status='complex_structure'
                                 pred_res='MEI_left_breakpoint=' + '|'.join(bp_str_l) +';'+ 'MEI_right_breakpoint=pA'
-                        elif ls[8] == 'NA':
+                        elif len(r_evals) == 0:
+                            r_bp=ls[3].split(':')[0]
+                            id='\t'.join([ls[0], r_bp, ls[7], '+'])
+                            if id in trans_d:
+                                transd_status='3transduction:yes,%s' % trans_d[id]
                             bp_plus,bp_minus=[],[]
                             # L breakpoint
-                            evals=[ float(i) for i in ls[9].split(';') ]
+                            evals=[ float(i) for i in ls[9].split(';') if not i == 'NA' and not i == '' ]
                             min_eval=min(evals)
                             for eval,tes in zip(ls[9].split(';'), ls[11].split(';;')):
-                                if not eval == 'NA':
+                                if not eval == 'NA' and not eval == '':
                                     for te in tes.split(';'):
                                         if not te == '':
                                             ts=te.split(',')
@@ -389,12 +401,14 @@ def grouped_mei_to_bed(params, filenames):
 
         # main
         if os.path.exists(filenames.bp_merged_groupg) is True:
-            convert_to_bed(filenames.bp_merged_groupg, filenames.bp_final_g)
+            convert_to_bed(params, filenames, filenames.bp_merged_groupg, filenames.bp_final_g)
         if os.path.exists(filenames.bp_merged_groupp) is True:
-            convert_to_bed(filenames.bp_merged_groupp, filenames.bp_final_p)
+            convert_to_bed(params, filenames, filenames.bp_merged_groupp, filenames.bp_final_p)
         if os.path.exists(filenames.bp_merged_groupf) is True:
-            convert_to_bed(filenames.bp_merged_groupf, filenames.bp_final_f)
-
+            convert_to_bed(params, filenames, filenames.bp_merged_groupf, filenames.bp_final_f)
+        if os.path.exists(filenames.tmp_for_3transd) is True:
+            os.remove(filenames.tmp_for_3transd)
+            
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

@@ -136,7 +136,6 @@ def merge_breakpoints(filenames):
                 tmp=[]
                 for ls in lines[m][chr]:
                     start=int(ls[1])
-                    end=int(ls[2])
                     if start <= prev_end:
                         tmp.append(prev_ls)
                     else:
@@ -146,7 +145,7 @@ def merge_breakpoints(filenames):
                             tmp=[]
                         else:
                             outfile.write(prev_line)
-                    prev_end=end
+                    prev_end=int(ls[2])
                     prev_line='\t'.join(ls) +'\n'
                     prev_ls=ls
                 if len(tmp) >= 1:
