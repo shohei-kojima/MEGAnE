@@ -10,7 +10,7 @@ See file LICENSE for details.
 import log,traceback
 
 class load:
-    def __init__(self, f):
+    def __init__(self, args, f):
         log.logger.debug('started')
         try:
             # default
@@ -44,6 +44,10 @@ class load:
             self.hybrid_read_coeff_for_gaussian_fitting=0.1
             self.chimeric_read_coeff_for_gaussian_fitting=0.01
             self.eval_threshold_for_gaussian_fitting=float('1e-25')
+            if 100 <= args.readlen <= 149:
+                params.eval_threshold_for_gaussian_fitting=float('1e-15')
+            elif args.readlen <= 99:
+                params.eval_threshold_for_gaussian_fitting=float('1e-10')
             self.fit_gaussian_init_a_coeff=0.5
             self.fit_gaussian_init_mu_coeff=1
             self.fit_gaussian_init_sigma_coeff=0.33
@@ -134,8 +138,8 @@ class load:
                         self.hybrid_read_coeff_for_gaussian_fitting=float(ls[1])
                     elif ls[0] == 'chimeric_read_coeff_for_gaussian_fitting':
                         self.chimeric_read_coeff_for_gaussian_fitting=float(ls[1])
-                    elif ls[0] == 'eval_threshold_for_gaussian_fitting':
-                        self.eval_threshold_for_gaussian_fitting=float(ls[1])
+#                    elif ls[0] == 'eval_threshold_for_gaussian_fitting':
+#                        self.eval_threshold_for_gaussian_fitting=float(ls[1])
                     elif ls[0] == 'fit_gaussian_init_a_coeff':
                         self.fit_gaussian_init_a_coeff=float(ls[1])
                     elif ls[0] == 'fit_gaussian_init_mu_coeff':

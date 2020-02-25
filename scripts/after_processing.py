@@ -299,7 +299,7 @@ def grouped_mei_to_bed(params, filenames):
                         # if either end is pA
                         elif len(l_evals) == 0:
                             if ls[13] == '0':
-                                transd_status='3transduction:need_check'
+                                transd_status='3transduction:need_check,MEI_right'
                             bp_plus,bp_minus=[],[]
                             # R breakpoint
                             evals=[ float(i) for i in ls[8].split(';') if not i == 'NA' and not i == '' ]
@@ -342,7 +342,7 @@ def grouped_mei_to_bed(params, filenames):
                                 pred_res='MEI_left_breakpoint=' + '|'.join(bp_str_l) +';'+ 'MEI_right_breakpoint=pA'
                         elif len(r_evals) == 0:
                             if ls[12] == '0':
-                                transd_status='3transduction:need_check'
+                                transd_status='3transduction:need_check,MEI_left'
                             bp_plus,bp_minus=[],[]
                             # L breakpoint
                             evals=[ float(i) for i in ls[9].split(';') if not i == 'NA' and not i == '' ]
@@ -408,4 +408,80 @@ def grouped_mei_to_bed(params, filenames):
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
+
+
+def retrieve_3transd_reads(params, filenames):
+    
+    def convert_line(params, ls):
+        if 'MEI_left' in ls[9]:
+            end=ls[4].split(',')[0].replace('MEI_left:ref_pos=', '')
+            end=int(end)
+            start= end - params.hybrid_read_range_from_breakpint
+            if start < 0:
+                start=0
+            id_for_chimeric=':'.join([ls[0], ls[1], ls[2], ls[3], 'R'])
+            pos_for_hybrid='\t'.join([ls[0], str(start), str(end), 'id_for_chimeric', '.', '+'])
+        elif 'MEI_right' in ls[9]:
+            start=ls[5].split(',')[0].replace('MEI_right:ref_pos=', '')
+            start=int(start)
+            end= start + params.hybrid_read_range_from_breakpint
+            id_for_chimeric=':'.join([ls[0], ls[1], ls[2], ls[3], 'L'])
+            pos_for_hybrid='\t'.join([ls[0], str(start), str(end), 'id_for_chimeric', '.', '-'])
+        return id_for_chimeric, pos_for_hybrid
+    
+    def retrieve_read_ids(params, infilepath):
+        ids_for_chimeric=set()
+        poss_for_hybrid=set()
+        with open(infilepath) as infile:
+            for line in infile:
+                if '3transduction:need_check' in line:
+                    ls=line.split()
+                    for_chimeric,for_hybrid=convert_line(params, ls)
+                    ids_for_chimeric.add(for_chimeric)
+                    poss_for_hybrid.add(for_hybrid)
+        return ids_for_chimeric,poss_for_hybrid
+    
+    if os.path.exists(filenames.bp_final_g) is True:
+        ids_for_chimeric_gaussian,poss_for_hybrid_gaussian=retrieve_read_ids(params, filenames.bp_final_g)
+        ids_for_chimeric_percentile,poss_for_hybrid_percentile=retrieve_read_ids(params, filenames.bp_final_p)
+        overlap= ids_for_chimeric_gaussian & ids_for_chimeric_percentile   # chimeric
+        only_gaussian= ids_for_chimeric_gaussian - ids_for_chimeric_percentile
+        only_percentile= ids_for_chimeric_percentile - ids_for_chimeric_gaussian
+        overlap=[ i + ':gaussian,percentile' for i in overlap ]
+        only_gaussian=[ i + ':gaussian' for i in only_gaussian ]
+        only_percentile=[ i + ':percentile' for i in only_percentile ]
+        ids_for_chimeric= sorted(overlap + only_gaussian + only_percentile)
+        overlap= poss_for_hybrid_gaussian & poss_for_hybrid_percentile   # hybrid
+        only_gaussian= poss_for_hybrid_gaussian - poss_for_hybrid_percentile
+        only_percentile= poss_for_hybrid_percentile - poss_for_hybrid_gaussian
+        overlap=[ i + '\tgaussian,percentile' for i in overlap ]
+        only_gaussian=[ i + '\tgaussian' for i in only_gaussian ]
+        only_percentile=[ i + '\tpercentile' for i in only_percentile ]
+        poss_for_hybrid= sorted(overlap + only_gaussian + only_percentile)
+        poss_for_hybrid='\n'.join(poss_for_hybrid) +'\n'
+    elif os.path.exists(filenames.bp_final_f) is True:
+        ids_for_chimeric,poss_for_hybrid=retrieve_read_ids(params, filenames.bp_final_g)
+        ids_for_chimeric=sorted([ i +':failed' for i in ids_for_chimeric ])
+        poss_for_hybrid=sorted([ i +'\tfailed' for i in poss_for_hybrid ])
+        poss_for_hybrid='\n'.join(poss_for_hybrid) +'\n'
+
+    def retrieve_pA_reads(ids_list):
+        d={}
+        for full_id in ids_list:
+            id,dir,_=full_id.rsplit(':', 2)
+            d[id]=[dir, full_id]
+        with open(filenames.breakpoint_pairs) as infile:
+            for line in infile:
+                id=':'.join([ls[0], ls[1], ls[2], ls[7]])
+                if id in d:
+                    if d[id][0]='R':
+                        d[id].append(ls[8])
+                    elif d[id][0]='L':
+                        d[id].append(ls[9])
+        return d    ######
+
+    retrieve_pA_reads(ids_for_chimeric)
+    pass
+
+
 

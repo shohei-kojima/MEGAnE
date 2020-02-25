@@ -39,7 +39,7 @@ def setup(args, base):
         else:
             param_path=join(base, 'lib/parameter_settings.txt')
         import load_parameters
-        params=load_parameters.load(param_path)
+        params=load_parameters.load(args, param_path)
 
         # load rep headers to be removed
         global rep_headers_to_be_removed

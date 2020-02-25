@@ -122,10 +122,12 @@ filenames.bp_merged_groupg=os.path.join(args.outdir, 'breakpoint_pairs_pooled_gr
 filenames.bp_merged_groupp=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_percentile.txt')
 filenames.bp_merged_groupf=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_failed.txt')
 filenames.gaussian_plot   =os.path.join(args.outdir, 'plot_gaussian_fitting.pdf')
+
 filenames.tmp_for_3transd =os.path.join(args.outdir, 'tmp_for_3transd.bed')
 filenames.bp_final_g      =os.path.join(args.outdir, 'MEI_final_gaussian.bed')
 filenames.bp_final_p      =os.path.join(args.outdir, 'MEI_final_percentile.bed')
 filenames.bp_final_f      =os.path.join(args.outdir, 'MEI_final_failed.bed')
+filenames.transd_master   =os.path.join(args.outdir, 'reads_for_3transduction_check.txt')
 
 filenames.abs_res         =os.path.join(args.outdir, 'absent_MEs.bed')
 filenames.transd_res      =os.path.join(args.outdir, 'absent_MEs_transduction.bed')
@@ -227,7 +229,6 @@ if do_ins is True:
     # del files
     utils.gzip_or_del(args, params, filenames.overhang_fa)
     utils.gzip_or_del(args, params, filenames.similar_rep_list)
-    utils.gzip_or_del(args, params, filenames.breakpoint_pairs)
     utils.gzip_or_del(args, params, filenames.breakpoint_clean)
     utils.gzip_or_del(args, params, filenames.breakpoint_info)
     utils.gzip_or_del(args, params, filenames.bp_info_single)
@@ -245,6 +246,7 @@ if do_ins is True:
         utils.gzip_file(params, filenames.bp_merged_groupp)
     if os.path.exists(filenames.bp_merged_groupf) is True:
         utils.gzip_file(params, filenames.bp_merged_groupf)
+    utils.gzip_file(params, filenames.breakpoint_pairs)
     utils.gzip_file(params, filenames.bp_merged_all)
     utils.gzip_file(params, filenames.overhang_MEI)
     utils.gzip_file(params, filenames.unmapped_MEI)
