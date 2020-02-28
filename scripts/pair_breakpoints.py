@@ -32,6 +32,7 @@ def load_ref_simple_rep_as_bed(filenames):
 def pairing(args, params, filenames):
     log.logger.debug('started')
     try:
+        numbering=0
         mes,all_clas=utils.load_me_classification(filenames.reshaped_rep)
         # load blast results
         L_poss={}
@@ -139,7 +140,8 @@ def pairing(args, params, filenames):
                                     R_id=';'.join(R_poss[m][chr][r])
                                     R_pA_id,L_pA_id='NA','NA'
                                 if (L_count >= params.min_read_num_per_breakpoint_edge) and (R_count >= params.min_read_num_per_breakpoint_edge):
-                                    outfile.write(chr +'\t'+ str(min(l, r)) +'\t'+ str(max(l, r)) +'\t'+ str(r)+':'+str(R_count) +'\t'+ str(l)+':'+str(L_count) +'\t'+ R_pA_num +'\t'+ L_pA_num +'\t'+ m +'\t'+ R_id +'\t'+ L_id +'\t'+ R_pA_id +'\t'+ L_pA_id +'\n')
+                                    outfile.write(chr +'\t'+ str(min(l, r)) +'\t'+ str(max(l, r)) +'\t'+ str(r)+':'+str(R_count) +'\t'+ str(l)+':'+str(L_count) +'\t'+ R_pA_num +'\t'+ L_pA_num +'\t'+ m +'\t'+ R_id +'\t'+ L_id +'\t'+ R_pA_id +'\t'+ L_pA_id +'\t'+ str(numbering) +'\n')
+                                    numbering += 1
                                     if l in L_pA[chr]:
                                         del(L_pA[chr][l])
                                     if r in R_pA[chr]:
@@ -168,7 +170,8 @@ def pairing(args, params, filenames):
                                     R_pA_id=';'.join(R_pA[chr][r])
                                     R_id,L_pA_id='NA','NA'
                                     if (L_count >= params.min_read_num_per_breakpoint_edge) and (R_count >= params.min_read_num_per_breakpoint_edge):
-                                        outfile.write(chr +'\t'+ str(min(l, r)) +'\t'+ str(max(l, r)) +'\t'+ str(r)+':'+str(R_count) +'\t'+ str(l)+':'+str(L_count) +'\t'+ str(R_count) +'\t'+ 'NA' +'\t'+ m +'\t'+ R_id +'\t'+ L_id +'\t'+ R_pA_id +'\t'+ L_pA_id +'\n')
+                                        outfile.write(chr +'\t'+ str(min(l, r)) +'\t'+ str(max(l, r)) +'\t'+ str(r)+':'+str(R_count) +'\t'+ str(l)+':'+str(L_count) +'\t'+ str(R_count) +'\t'+ 'NA' +'\t'+ m +'\t'+ R_id +'\t'+ L_id +'\t'+ R_pA_id +'\t'+ L_pA_id +'\t'+ str(numbering) +'\n')
+                                    numbering += 1
                                 elif (l - r) >= params.max_breakpoint_gap:
                                     iter_n += 1
                                 elif (r - l) >= params.max_TSD_len:
@@ -193,7 +196,8 @@ def pairing(args, params, filenames):
                                     R_id=';'.join(R_poss[m][chr][r])
                                     L_id,R_pA_id='NA','NA'
                                     if (L_count >= params.min_read_num_per_breakpoint_edge) and (R_count >= params.min_read_num_per_breakpoint_edge):
-                                        outfile.write(chr +'\t'+ str(min(l, r)) +'\t'+ str(max(l, r)) +'\t'+ str(r)+':'+str(R_count) +'\t'+ str(l)+':'+str(L_count) +'\t'+ 'NA' +'\t'+ str(L_count) +'\t'+ m +'\t'+ R_id +'\t'+ L_id +'\t'+ R_pA_id +'\t'+ L_pA_id +'\n')
+                                        outfile.write(chr +'\t'+ str(min(l, r)) +'\t'+ str(max(l, r)) +'\t'+ str(r)+':'+str(R_count) +'\t'+ str(l)+':'+str(L_count) +'\t'+ 'NA' +'\t'+ str(L_count) +'\t'+ m +'\t'+ R_id +'\t'+ L_id +'\t'+ R_pA_id +'\t'+ L_pA_id +'\t'+ str(numbering) +'\n')
+                                    numbering += 1
                                 elif (r - l) >= params.max_breakpoint_gap:
                                     iter_n += 1
                                 elif (l - r) >= params.max_TSD_len:
@@ -296,7 +300,7 @@ def add_TE_subclass(args, filenames, infpath, outfpath):
                     else:
                         vsr.append('NA')
                         msr.append('NA')
-                    outfile.write('\t'.join(ls[:8]) +'\t'+ ';'.join(vsr) +'\t'+ ';'.join(vsl) +'\t'+ ';'.join(msr) +'\t'+ ';'.join(msl) +'\n')
+                    outfile.write('\t'.join(ls[:8]) +'\t'+ ';'.join(vsr) +'\t'+ ';'.join(vsl) +'\t'+ ';'.join(msr) +'\t'+ ';'.join(msl) +'\t'+ ls[12] +'\n')
             outfile.flush()
             os.fdatasync(outfile.fileno())
     except:

@@ -13,7 +13,7 @@ from pybedtools import BedTool
 import log,traceback
 
 
-def grouped_mei_to_bed(params, filenames):
+def grouped_mei_to_bed(args, params, filenames):
     log.logger.debug('started')
     
     try:
@@ -388,20 +388,21 @@ def grouped_mei_to_bed(params, filenames):
                         r_pos,r_num=ls[4].split(':')
                         l_chim= int(l_num) - int(ls[12])
                         r_chim= int(r_num) - int(ls[13])
-                        uniq='yes' if ls[15] == 'singleton' else 'no,%s' % ls[15]
-                        tmp=[ls[0], ls[1], ls[2], ls[7], 'MEI_left:ref_pos=%s,chimeric=%d,hybrid=%s' % (l_pos, l_chim, ls[12]), 'MEI_right:ref_pos=%s,chimeric=%d,hybrid=%s' % (r_pos, r_chim, ls[13]), 'confidence:%s' % ls[14], 'unique:%s' % uniq, 'subfamily_pred:status=%s,%s' % (pred_status, pred_res), transd_status]
+                        uniq='yes' if ls[16] == 'singleton' else 'no,%s' % ls[16]
+                        tmp=[ls[0], ls[1], ls[2], ls[7], 'MEI_left:ref_pos=%s,chimeric=%d,hybrid=%s' % (l_pos, l_chim, ls[12]), 'MEI_right:ref_pos=%s,chimeric=%d,hybrid=%s' % (r_pos, r_chim, ls[13]), 'confidence:%s' % ls[15], 'unique:%s' % uniq, 'subfamily_pred:status=%s,%s' % (pred_status, pred_res), transd_status, 'ID=%s' % ls[14]]
                         tmp= [ str(i) for i in tmp ]
                         outfile.write('\t'.join(tmp) +'\n')
                 outfile.flush()
                 os.fdatasync(outfile.fileno())
 
         # main
-        if os.path.exists(filenames.bp_merged_groupg) is True:
+        if args.gaussian_executed is True:
             convert_to_bed(params, filenames, filenames.bp_merged_groupg, filenames.bp_final_g)
-        if os.path.exists(filenames.bp_merged_groupp) is True:
             convert_to_bed(params, filenames, filenames.bp_merged_groupp, filenames.bp_final_p)
-        if os.path.exists(filenames.bp_merged_groupf) is True:
+        else:
             convert_to_bed(params, filenames, filenames.bp_merged_groupf, filenames.bp_final_f)
+        if args.threshold is not None:
+            convert_to_bed(params, filenames, filenames.bp_merged_groupu, filenames.bp_final_u)
         if os.path.exists(filenames.tmp_for_3transd) is True:
             os.remove(filenames.tmp_for_3transd)
             
@@ -410,78 +411,152 @@ def grouped_mei_to_bed(params, filenames):
         exit(1)
 
 
-def retrieve_3transd_reads(params, filenames):
+def retrieve_3transd_reads(args, params, filenames):
+    log.logger.debug('started')
     
-    def convert_line(params, ls):
-        if 'MEI_left' in ls[9]:
-            end=ls[4].split(',')[0].replace('MEI_left:ref_pos=', '')
-            end=int(end)
-            start= end - params.hybrid_read_range_from_breakpint
-            if start < 0:
-                start=0
-            id_for_chimeric=':'.join([ls[0], ls[1], ls[2], ls[3], 'R'])
-            pos_for_hybrid='\t'.join([ls[0], str(start), str(end), 'id_for_chimeric', '.', '+'])
-        elif 'MEI_right' in ls[9]:
-            start=ls[5].split(',')[0].replace('MEI_right:ref_pos=', '')
-            start=int(start)
-            end= start + params.hybrid_read_range_from_breakpint
-            id_for_chimeric=':'.join([ls[0], ls[1], ls[2], ls[3], 'L'])
-            pos_for_hybrid='\t'.join([ls[0], str(start), str(end), 'id_for_chimeric', '.', '-'])
-        return id_for_chimeric, pos_for_hybrid
-    
-    def retrieve_read_ids(params, infilepath):
-        ids_for_chimeric=set()
-        poss_for_hybrid=set()
-        with open(infilepath) as infile:
-            for line in infile:
-                if '3transduction:need_check' in line:
+    try:
+        def convert_line(params, ls):
+            if 'MEI_left' in ls[9]:
+                end=ls[4].split(',')[0].replace('MEI_left:ref_pos=', '')
+                end=int(end)
+                start= end - params.hybrid_read_range_from_breakpint
+                if start < 0:
+                    start=0
+                pos_for_hybrid='\t'.join([ls[0], str(start), str(end), ls[10], '.', '+'])
+            elif 'MEI_right' in ls[9]:
+                start=ls[5].split(',')[0].replace('MEI_right:ref_pos=', '')
+                start=int(start)
+                end= start + params.hybrid_read_range_from_breakpint
+                pos_for_hybrid='\t'.join([ls[0], str(start), str(end), ls[10], '.', '-'])
+            return pos_for_hybrid
+
+        def retrieve_read_ids(params, infilepath):
+            poss_for_hybrid=set()
+            with open(infilepath) as infile:
+                for line in infile:
+                    if '3transduction:need_check' in line:
+                        ls=line.split()
+                        for_hybrid=convert_line(params, ls)
+                        poss_for_hybrid.add(for_hybrid)
+            return poss_for_hybrid
+
+        poss_for_hybrid=[]
+        if args.gaussian_executed is True:
+            poss_for_hybrid_gaussian=retrieve_read_ids(params, filenames.bp_final_g)
+            poss_for_hybrid_percentile=retrieve_read_ids(params, filenames.bp_final_p)
+            if args.threshold is True:
+                poss_for_hybrid_user=retrieve_read_ids(params, filenames.bp_final_u)
+                overlap= poss_for_hybrid_gaussian | poss_for_hybrid_percentile | poss_for_hybrid_user
+                for line in overlap:
+                    tmp=[]
+                    if line in poss_for_hybrid_gaussian:
+                        tmp.append('gaussian')
+                    if line in poss_for_hybrid_percentile:
+                        tmp.append('percentile')
+                    if line in poss_for_hybrid_user:
+                        tmp.append('user_defined')
+                    poss_for_hybrid.append(line +'\t'+ ';'.join(tmp))
+            else:
+                overlap= poss_for_hybrid_gaussian | poss_for_hybrid_percentile
+                for line in overlap:
+                    tmp=[]
+                    if line in poss_for_hybrid_gaussian:
+                        tmp.append('gaussian')
+                    if line in poss_for_hybrid_percentile:
+                        tmp.append('percentile')
+                    poss_for_hybrid.append(line +'\t'+ ';'.join(tmp))
+        else:
+            poss_for_hybrid_failed=retrieve_read_ids(params, filenames.bp_final_f)
+            if args.threshold is True:
+                poss_for_hybrid_user=retrieve_read_ids(params, filenames.bp_final_u)
+                overlap= poss_for_hybrid_failed | poss_for_hybrid_user
+                for line in overlap:
+                    tmp=[]
+                    if line in poss_for_hybrid_failed:
+                        tmp.append('failed')
+                    if line in poss_for_hybrid_user:
+                        tmp.append('user_defined')
+                    poss_for_hybrid.append(line +'\t'+ ';'.join(tmp))
+            else:
+                for line in poss_for_hybrid_failed:
+                    poss_for_hybrid.append(line +'\tfailed')
+                        
+        if len(poss_for_hybrid) >= 1:
+            poss_for_hybrid=BedTool('\n'.join(poss_for_hybrid) +'\n', from_string=True)
+
+            # pairing of distant reads
+            d={}
+            with gzip.open(filenames.distant_txt +'.gz') as infile:
+                for line in infile:
+                    line=line.decode()
                     ls=line.split()
-                    for_chimeric,for_hybrid=convert_line(params, ls)
-                    ids_for_chimeric.add(for_chimeric)
-                    poss_for_hybrid.add(for_hybrid)
-        return ids_for_chimeric,poss_for_hybrid
-    
-    if os.path.exists(filenames.bp_final_g) is True:
-        ids_for_chimeric_gaussian,poss_for_hybrid_gaussian=retrieve_read_ids(params, filenames.bp_final_g)
-        ids_for_chimeric_percentile,poss_for_hybrid_percentile=retrieve_read_ids(params, filenames.bp_final_p)
-        overlap= ids_for_chimeric_gaussian & ids_for_chimeric_percentile   # chimeric
-        only_gaussian= ids_for_chimeric_gaussian - ids_for_chimeric_percentile
-        only_percentile= ids_for_chimeric_percentile - ids_for_chimeric_gaussian
-        overlap=[ i + ':gaussian,percentile' for i in overlap ]
-        only_gaussian=[ i + ':gaussian' for i in only_gaussian ]
-        only_percentile=[ i + ':percentile' for i in only_percentile ]
-        ids_for_chimeric= sorted(overlap + only_gaussian + only_percentile)
-        overlap= poss_for_hybrid_gaussian & poss_for_hybrid_percentile   # hybrid
-        only_gaussian= poss_for_hybrid_gaussian - poss_for_hybrid_percentile
-        only_percentile= poss_for_hybrid_percentile - poss_for_hybrid_gaussian
-        overlap=[ i + '\tgaussian,percentile' for i in overlap ]
-        only_gaussian=[ i + '\tgaussian' for i in only_gaussian ]
-        only_percentile=[ i + '\tpercentile' for i in only_percentile ]
-        poss_for_hybrid= sorted(overlap + only_gaussian + only_percentile)
-        poss_for_hybrid='\n'.join(poss_for_hybrid) +'\n'
-    elif os.path.exists(filenames.bp_final_f) is True:
-        ids_for_chimeric,poss_for_hybrid=retrieve_read_ids(params, filenames.bp_final_g)
-        ids_for_chimeric=sorted([ i +':failed' for i in ids_for_chimeric ])
-        poss_for_hybrid=sorted([ i +'\tfailed' for i in poss_for_hybrid ])
-        poss_for_hybrid='\n'.join(poss_for_hybrid) +'\n'
+                    id,dir=ls[0].split('/')
+                    if not id in d:
+                        d[id]=set()
+                    d[id].add(dir)
+            retain=set()
+            for id in d:
+                if len(d[id]) == 2:
+                    retain.add(id)
 
-    def retrieve_pA_reads(ids_list):
-        d={}
-        for full_id in ids_list:
-            id,dir,_=full_id.rsplit(':', 2)
-            d[id]=[dir, full_id]
-        with open(filenames.breakpoint_pairs) as infile:
-            for line in infile:
-                id=':'.join([ls[0], ls[1], ls[2], ls[7]])
-                if id in d:
-                    if d[id][0]='R':
-                        d[id].append(ls[8])
-                    elif d[id][0]='L':
-                        d[id].append(ls[9])
-        return d    ######
+            def process_bed(bed):
+                ids={}
+                bed=BedTool(bed, from_string=True)
+                bed=bed.intersect(poss_for_hybrid, wa=True, wb=True, s=True)
+                if len(bed) >= 1:
+                    for line in bed:
+                        line=str(line)
+                        ls=line.split()
+                        if not ls[9] in ids:
+                            ids[ls[9]]=[]
+                        mapped_pos= '%s:%s-%s(%s)' % (ls[0], ls[1], ls[2], ls[5])
+                        ids[ls[9]].append([ls[3], mapped_pos])
+                return ids
 
-    retrieve_pA_reads(ids_for_chimeric)
-    pass
+            # extract reads intersect with 3'transduction candidates
+            d={}
+            bed=[]
+            with gzip.open(filenames.distant_txt +'.gz') as infile:
+                for line in infile:
+                    line=line.decode()
+                    ls=line.split()
+                    rn,dir=ls[0].split('/')
+                    if rn in retain:
+                        id,poss=line.split()
+                        for pos in poss.split(';'):
+                            tmp,strand=pos.rsplit('/', 1)
+                            tmp,end=tmp.rsplit('-', 1)
+                            chr,start=tmp.rsplit(':', 1)
+                            bed.append('\t'.join([chr, start, end, id, '.', strand]))
+                        if len(bed) >= 100000:  # chunk
+                            bed='\n'.join(bed)
+                            tmp=process_bed(bed)
+                            for id in tmp:
+                                if id in d:
+                                    d[id]=d[id].extend(tmp[id])
+                                else:
+                                    d[id]=tmp[id]
+                            bed=[]
 
+            def convert_read_mate(readname):
+                converted= '%s2' % readname[:-1] if readname[-1] == '1' else '%s1' % readname[:-1]
+                return converted
+
+            out=[]
+            for id in d:
+                converted_d[id]=[]
+                for rn,pos in d[id]:
+                    c=convert_read_mate(rn)
+                    out.append('%s\tmapped=%s,%s\tmate=%s\n' % (id, rn, pos, c))
+            with open(filenames.transd_master, 'w') as outfile:
+                outfile.write(''.join(out))
+                outfile.flush()
+                os.fdatasync(outfile.fileno())
+        else:
+            log.logger.debug('No candidate for 3transduction.')
+
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
 
 

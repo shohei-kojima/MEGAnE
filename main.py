@@ -26,6 +26,7 @@ parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify Rep
 parser.add_argument('-repout', metavar='str', type=str, help='Required. Specify RepeatMasker output. Must be masked using the input RepBase file. Example: hg38.fa.out')
 parser.add_argument('-cov', metavar='int', type=int, help='Optional. Specify coverage depth. Default: 30', default=30)
 parser.add_argument('-readlen', metavar='int', type=int, help='Optional. Specify read length. Default: 150', default=150)
+parser.add_argument('-threshold', metavar='int', type=int, help='Optional. Specify user-defined threshold.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
 parser.add_argument('-monoallelic', help='Optional. Specify if you use monoalellic sample, such as mouse strains or HAP1 cells.', action='store_true')
@@ -118,16 +119,19 @@ filenames.bp_merged_all   =os.path.join(args.outdir, 'breakpoint_pairs_pooled_al
 filenames.bp_merged_filt_g=os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered_gaussian.txt')
 filenames.bp_merged_filt_p=os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered_percentile.txt')
 filenames.bp_merged_filt_f=os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered_failed.txt')
+filenames.bp_merged_filt_u=os.path.join(args.outdir, 'breakpoint_pairs_pooled_filtered_user.txt')
 filenames.bp_merged_groupg=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_gaussian.txt')
 filenames.bp_merged_groupp=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_percentile.txt')
 filenames.bp_merged_groupf=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_failed.txt')
+filenames.bp_merged_groupu=os.path.join(args.outdir, 'breakpoint_pairs_pooled_grouped_user.txt')
 filenames.gaussian_plot   =os.path.join(args.outdir, 'plot_gaussian_fitting.pdf')
 
 filenames.tmp_for_3transd =os.path.join(args.outdir, 'tmp_for_3transd.bed')
 filenames.bp_final_g      =os.path.join(args.outdir, 'MEI_final_gaussian.bed')
 filenames.bp_final_p      =os.path.join(args.outdir, 'MEI_final_percentile.bed')
 filenames.bp_final_f      =os.path.join(args.outdir, 'MEI_final_failed.bed')
-filenames.transd_master   =os.path.join(args.outdir, 'reads_for_3transduction_check.txt')
+filenames.bp_final_u      =os.path.join(args.outdir, 'MEI_final_user.bed')
+filenames.transd_master   =os.path.join(args.outdir, '3transduction_check_master.txt')
 
 filenames.abs_res         =os.path.join(args.outdir, 'absent_MEs.bed')
 filenames.transd_res      =os.path.join(args.outdir, 'absent_MEs_transduction.bed')
@@ -223,9 +227,11 @@ if do_ins is True:
     pool_results.add_hybrid(params, filenames)
     import filter_candidates
     filter_candidates.filter(args, params, filenames)
+    args.gaussian_executed=filter_candidates.gaussian_executed
     filter_candidates.grouping(args, filenames)
     import after_processing
-    after_processing.grouped_mei_to_bed(params, filenames)
+    after_processing.grouped_mei_to_bed(args, params, filenames)
+    after_processing.retrieve_3transd_reads(args, params, filenames)
     # del files
     utils.gzip_or_del(args, params, filenames.overhang_fa)
     utils.gzip_or_del(args, params, filenames.similar_rep_list)

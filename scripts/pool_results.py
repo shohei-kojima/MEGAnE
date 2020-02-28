@@ -177,7 +177,7 @@ def add_hybrid(params, filenames):
                             if not i == '':
                                 te.add(i.split(',')[0])
                 te=';'.join(list(te))
-                id=ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7]
+                id=ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7] +'/ID='+ ls[12]
                 bed_up += ls[0] +'\t'+ str(s) +'\t'+ str(r) +'\t'+ id +'\t'+ te +'\n'
                 bed_down += ls[0] +'\t'+ str(l) +'\t'+ str(e) +'\t'+ id +'\t'+ te +'\n'
         bed_up=BedTool(bed_up, from_string=True)
@@ -239,7 +239,7 @@ def add_hybrid(params, filenames):
             with open(filenames.bp_merged) as infile:
                 for line in infile:
                     ls=line.split()
-                    id=ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7]
+                    id=ls[0] +':'+ ls[1] +'-'+ ls[2] +'/'+ ls[7] +'/ID='+ ls[12]
                     if id in hybrid:
                         r,r_num=ls[3].split(':')
                         l,l_num=ls[4].split(':')
@@ -249,12 +249,14 @@ def add_hybrid(params, filenames):
                         r_num += r_hub_num
                         l_num += l_hub_num
                         s=[ls[0], ls[1], ls[2], r +':'+ str(r_num), l +':'+ str(l_num)]
-                        s.extend(ls[5:])
+                        s.extend(ls[5:12])
                         s.extend([str(r_hub_num), str(l_hub_num)])
+                        s.append(ls[12])
                     else:
                         s=[]
-                        s.extend(ls)
+                        s.extend(ls[:12])
                         s.extend(['0', '0'])
+                        s.append(ls[12])
                     outline= '\t'.join(s) +'\n'
                     outfile.write(outline)
             outfile.flush()

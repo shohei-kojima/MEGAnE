@@ -155,7 +155,9 @@ def filter(args, params, filenames):
                         if (min(R_eval) < params.eval_threshold_for_gaussian_fitting) and (min(L_eval) < params.eval_threshold_for_gaussian_fitting):
                             for_gaussian_fitting.append(total_read_count)
                             hybrid_num.append(int(ls[12]) + int(ls[13]))
+        global gaussian_executed
         if len(for_gaussian_fitting) >= 3:
+            gaussian_executed=True
             cutoff=determine_cutoff(for_gaussian_fitting)  # percentile cutoff
             log.logger.debug('total_support_read_num_cutoff=%d' % cutoff)
             
@@ -189,6 +191,7 @@ def filter(args, params, filenames):
             log.logger.debug('gaussian_fitting_n=%d,r_squared=%f,gaussian_cutoff=%f,percentile_cutoff=%f,zero_hybrid_total_read_threshold=%f' %(len(for_gaussian_fitting), r_squared, total_read_thresholds[0], total_read_thresholds[1], zero_hybrid_total_read_threshold))
         else:
             log.logger.warning('Not enough data found. Cannot automatically determine thresholds for MEI filtering. Please check if your data contains discordant reads enough for auto-filtering. Proceed anyway.')
+            gaussian_executed=False
             total_read_thresholds=[3]
             zero_hybrid_total_read_threshold=5
             log.logger.debug('cutoff=%d,zero_hybrid_total_read_threshold=%d' %(total_read_thresholds[0], zero_hybrid_total_read_threshold))
@@ -268,11 +271,13 @@ def filter(args, params, filenames):
                 os.fdatasync(outfile.fileno())
 
         # main filtering
-        if len(total_read_thresholds) == 2:
+        if gaussian_executed is True:
             main_filter(total_read_thresholds[0], filenames.bp_merged_filt_g)
             main_filter(total_read_thresholds[1], filenames.bp_merged_filt_p)
         else:
             main_filter(total_read_thresholds[0], filenames.bp_merged_filt_f)
+        if args.threshold is not None:
+            main_filter(args.threshold, filenames.bp_merged_filt_u)
                 
     except:
         log.logger.error('\n'+ traceback.format_exc())
@@ -402,14 +407,16 @@ def grouping(args, filenames):
                     
         global ins_ns
         ins_ns=[]
-        if os.path.exists(filenames.bp_merged_filt_g) is True:
+        if args.gaussian_executed is True:
             ins_n=main_grouping(filenames.bp_merged_filt_g, filenames.bp_merged_groupg)
             ins_ns.append(ins_n)
-        if os.path.exists(filenames.bp_merged_filt_p) is True:
             ins_n=main_grouping(filenames.bp_merged_filt_p, filenames.bp_merged_groupp)
             ins_ns.append(ins_n)
-        if os.path.exists(filenames.bp_merged_filt_f) is True:
+        else:
             ins_n=main_grouping(filenames.bp_merged_filt_f, filenames.bp_merged_groupf)
+            ins_ns.append(ins_n)
+        if args.threshold is not None:
+            ins_n=main_grouping(filenames.bp_merged_filt_u, filenames.bp_merged_groupu)
             ins_ns.append(ins_n)
 
     except:
