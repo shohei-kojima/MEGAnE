@@ -403,8 +403,8 @@ def grouped_mei_to_bed(args, params, filenames):
             convert_to_bed(params, filenames, filenames.bp_merged_groupf, filenames.bp_final_f)
         if args.threshold is not None:
             convert_to_bed(params, filenames, filenames.bp_merged_groupu, filenames.bp_final_u)
-        if os.path.exists(filenames.tmp_for_3transd) is True:
-            os.remove(filenames.tmp_for_3transd)
+#        if os.path.exists(filenames.tmp_for_3transd) is True:
+#            os.remove(filenames.tmp_for_3transd)
             
     except:
         log.logger.error('\n'+ traceback.format_exc())

@@ -76,3 +76,19 @@ def load_me_classification(path_to_file):
                 all_clas.add(clas)
     return mes, all_clas
 
+
+def gzip_d(gzfile):
+    log.logger.debug('started,infile=%s' % gzfile)
+    try:
+        outfpath=gzfile[:-3]
+        with open(outfpath, 'w') as outfile:
+            with gzip.open(gzfile) as infile:
+                for line in infile:
+                    line=line.decode()
+                    outfile.write(line)
+            outfile.flush()
+            os.fdatasync(outfile.fileno())
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
