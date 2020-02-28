@@ -155,6 +155,29 @@ def filter(args, params, filenames):
                         if (min(R_eval) < params.eval_threshold_for_gaussian_fitting) and (min(L_eval) < params.eval_threshold_for_gaussian_fitting):
                             for_gaussian_fitting.append(total_read_count)
                             hybrid_num.append(int(ls[12]) + int(ls[13]))
+                        elif not ls[5] == 'NA':
+                            L_eval_min=min(L_eval)
+                            if L_eval_min < params.eval_threshold_for_gaussian_fitting:
+                                for_gaussian_fitting.append(total_read_count)
+                                hybrid_num.append(int(ls[12]) + int(ls[13]))
+                        elif not ls[6] == 'NA':
+                            R_eval_min=min(R_eval)
+                            if R_eval_min < params.eval_threshold_for_gaussian_fitting:
+                                for_gaussian_fitting.append(total_read_count)
+                                hybrid_num.append(int(ls[12]) + int(ls[13]))
+                    elif not ls[5] == 'NA':
+                        if len(L_eval) >= chimeric_num_threshold:
+                            L_eval_min=min(L_eval)
+                            if L_eval_min < params.eval_threshold_for_gaussian_fitting:
+                                for_gaussian_fitting.append(total_read_count)
+                                hybrid_num.append(int(ls[12]) + int(ls[13]))
+                    elif not ls[6] == 'NA':
+                        if len(R_eval) >= chimeric_num_threshold:
+                            R_eval_min=min(R_eval)
+                            if R_eval_min < params.eval_threshold_for_gaussian_fitting:
+                                for_gaussian_fitting.append(total_read_count)
+                                hybrid_num.append(int(ls[12]) + int(ls[13]))
+
         global gaussian_executed
         if len(for_gaussian_fitting) >= 3:
             gaussian_executed=True
