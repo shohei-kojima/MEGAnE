@@ -533,13 +533,13 @@ def retrieve_3transd_reads(args, params, filenames):
                             tmp=process_bed(bed)
                             for id in tmp:
                                 if id in d:
-                                    d[id]=d[id].extend(tmp[id])
+                                    d[id].extend(tmp[id])
                                 else:
                                     d[id]=tmp[id]
                             bed=[]
 
             def convert_read_mate(readname):
-                converted= '%s2' % readname[:-1] if readname[-1] == '1' else '%s1' % readname[:-1]
+                converted='%s2' % readname[:-1] if readname[-1] == '1' else '%s1' % readname[:-1]
                 return converted
 
             out=[]
