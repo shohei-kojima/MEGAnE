@@ -544,7 +544,6 @@ def retrieve_3transd_reads(args, params, filenames):
 
             out=[]
             for id in d:
-                converted_d[id]=[]
                 for rn,pos in d[id]:
                     c=convert_read_mate(rn)
                     out.append('%s\tmapped=%s,%s\tmate=%s\n' % (id, rn, pos, c))
