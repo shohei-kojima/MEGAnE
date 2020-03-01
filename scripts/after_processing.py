@@ -146,6 +146,7 @@ def grouped_mei_to_bed(args, params, filenames):
                 with open(infilename) as infile:
                     for line in infile:
                         ls=line.split()
+                        len_status='NA'
                         transd_status='3transduction:no'
                         # if breakpoints are not pA
                         r_evals=[ float(i) for i in ls[8].split(';') if not i == 'NA' and not i == '' ]
@@ -226,6 +227,14 @@ def grouped_mei_to_bed(args, params, filenames):
                                 elif (len(R_minus) >= 1) and (len(L_plus) >= 1):
                                     tmp=predict_shared_te(R_minus, L_plus, '-', '+')
                                     cands.extend(tmp)
+                                len_short=False
+                                for cand in cands:
+                                    if ('+/+' in cand) or ('-/-' in cand):
+                                        rbp,lbp=cand.split(',')[1].split('/')
+                                        inslen= int(lbp) - int(rbp)
+                                        if 10 < inslen < 50:
+                                            len_short=True
+                                len_status='no' if len_short is True else 'yes'
                                 pred_status='PASS'
                                 pred_res='MEI=' + '|'.join(cands)
                             # if not shared TE exist
@@ -389,7 +398,11 @@ def grouped_mei_to_bed(args, params, filenames):
                         l_chim= int(l_num) - int(ls[12])
                         r_chim= int(r_num) - int(ls[13])
                         uniq='yes' if ls[16] == 'singleton' else 'no,%s' % ls[16]
-                        tmp=[ls[0], ls[1], ls[2], ls[7], 'MEI_left:ref_pos=%s,chimeric=%d,hybrid=%s' % (l_pos, l_chim, ls[12]), 'MEI_right:ref_pos=%s,chimeric=%d,hybrid=%s' % (r_pos, r_chim, ls[13]), 'confidence:%s' % ls[15], 'unique:%s' % uniq, 'subfamily_pred:status=%s,%s' % (pred_status, pred_res), transd_status, 'ID=%s' % ls[14]]
+                        if len_status == 'no':
+                            confidence_status='low'
+                        else:
+                            confidence_status=ls[15]
+                        tmp=[ls[0], ls[1], ls[2], ls[7], 'MEI_left:ref_pos=%s,chimeric=%d,hybrid=%s' % (l_pos, l_chim, ls[12]), 'MEI_right:ref_pos=%s,chimeric=%d,hybrid=%s' % (r_pos, r_chim, ls[13]), 'confidence:%s' % confidence_status, 'unique:%s,50bp_or_longer:%s,orig_conf:%s' % (uniq, len_status, ls[15]), 'subfamily_pred:status=%s,%s' % (pred_status, pred_res), transd_status, 'ID=%s' % ls[14]]
                         tmp= [ str(i) for i in tmp ]
                         outfile.write('\t'.join(tmp) +'\n')
                 outfile.flush()
