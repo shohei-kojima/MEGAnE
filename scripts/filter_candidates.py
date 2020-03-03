@@ -99,7 +99,7 @@ def filter(args, params, filenames):
             reject1perc=norm.interval(alpha=params.fit_gaussian_CI_alpha, loc=popt[1], scale=abs(popt[2]))
             return x, y, popt, pcov, reject1perc, r_squared, coeff
 
-        def L1_filter(line, r_pos, l_pos, pA_only):
+        def L1_filter(line, r_pos, l_pos, pA_only, R_eval, L_eval):
             cand=True
             if pA_only is False:
                 ls=line.split()
@@ -268,16 +268,16 @@ def filter(args, params, filenames):
                     # second filter, 90% accuracy
                     if (retain_count is True) and (retain_eval is True):
                         if (int(ls[12]) >= params.second_filter_hybrid_read_num) and (int(ls[13]) >= params.second_filter_hybrid_read_num):
-                            if 'L1' in line:
-                                L1_judge=L1_filter(line, r_pos, l_pos, pA_only)
+                            if ls[7] == 'L1':
+                                L1_judge=L1_filter(line, r_pos, l_pos, pA_only, R_eval, L_eval)
                                 if L1_judge is True:
                                     high.add(line)
                             else:
                                 high.add(line)
                         elif (len(R_eval) >= 1) and (len(L_eval) >= 1):
                             if (min(R_eval) < params.second_filter_eval_threshold_for_few_hybrid) and (min(L_eval) < params.second_filter_eval_threshold_for_few_hybrid):
-                                if 'L1' in line:
-                                    L1_judge=L1_filter(line, r_pos, l_pos, pA_only)
+                                if ls[7] == 'L1':
+                                    L1_judge=L1_filter(line, r_pos, l_pos, pA_only, R_eval, L_eval)
                                     if L1_judge is True:
                                         high.add(line)
                                 else:
