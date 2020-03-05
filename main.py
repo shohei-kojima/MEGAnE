@@ -15,6 +15,10 @@ time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/koooji
 '''
 
 
+# version
+version='2020/03/05'
+
+
 # args
 parser=argparse.ArgumentParser(description='')
 parser.add_argument('-b', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end BAM file.')  # , required=True
@@ -58,6 +62,7 @@ log.logger.debug('Logging started.')
 
 # initial check
 import initial_check
+log.logger.debug('This is version %s' % version)
 print()
 log.logger.info('Initial check started.')
 initial_check.check(args, sys.argv)

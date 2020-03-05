@@ -14,6 +14,10 @@ python rethreshold.py -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Document
 '''
 
 
+# version
+version='2020/03/05'
+
+
 # args
 parser=argparse.ArgumentParser(description='')
 parser.add_argument('-b', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end BAM file.')  # , required=True
@@ -61,6 +65,7 @@ log.logger.debug('Logging started.')
 
 # initial check
 import initial_check
+log.logger.debug('This is version %s' % version)
 print()
 log.logger.info('Initial check started.')
 initial_check.check(args, sys.argv)
@@ -142,5 +147,6 @@ after_processing.grouped_mei_to_bed(args, params, filenames)
 
 utils.gzip_file(params, filenames.breakpoint_pairs)
 utils.gzip_file(params, filenames.bp_merged_all)
+utils.gzip_file(params, filenames.overhang_MEI)
 
 log.logger.info('Re-thresholding finished!\n')
