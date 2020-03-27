@@ -85,11 +85,18 @@ def merge_breakpoints(filenames):
             n=str(n)
         l_pA= n
         tmp=[]
-        for n in range(len(list[0]) - 8):
+        for n in [8, 9]:
             s=''
-            n=n+8
             for ls in list:
                 s += ls[n] +';'
+            tmp.append(s)
+        for n in range(10, len(list[0])):
+            s=''
+            for ls in list:
+                if ls[n] == 'NA':
+                    s += ls[n] +';;'
+                else:
+                    s += ls[n] +';'
             tmp.append(s)
         # output
         if start > end:
