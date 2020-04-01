@@ -1,5 +1,5 @@
-# aimup
-https://github.com/shohei-kojima/aimup
+# koji_mei_pipeline
+https://github.com/shohei-kojima/koji_mei_pipeline
 
 
 # prerequisites
