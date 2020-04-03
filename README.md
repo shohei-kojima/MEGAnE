@@ -27,3 +27,11 @@ python main.py \
 -p 4
 
 
+# requirements in a bam/cram file
+SA:Z: tag
+XA:Z: tag
+
+# do not need in a bam/cram file (just a memo)
+duplication tag
+MC:Z: tag
+
