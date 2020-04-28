@@ -10,7 +10,13 @@ See file LICENSE for details.
 import os,sys
 
 
-def init(args):
+def init(args, version):
+    # version check
+    if args.version is True:
+        print('MEI pipeline\nVersion = %s' % version)
+        exit(0)
+    
+    # pythonpath
     global base
     base=os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
     sys.path.insert(0, os.path.join(base, 'scripts'))
@@ -19,7 +25,7 @@ def init(args):
     if args.overwrite is False:
         if os.path.exists(args.outdir) is True:
             print('Error: %s already exists. Please specify another directory name.' % args.outdir)
-            exit()
+            exit(1)
         else:
             os.mkdir(args.outdir)
     else:
