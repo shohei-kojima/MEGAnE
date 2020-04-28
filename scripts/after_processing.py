@@ -347,7 +347,7 @@ def grouped_mei_to_bed(args, params, filenames):
                                 for te in d:
                                     breapoint=round(mean(d[te]))
                                     bp_str_l.append('%s,%d,-' % (te, breapoint))
-                                pred_status='complex_structure'
+                                pred_status='Complex_structure'
                                 pred_res='MEI_left_breakpoint=' + '|'.join(bp_str_l) +';'+ 'MEI_right_breakpoint=pA'
                         elif len(r_evals) == 0:
                             if ls[12] == '0':
@@ -390,7 +390,7 @@ def grouped_mei_to_bed(args, params, filenames):
                                 for te in d:
                                     breapoint=round(mean(d[te]))
                                     bp_str_l.append('%s,%d,+' % (te, breapoint))
-                                pred_status='complex_structure'
+                                pred_status='Complex_structure'
                                 pred_res='MEI_left_breakpoint=pT' +';'+ 'MEI_right_breakpoint='  + '|'.join(bp_str_l)
 
                         l_pos,l_num=ls[3].split(':')
