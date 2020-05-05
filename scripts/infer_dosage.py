@@ -41,7 +41,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
 
         def fit_gaussian(list_support_read_count):
             x,y=[],[]
-            support_read_bin= int(np.ceil(args.cov / 10))
+            support_read_bin= int(np.ceil(args.cov / 50))
             for i in range(0, max(list_support_read_count), support_read_bin):
                 x.append(i + ((support_read_bin - 1) / 2))
                 y.append(sum([ list_support_read_count.count(i + j) for j in range(support_read_bin) ]))
