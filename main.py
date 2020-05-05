@@ -45,6 +45,7 @@ parser.add_argument('-keep', help='Optional. Specify if you do not want to delet
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 1', default=1)
 parser.add_argument('-v', '--version', help='Print version.', action='store_true')
 args=parser.parse_args()
+args.version=version
 
 
 # start
