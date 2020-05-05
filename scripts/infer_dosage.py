@@ -112,7 +112,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             di_zscore= (xd - (popt[1] * 2)) / (mono_sd * 2)
             dosage={}
             for pos,mono,di in zip(xd,mono_zscore,di_zscore):
-                if abs(mono) >= abs(di):
+                if abs(mono) < abs(di):
                     dosage[pos]=1
                 else:
                     dosage[pos]=2
@@ -180,7 +180,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
                 outfile.write(''.join(header))
                 with open(infilename) as infile:
                     for line in infile:
-                        ls=line.split('\t')
+                        ls=line.strip().split('\t')
                         chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', ''))
                         chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', ''))
                         if 'MEI_left_breakpoint=pT' in ls[8]:
