@@ -83,19 +83,22 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             return x, y, popt, pcov, r_squared, coeff
 
         # main
+        all_mei_count_range=[]
         for_gaussian_fitting=[]
         with open(infilename) as infile:
             for line in infile:
                 ls=line.split('\t')
+                chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', ''))
+                chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', ''))
+                if 'MEI_left_breakpoint=pT' in ls[8]:
+                    count=chimeric_r
+                elif 'MEI_right_breakpoint=pA' in ls[8]:
+                    count=chimeric_l
+                else:
+                    count= math.ceil((chimeric_l + chimeric_r) / 2)
                 if ls[6] == 'confidence:high' and 'unique:yes' in ls[7]:
-                    chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', ''))
-                    chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', ''))
-                    if 'MEI_left_breakpoint=pT' in ls[8]:
-                        for_gaussian_fitting.append(chimeric_r)
-                    elif 'MEI_right_breakpoint=pA' in ls[8]:
-                        for_gaussian_fitting.append(chimeric_l)
-                    else:
-                        for_gaussian_fitting.append(math.ceil((chimeric_l + chimeric_r) / 2))
+                    for_gaussian_fitting.append(count)
+                all_mei_count_range.append(count)
         if len(for_gaussian_fitting) < 10:
             log.logger.warning('Not enough data found. Cannot automatically determine thresholds for MEI filtering. Please check if your data contains MEIs enough for inferring gene dosage.')
         else:
@@ -106,7 +109,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             input_bed=os.path.basename(infilename)
             x,y,popt,pcov,r_squared,coeff=fit_gaussian(for_gaussian_fitting)  # gaussian fitting
             log.logger.debug('popt=%s,pcov=%s' %(str(popt), str(pcov)))
-            xd=np.arange(math.ceil(min(x)), math.ceil(max(x)) + 1)
+            xd=np.arange(math.ceil(min(all_mei_count_range)), math.ceil(max(all_mei_count_range)) + 1)
             mono_sd= popt[2] ** 2  # standard deviation; sigma ** 2
             mono_zscore= (xd - popt[1]) / mono_sd  # zscore = (value - mu) / stdev
             di_zscore= (xd - (popt[1] * 2)) / (mono_sd * 2)
