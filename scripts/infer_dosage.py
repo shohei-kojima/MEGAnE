@@ -88,8 +88,8 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             for line in infile:
                 ls=line.split('\t')
                 if ls[6] == 'confidence:high' and 'unique:yes' in ls[7]:
-                    chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', ''))
-                    chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', ''))
+                    chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', '')) + int(ls[4].split(',')[2].replace('hybrid=', ''))
+                    chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', '')) + int(ls[5].split(',')[2].replace('hybrid=', ''))
                     if 'MEI_left_breakpoint=pT' in ls[8]:
                         for_gaussian_fitting.append(chimeric_r)
                     elif 'MEI_right_breakpoint=pA' in ls[8]:
@@ -147,9 +147,9 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             
             # save results
             header=[]
-            header.append('##fileformat=VCFv4.2\n')
-            header.append('####fileDate=%s\n' % datetime.datetime.now())
-            header.append('##source=%s\n' % args.version)
+            header.append('##fileformat=VCFv4.1\n')
+            header.append('##fileDate=%s\n' % datetime.datetime.now().split('.')[0])
+            header.append('##source=MEI search version "%s"\n' % args.version)
             header.append('##reference=%s\n' % args.fa)
             with open(args.fai) as infile:
                 for line in infile:
@@ -184,8 +184,8 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
                 with open(infilename) as infile:
                     for line in infile:
                         ls=line.strip().split('\t')
-                        chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', ''))
-                        chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', ''))
+                        chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', '')) + int(ls[4].split(',')[2].replace('hybrid=', ''))
+                        chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', '')) + int(ls[5].split(',')[2].replace('hybrid=', ''))
                         if 'MEI_left_breakpoint=pT' in ls[8]:
                             count=chimeric_r
                         elif 'MEI_right_breakpoint=pA' in ls[8]:
