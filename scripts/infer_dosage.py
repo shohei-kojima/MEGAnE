@@ -118,7 +118,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
                     dosage[pos]=2
             mono_x,mono_y, di_x,di_y=[],[], [],[]
             for xval,yval in zip(x,y):
-                if dosage[xval] == 1:
+                if dosage[math.ceil(xval)] == 1:
                     mono_x.append(xval)
                     mono_y.append(yval)
                 else:
