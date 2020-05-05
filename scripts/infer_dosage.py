@@ -41,7 +41,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
 
         def fit_gaussian(list_support_read_count):
             x,y=[],[]
-            support_read_bin= int(np.ceil(args.cov / 25))
+            support_read_bin= int(np.ceil(args.cov / 10))
             for i in range(0, max(list_support_read_count), support_read_bin):
                 x.append(i + ((support_read_bin - 1) / 2))
                 y.append(sum([ list_support_read_count.count(i + j) for j in range(support_read_bin) ]))
@@ -143,7 +143,6 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             plt.suptitle('sample=%s;%s,\nn=%d, r_squared=%f,' % (input_sample, input_bed, len(for_gaussian_fitting), r_squared))  # popt[1] = mean, popt[2] = sigma
             plt.savefig(plotfilename)
             plt.close()
-            zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))  # parameter setting
             log.logger.debug('gaussian_fitting_n=%d,r_squared=%f' %(len(for_gaussian_fitting), r_squared))
             
             # save results
