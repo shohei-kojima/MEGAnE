@@ -13,7 +13,7 @@ import os,sys,datetime,argparse,glob,logging
 time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4
 time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4 -only_abs
 
-python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/export_disage_vcf.py -b NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/ucsc/hg38.fa -rep /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/humrepsub.fa -mainchr /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt -p 4 -overwrite
+python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/export_disage_vcf.py -b NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/ucsc/hg38.fa -rep /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/humrepsub.fa -mainchr /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt -cov 35 -p 4 -overwrite
 '''
 
 
@@ -28,6 +28,7 @@ parser.add_argument('-c', metavar='str', type=str, help='Either -b or -c is Requ
 parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: hg38.fa')
 parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fasta index of the reference genome. Example: hg38.fa.fai')
 parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
+parser.add_argument('-cov', metavar='int', type=int, help='Optional. Specify coverage depth. Default: 30', default=30)
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
 parser.add_argument('-monoallelic', help='Optional. Specify if you use monoalellic sample, such as mouse strains or HAP1 cells.', action='store_true')
