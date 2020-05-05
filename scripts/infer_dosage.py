@@ -140,7 +140,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             ax.set_xlabel('Number of chimeric reads per breakpoint')
             ax.set_ylabel('Number of MEI')
             ax.legend()
-            plt.suptitle('sample=%s;%s,\nn=%d, r_squared=%f,' % (input_sample, input_bed, len(for_gaussian_fitting), r_squared)))  # popt[1] = mean, popt[2] = sigma
+            plt.suptitle('sample=%s;%s,\nn=%d, r_squared=%f,' % (input_sample, input_bed, len(for_gaussian_fitting), r_squared))  # popt[1] = mean, popt[2] = sigma
             plt.savefig(plotfilename)
             plt.close()
             zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))  # parameter setting
