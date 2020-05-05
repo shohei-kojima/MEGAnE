@@ -140,7 +140,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
             ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
             ax.set_xlim(0, popt[1] * 4)
-            ax.set_xlabel('Number of chimeric reads per breakpoint')
+            ax.set_xlabel('Number of chimeric + hybrid reads per breakpoint')
             ax.set_ylabel('Number of MEI')
             ax.legend()
             plt.suptitle('sample=%s;%s,\nn=%d, r_squared=%f,' % (input_sample, input_bed, len(for_gaussian_fitting), r_squared))  # popt[1] = mean, popt[2] = sigma

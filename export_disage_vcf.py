@@ -94,9 +94,16 @@ filenames.disage_pdf_u    =os.path.join(args.outdir, 'plot_gene_dosage_user.pdf'
 
 # output vcf
 import infer_dosage
+log.logger.info('Output vcf started.')
 if os.path.exists(filenames.bp_final_g) is True:
     infer_dosage.calc_dosage(args, params, filenames, filenames.bp_final_g, filenames.disage_pdf_g, filenames.vcf_g)
-    
+    log.logger.info('MEI_final_gaussian.vcf processed.')
+if os.path.exists(filenames.bp_final_p) is True:
+    infer_dosage.calc_dosage(args, params, filenames, filenames.bp_final_p, filenames.disage_pdf_p, filenames.vcf_p)
+    log.logger.info('MEI_final_percentile.vcf processed.')
+if os.path.exists(filenames.bp_final_u) is True:
+    infer_dosage.calc_dosage(args, params, filenames, filenames.bp_final_u, filenames.disage_pdf_u, filenames.vcf_u)
+    log.logger.info('MEI_final_user.vcf processed.')
 
 # output comments
 log.logger.info('Output vcf finished!')
