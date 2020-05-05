@@ -88,14 +88,14 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             for line in infile:
                 ls=line.split('\t')
                 if ls[6] == 'confidence:high' and 'unique:yes' in ls[7]:
-                    chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', '')) + int(ls[4].split(',')[2].replace('hybrid=', ''))
-                    chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', '')) + int(ls[5].split(',')[2].replace('hybrid=', ''))
+                    chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', ''))
+                    chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', ''))
                     if 'MEI_left_breakpoint=pT' in ls[8]:
                         for_gaussian_fitting.append(chimeric_r)
                     elif 'MEI_right_breakpoint=pA' in ls[8]:
                         for_gaussian_fitting.append(chimeric_l)
                     else:
-                        for_gaussian_fitting.append(math.ceil(chimeric_l + chimeric_r))
+                        for_gaussian_fitting.append(math.ceil((chimeric_l + chimeric_r) / 2))
         if len(for_gaussian_fitting) < 10:
             log.logger.warning('Not enough data found. Cannot automatically determine thresholds for MEI filtering. Please check if your data contains MEIs enough for inferring gene dosage.')
         else:
@@ -184,8 +184,8 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
                 with open(infilename) as infile:
                     for line in infile:
                         ls=line.strip().split('\t')
-                        chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', '')) + int(ls[4].split(',')[2].replace('hybrid=', ''))
-                        chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', '')) + int(ls[5].split(',')[2].replace('hybrid=', ''))
+                        chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', ''))
+                        chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', ''))
                         if 'MEI_left_breakpoint=pT' in ls[8]:
                             count=chimeric_r
                         elif 'MEI_right_breakpoint=pA' in ls[8]:
