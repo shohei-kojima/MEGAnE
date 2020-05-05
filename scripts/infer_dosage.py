@@ -148,7 +148,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             # save results
             header=[]
             header.append('##fileformat=VCFv4.1\n')
-            header.append('##fileDate=%s\n' % datetime.datetime.now().split('.')[0])
+            header.append('##fileDate=%s\n' % str(datetime.datetime.now()).split('.')[0])
             header.append('##source=MEI search version "%s"\n' % args.version)
             header.append('##reference=%s\n' % args.fa)
             with open(args.fai) as infile:
