@@ -175,6 +175,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             bed=BedTool(''.join(bed), from_string=True)
             fa=bed.sequence(fi=args.fa, name=True)
             fa=parse_fasta(fa.seqfn)
+            print(open(fa.seqfn).read())
             # load ME length
             with open(outfilename, 'w') as outfile:  # vcf file
                 outfile.write(''.join(header))
