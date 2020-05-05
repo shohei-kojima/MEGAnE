@@ -106,7 +106,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
             input_bed=os.path.basename(infilename)
             x,y,popt,pcov,r_squared,coeff=fit_gaussian(for_gaussian_fitting)  # gaussian fitting
             log.logger.debug('popt=%s,pcov=%s' %(str(popt), str(pcov)))
-            xd=np.arange(min(x), max(x))
+            xd=np.arange(math.ceil(min(x)), math.ceil(max(x)))
             mono_sd= popt[2] ** 2  # standard deviation; sigma ** 2
             mono_zscore= (xd - popt[1]) / mono_sd  # zscore = (value - mu) / stdev
             di_zscore= (xd - (popt[1] * 2)) / (mono_sd * 2)
