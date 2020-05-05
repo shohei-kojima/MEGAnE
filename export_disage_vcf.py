@@ -13,7 +13,7 @@ import os,sys,datetime,argparse,glob,logging
 time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4
 time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4 -only_abs
 
-python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/export_disage_vcf.py -b NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/ucsc/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/ucsc/hg38 -rep /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/humrepsub.fa -mainchr /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt -p 4
+python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/export_disage_vcf.py -b NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/ucsc/hg38.fa -rep /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/humrepsub.fa -mainchr /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt -p 4 -overwrite
 '''
 
 
@@ -41,6 +41,7 @@ parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of thr
 parser.add_argument('-v', '--version', help='Print version.', action='store_true')
 args=parser.parse_args()
 args.version=version
+args.readlen=150  # any read length is fine
 
 
 # start
