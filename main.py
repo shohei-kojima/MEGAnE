@@ -16,7 +16,7 @@ time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/koooji
 
 
 # version
-version='2020/04/13'
+version='2020/05/08'
 
 
 # args
