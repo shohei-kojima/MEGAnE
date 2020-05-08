@@ -226,7 +226,8 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
                             right= int(ls[5].split(',')[0].replace('MEI_right:ref_pos=', ''))
                             homlen= (left - right) if left > right else 0
                             meinfo=ls[8].split(',', 1)[1].replace('MEI_left_breakpoint', 'MEI_lbp').replace('MEI_right_breakpoint', 'MEI_rbp')
-                            info='SVTYPE=%s;MEPRED=%s;HOMLEN=%d;MEI_rpos=%s;%s' % (ls[3], 'PASS', homlen, ls[2], meinfo)
+                            mepred='PASS' if 'subfamily_pred:status=PASS' in ls[8] else 'FAILED'
+                            info='SVTYPE=%s;MEPRED=%s;HOMLEN=%d;MEI_rpos=%s;%s' % (ls[3], mepred, homlen, ls[2], meinfo)
                             outline='%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\n' % (ls[0], start, id, seq, '<INS:ME>', '.', filt, info, 'CN', dosage[count])
                             outfile.write(outline)
                     outfile.flush()
