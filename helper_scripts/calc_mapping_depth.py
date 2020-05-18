@@ -41,11 +41,11 @@ else:
 
 if args.o is not None:
     if os.path.exists(args.o) is True:
-        if args.overwirte is False:
+        if args.overwrite is False:
             print('Error: Output file already exists. Please specify "-overwrite" option if you overwrite the existing file.')
             exit(1)
         else:
-            print('Info: Output file already exists, but will overwrite.')
+            print('Info: Output file already existed, but overwrote it according to "-overwrite" option.')
 
 
 # main
