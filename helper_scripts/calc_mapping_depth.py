@@ -61,7 +61,7 @@ mean_dep= cov_dep / genome_len
 mean_dep= round(mean_dep)
 
 if args.o is not None:
-    with open('%s_genome_depth.txt' % base, 'w') as outfile:
+    with open(args.o, 'w') as outfile:
         outfile.write('%d\t%s\n' % (mean_dep, os.path.abspath(args.i)))
 else:
     print('%d\t%s' % (mean_dep, os.path.abspath(args.i)))
