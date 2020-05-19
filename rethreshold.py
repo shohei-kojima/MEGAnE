@@ -43,6 +43,7 @@ parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previ
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Do not need to specify this. Rethresholding uses single core.', default=1)
 args=parser.parse_args()
+args.version=version
 
 
 # always overwrite
@@ -51,7 +52,7 @@ args.overwrite=True
 
 # start
 import init
-init.init(args)
+init.init(args, version)
 
 
 # logging

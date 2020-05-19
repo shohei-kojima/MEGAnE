@@ -72,7 +72,7 @@ class load:
             # read parameter setting file
             with open(f) as infile:
                 for line in infile:
-                    ls=line.strip().split('=')
+                    ls=line.strip().split(' ')[0].split('=')
                     if ls[0] == 'discordant_reads_clip_len':
                         self.discordant_reads_clip_len=int(ls[1])
                     elif ls[0] == 'read_pair_gap_len':
