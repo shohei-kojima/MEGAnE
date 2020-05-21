@@ -36,6 +36,10 @@ def setup(args, base):
         global params
         if args.setting is not None:
             param_path=args.setting
+        elif args.verylowdep is True:
+            param_path=join(base, 'lib/parameter_settings_lowdep.txt')
+        elif args.lowdep is True:
+            param_path=join(base, 'lib/parameter_settings_lowdep.txt')
         else:
             param_path=join(base, 'lib/parameter_settings.txt')
         import load_parameters

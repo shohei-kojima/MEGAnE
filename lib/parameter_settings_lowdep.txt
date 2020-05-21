@@ -36,7 +36,7 @@ actual_cutoff_rank=0.001
 first_filter_eval_threshold=1e-15
 first_filter_total_hybrid_read_num=0    # orig = 1
 second_filter_hybrid_read_num=1
-second_filter_eval_threshold_for_few_hybrid=1e-20    # orig = 1e-25
+second_filter_eval_threshold_for_few_hybrid=1e-25
 L1_filter_min_TSD_len=5
 L1_filter_A_or_T_perc=50
 L1_filter_A_plus_T_perc=90

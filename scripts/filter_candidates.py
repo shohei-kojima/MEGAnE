@@ -275,7 +275,30 @@ def filter(args, params, filenames):
                             else:
                                 high.add(line)
                         elif (len(R_eval) >= 1) and (len(L_eval) >= 1):
-                            if (min(R_eval) < params.second_filter_eval_threshold_for_few_hybrid) and (min(L_eval) < params.second_filter_eval_threshold_for_few_hybrid):
+                            proc_next=False
+                            if args.lowdep is True or args.verylowdep is True:
+                                if min(R_eval + L_eval) < params.second_filter_eval_threshold_for_few_hybrid and (int(ls[12]) + int(ls[13])) >= params.second_filter_hybrid_read_num:
+                                    proc_next=True
+                            else:
+                                if (min(R_eval) < params.second_filter_eval_threshold_for_few_hybrid) and (min(L_eval) < params.second_filter_eval_threshold_for_few_hybrid):
+                                    proc_next=True
+                            if proc_next is True:
+                                if ls[7] == 'L1':
+                                    L1_judge=L1_filter(line, r_pos, l_pos, pA_only, R_eval, L_eval)
+                                    if L1_judge is True:
+                                        high.add(line)
+                                else:
+                                    high.add(line)
+                        elif args.lowdep is True or args.verylowdep is True:
+                            RL_eval= R_eval + L_eval
+                            proc_next=False
+                            if args.lowdep is True:
+                                if min(RL_eval) < params.second_filter_eval_threshold_for_few_hybrid and (int(ls[12]) + int(ls[13])) >= (2 * params.second_filter_hybrid_read_num):
+                                    proc_next=True
+                            elif args.verylowdep is True:
+                                if min(RL_eval) < params.second_filter_eval_threshold_for_few_hybrid:
+                                    proc_next=True
+                            if proc_next is True:
                                 if ls[7] == 'L1':
                                     L1_judge=L1_filter(line, r_pos, l_pos, pA_only, R_eval, L_eval)
                                     if L1_judge is True:
