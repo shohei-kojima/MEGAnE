@@ -12,7 +12,7 @@ Usage: python calc_mapping_depth.py -i samtools_out.txt -o out.txt
 
 Exmaple:
 samtools coverage --reference ref.fa in.cram > in.txt
-python calc_mapping_depth.py -i in.txt -chr /path/to/prog/lib/human_autosomes_ucsc_stype.txt -o out.txt
+python calc_mapping_depth.py -i in.txt -chr /path/to/prog/lib/human_autosomes_ucsc_style.txt -o out.txt
 
 Usage details:
 Before using this script, you need to run 'samtools coverage' to calculate depth of each chromosome. You need to use samtools 1.10 or later to use 'coverage' function. The output from 'samtools coverage' contains mean depth of each chromosome. This program takes the output file from 'samtools coverage' to calculate mean depth of autosomes. You can specify the output file with '-i' option. You can specify names of autosomes by specifying a file containing names of autosomes with -chr option.
@@ -25,7 +25,7 @@ import os,sys,argparse
 
 parser=argparse.ArgumentParser(description='')
 parser.add_argument('-i', metavar='str', type=str, help='Required. Specify output file from samtools coverage.')
-parser.add_argument('-chr', metavar='str', type=str, help='Required. Specify a file containing autosomes. Default=/path/to/prog/lib/human_autosomes_ucsc_stype.txt')
+parser.add_argument('-chr', metavar='str', type=str, help='Required. Specify a file containing autosomes. Default=/path/to/prog/lib/human_autosomes_ucsc_style.txt')
 parser.add_argument('-o', metavar='str', type=str, help='Optional. Specify output file name. Otherwise, output result as stdout.')
 parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
 args=parser.parse_args()
@@ -42,7 +42,7 @@ else:
 
 if args.chr is None:
     base=os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
-    args.chr=os.path.join(base, '../lib/human_autosomes_ucsc_stype.txt')
+    args.chr=os.path.join(base, '../lib/human_autosomes_ucsc_style.txt')
 else:
     if os.path.exists(args.chr) is not True:
         print('Error: Chromosome file do not exists.')
