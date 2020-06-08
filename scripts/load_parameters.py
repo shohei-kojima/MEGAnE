@@ -189,3 +189,20 @@ class load:
         except:
             log.logger.error('\n'+ traceback.format_exc())
             exit(1)
+
+
+class load_geno:
+    def __init__(self, args, f):
+        log.logger.debug('started')
+        try:
+            # default
+            self.ins_slop_len=300
+            self.abs_slop_len=300
+            
+            params_for_debug=[]
+            for k,v in self.__dict__.items():
+                params_for_debug.append('%s=%s' % (k, str(v)))
+            log.logger.debug('parameters:\n'+ '\n'.join(params_for_debug))
+        except:
+            log.logger.error('\n'+ traceback.format_exc())
+            exit(1)

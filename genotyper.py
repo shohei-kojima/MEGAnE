@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+
+'''
+Copyright (c) 2020 RIKEN
+All Rights Reserved
+See file LICENSE for details.
+'''
+
+
+import os,sys,datetime,argparse,glob,logging
+
+'''
+time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4
+time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4 -only_abs
+
+python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/export_disage_vcf.py -b NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/ucsc/hg38.fa -fai /home/kooojiii/Documents/genomes/hg38/ucsc/hg38.fa.fai -rep /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/humrepsub.fa -mainchr /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt -cov 35 -p 4 -overwrite
+'''
+
+
+# version
+version='2020/06/08'
+
+
+# args
+parser=argparse.ArgumentParser(description='')
+parser.add_argument('-b', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end BAM file.')
+parser.add_argument('-c', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end CRAM file.')
+parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: hg38.fa')
+parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fasta index of the reference genome. Example: hg38.fa.fai')
+parser.add_argument('-ins_bed', metavar='str', type=str, help='Specify input bed file containing information of MEIs.')
+parser.add_argument('-abs_bed', metavar='str', type=str, help='Specify input bed file containing information of absent MEs.')
+parser.add_argument('-cov', metavar='int', type=int, help='Optional. Specify coverage depth. Default: 30', default=30)
+parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./genotype_out', default='./genotype_out')
+parser.add_argument('-gender', metavar='str', type=str, help='Optional. Specify gender of the sample; male or female or unknown. Available only when human sample. Default: unknown', default='unknown')
+parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/prog/lib/parameter_settings.txt')
+parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
+parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
+parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 1', default=1)
+parser.add_argument('-v', '--version', help='Print version.', action='store_true')
+args=parser.parse_args()
+args.version=version
+args.readlen=150  # any read length is fine
+
+
+# start
+import init
+init.init_geno(args, version)
+
+
+# logging
+import log
+args.logfilename='for_debug_genotyping.log'
+if os.path.exists(os.path.join(args.outdir, args.logfilename)) is True:
+    os.remove(os.path.join(args.outdir, args.logfilename))
+log.start_log(args)
+log.logger.debug('Logging started.')
+
+
+# initial check
+import initial_check
+#log.logger.debug('This is version %s' % version)
+#print()
+#log.logger.info('Initial check started.')
+#initial_check.check(args, sys.argv)
+
+
+# set up
+import setup
+setup.setup_geno(args, init.base)
+params=setup.params
+
+
+# output file names
+import utils
+filenames=utils.empclass()
+
+filenames.bp_final_g      =os.path.join(args.outdir, 'MEI_final_gaussian.bed')
+filenames.bp_final_p      =os.path.join(args.outdir, 'MEI_final_percentile.bed')
+filenames.bp_final_u      =os.path.join(args.outdir, 'MEI_final_user.bed')
+
+filenames.vcf_g           =os.path.join(args.outdir, 'MEI_final_gaussian.vcf')
+filenames.vcf_p           =os.path.join(args.outdir, 'MEI_final_percentile.vcf')
+filenames.vcf_u           =os.path.join(args.outdir, 'MEI_final_user.vcf')
+
+filenames.disage_pdf_g    =os.path.join(args.outdir, 'plot_gene_dosage_gaussian.pdf')
+filenames.disage_pdf_p    =os.path.join(args.outdir, 'plot_gene_dosage_percentile.pdf')
+filenames.disage_pdf_u    =os.path.join(args.outdir, 'plot_gene_dosage_user.pdf')
+
+
+# 0. limit BAM/CRAM
+import allele_count_ins
+log.logger.info('Limit BAM/CRAM started.')
+allele_count_ins.limit()
+
+
+
+# output comments
+log.logger.info('Output vcf finished!')

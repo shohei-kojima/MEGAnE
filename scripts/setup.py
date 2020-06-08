@@ -73,3 +73,17 @@ def setup(args, base):
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
+
+
+def setup_geno(args, base):
+    log.logger.debug('started')
+    try:
+        # load parameter settings
+        global params
+        param_path=join(base, 'lib/parameter_settings_geno.txt')
+        import load_parameters
+        params=load_parameters.load_geno(args, param_path)
+
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
