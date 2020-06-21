@@ -13,7 +13,7 @@ class load:
     def __init__(self, args, f):
         log.logger.debug('started')
         try:
-            # default
+            # default; polymorphic ME search
             self.discordant_reads_clip_len=20
             self.read_pair_gap_len=2000
             self.max_TSD_len=50
@@ -195,10 +195,11 @@ class load_geno:
     def __init__(self, args, f):
         log.logger.debug('started')
         try:
-            # default
+            # default; genotyping
             self.ins_slop_len=300
             self.abs_slop_len=300
-            
+            self.min_tsd_len_to_remove_1nt=4
+            self.tsd_flank_len=11
             params_for_debug=[]
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))

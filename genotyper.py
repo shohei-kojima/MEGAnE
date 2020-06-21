@@ -10,15 +10,12 @@ See file LICENSE for details.
 import os,sys,datetime,argparse,glob,logging
 
 '''
-time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4
-time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4 -only_abs
-
-python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/export_disage_vcf.py -b NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/ucsc/hg38.fa -fai /home/kooojiii/Documents/genomes/hg38/ucsc/hg38.fa.fai -rep /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/humrepsub.fa -mainchr /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt -cov 35 -p 4 -overwrite
+python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -c NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa -fai /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai -ins_bed result_out/MEI_final_percentile.bed -p 4 -overwrite
 '''
 
 
 # version
-version='2020/06/08'
+version='2020/06/21'
 
 
 # args
@@ -74,23 +71,19 @@ params=setup.params
 import utils
 filenames=utils.empclass()
 
-filenames.bp_final_g      =os.path.join(args.outdir, 'MEI_final_gaussian.bed')
-filenames.bp_final_p      =os.path.join(args.outdir, 'MEI_final_percentile.bed')
-filenames.bp_final_u      =os.path.join(args.outdir, 'MEI_final_user.bed')
+filenames.tmp       =os.path.join(args.outdir, 'tmp.txt')
 
-filenames.vcf_g           =os.path.join(args.outdir, 'MEI_final_gaussian.vcf')
-filenames.vcf_p           =os.path.join(args.outdir, 'MEI_final_percentile.vcf')
-filenames.vcf_u           =os.path.join(args.outdir, 'MEI_final_user.vcf')
-
-filenames.disage_pdf_g    =os.path.join(args.outdir, 'plot_gene_dosage_gaussian.pdf')
-filenames.disage_pdf_p    =os.path.join(args.outdir, 'plot_gene_dosage_percentile.pdf')
-filenames.disage_pdf_u    =os.path.join(args.outdir, 'plot_gene_dosage_user.pdf')
+filenames.limited_b       =os.path.join(args.outdir, 'only_necessary.bam')
+filenames.limited_c       =os.path.join(args.outdir, 'only_necessary.cram')
+filenames.limited_f2       =os.path.join(args.outdir, 'only_necessary_f')
+filenames.depth_ins       =os.path.join(args.outdir, 'depth_ins.txt')
 
 
 # 0. limit BAM/CRAM
 import allele_count_ins
 log.logger.info('Limit BAM/CRAM started.')
-allele_count_ins.limit()
+#allele_count_ins.limit(args, params, filenames)
+allele_count_ins.genotype_ins(args, params, filenames)
 
 
 
