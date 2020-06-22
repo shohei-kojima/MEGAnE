@@ -71,12 +71,13 @@ params=setup.params
 import utils
 filenames=utils.empclass()
 
-filenames.tmp       =os.path.join(args.outdir, 'tmp.txt')
-
 filenames.limited_b       =os.path.join(args.outdir, 'only_necessary.bam')
 filenames.limited_c       =os.path.join(args.outdir, 'only_necessary.cram')
 filenames.limited_f2       =os.path.join(args.outdir, 'only_necessary_f')
 filenames.depth_ins       =os.path.join(args.outdir, 'depth_ins.txt')
+
+filenames.tmp_bam         =os.path.join(args.outdir, 'tmp.bam')
+filenames.out_spanning    =os.path.join(args.outdir, 'spanning_read_summary.txt.gz')
 
 
 # 0. limit BAM/CRAM
@@ -84,7 +85,8 @@ import allele_count_ins
 log.logger.info('Limit BAM/CRAM started.')
 #allele_count_ins.limit(args, params, filenames)
 allele_count_ins.evaluate_tsd_depth(args, params, filenames)
-cn_est_tsd_depth=evaluate_tsd_depth.cn_est_tsd_depth
+cn_est_tsd_depth=allele_count_ins.cn_est_tsd_depth
+allele_count_ins.evaluate_spanning_read(args, params, filenames)
 
 
 # output comments

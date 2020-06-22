@@ -200,6 +200,9 @@ class load_geno:
             self.abs_slop_len=300
             self.min_tsd_len_to_remove_1nt=4
             self.tsd_flank_len=11
+            self.min_len_overhang_for_spanning=21
+            self.min_overhang_match_for_spanning=21
+            self.max_overhang_mismatch_for_spanning=10
             params_for_debug=[]
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))
