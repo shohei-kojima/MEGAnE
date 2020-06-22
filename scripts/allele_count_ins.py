@@ -6,7 +6,7 @@ All Rights Reserved
 See file LICENSE for details.
 '''
 
-import os,gzip,subprocess
+import os,gzip,subprocess,statistics
 import pysam
 from pybedtools import BedTool
 from scipy import stats
@@ -176,10 +176,13 @@ def evaluate_tsd_depth(args, params, filenames):
         del_y=del_kernel(del_x)
         
         def find_threshold(xs, ys):
+            highest=[-1, -1]
             peaks,bottoms=[],[]
             up=True
             prev_y=-1
             for x,y in zip(xs, ys):
+                if y > highest[1]:
+                    highest=[x, y]
                 if y >= prev_y:
                     if up is False:
                         bottoms.append(x)
@@ -189,23 +192,41 @@ def evaluate_tsd_depth(args, params, filenames):
                         peaks.append(x)
                     up=False
                 prev_y=y
-            return peaks, bottoms
+            return peaks, bottoms, highest
         
         # find threshold
         xs=np.linspace(1, 2, 200)  # TSD
         ys=tsd_kernel(xs)
-        peaks,bottoms=find_threshold(xs, ys)
-        tsd_threshold=bottoms[-1]
+        peaks,bottoms,highest=find_threshold(xs, ys)
+        if len(bottoms) >= 1:
+            tsd_threshold=bottoms[-1]
+            for peak in peaks:
+                if peak < tsd_threshold:
+                    mono_peak=peak
+                else:
+                    bi_peak=peak
+                    break
+            tsd_mono_high_conf_threshold= (mono_peak + tsd_threshold + tsd_threshold) / 3
+            tsd_bi_high_conf_threshold=   (bi_peak   + tsd_threshold + tsd_threshold) / 3
+        else:
+            tsd_threshold= ((highest[0] - 1) * 1.5) + 1  # would be corner cases
+            tsd_mono_high_conf_threshold= ((highest[0] - 1) * 1.333) + 1
+            tsd_bi_high_conf_threshold=   ((highest[0] - 1) * 1.666) + 1
         log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,tsd_threshold=%f' % (peaks, bottoms, tsd_threshold))
         # find threshold, DEL
         xs=np.linspace(0, 1, 200)
         ys=del_kernel(xs)
-        peaks,bottoms=find_threshold(xs, ys)
-        del_threshold=bottoms[-1]
+        peaks,bottoms,highest=find_threshold(xs, ys)
+        if len(bottoms) >= 1:
+            del_threshold=bottoms[-1]
+        else:
+            del_threshold= 0.25  # would be corner cases
+        del_mono_high_conf_threshold= del_threshold * params.del_mono_high_threshold_coeff  # 0.66
+        del_bi_high_conf_threshold=   del_threshold * params.del_bi_high_threshold_coeff  # 1.33
         log.logger.debug('del_kernel,peaks=%s,bottoms=%s,del_threshold=%f' % (peaks, bottoms, del_threshold))
         # plot
         plt.figure(figsize=(3, 3))  # (x, y)
-        gs=gridspec.GridSpec(2, 1)   # y, x
+        gs=gridspec.GridSpec(2, 1)  # (y, x)
         gs.update(wspace=0.1)
         ax=plt.subplot(gs[0])  # TSD
         ax.fill([0]+ tsd_x.tolist() +[3], [0]+ tsd_y.tolist() +[0], c='dodgerblue', alpha=0.25, label='TSD, n=%d' % len(only_tsd))
@@ -232,11 +253,27 @@ def evaluate_tsd_depth(args, params, filenames):
             ratio,struc=back_to_tsd_ratios[id]
             allele=1
             if struc == 'TSD':
-                if ratio >= tsd_threshold:
-                    allele=2
+                if ratio < tsd_mono_high_conf_threshold:
+                    allele='mono_high'
+                elif tsd_mono_high_conf_threshold <= ratio < tsd_threshold:
+                    allele='mono_low'
+                elif tsd_threshold <= ratio < tsd_bi_high_conf_threshold:
+                    allele='bi_low'
+                elif tsd_bi_high_conf_threshold <= ratio < params.tsd_outlier:
+                    allele='bi_high'
+                else:
+                    allele='outlier'
             elif struc == 'Del':
-                if ratio >= del_threshold:
-                    allele=2
+                if ratio < del_mono_high_conf_threshold:
+                    allele='mono_high'
+                elif del_mono_high_conf_threshold <= ratio < del_threshold:
+                    allele='mono_low'
+                elif del_threshold <= ratio < del_bi_high_conf_threshold:
+                    allele='bi_low'
+                elif del_bi_high_conf_threshold <= ratio < params.del_outlier:
+                    allele='bi_high'
+                else:
+                    allele='outlier'
             else:
                 allele='NA'
             cn_est_tsd_depth[id]=[allele, ratio, struc]
@@ -327,6 +364,8 @@ def evaluate_spanning_read(args, params, filenames):
         
         # load
         insbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
+        if os.path.exists(filenames.limited_b +'.fai') is True:
+            os.remove(filenames.limited_b +'.fai')
         if args.b is not None:
             pysam.index(filenames.limited_b)
             cmd='samtools view -@ %d %s -bh -M -L %s -o %s' % (args.p, filenames.limited_b, insbed.fn, filenames.tmp_bam)
@@ -367,9 +406,9 @@ def evaluate_spanning_read(args, params, filenames):
                                     break
                             left_match=count_mismatch(ls[5], mdz, 0, s - start)
                             right_match=count_mismatch(ls[5], mdz, e - start, end - start)
-                            left_mismatch= s - start - left_match
-                            right_mismatch= end - e - right_match
-                            if left_match >= params.min_overhang_match_for_spanning and right_match >= params.min_overhang_match_for_spanning and left_mismatch <= params.max_overhang_mismatch_for_spanning and right_mismatch <= params.max_overhang_mismatch_for_spanning:
+                            left_mismatch_ratio= (s - start - left_match) / (s - start)
+                            right_mismatch_ratio= (end - e - right_match) / (end - e)
+                            if left_match >= params.min_overhang_match_for_spanning and right_match >= params.min_overhang_match_for_spanning and left_mismatch_ratio <= params.max_overhang_mismatch_ratio_for_spanning and right_mismatch_ratio <= params.max_overhang_mismatch_ratio_for_spanning:
                                 judge_span='True'
                                 if not id in span_judge_true:
                                     span_judge_true[id]=0
@@ -384,6 +423,31 @@ def evaluate_spanning_read(args, params, filenames):
                             out_spanning.append('%s\t%s%s\t%s\t%d\t%d\t%d\t%d\n' % (id, ls[0], strand, judge_span, s - start, left_match, end - e, right_match))
         with gzip.open(filenames.out_spanning, 'wt') as outfile:
             outfile.write(''.join(out_spanning))
+            outfile.flush()
+            os.fdatasync(outfile.fileno())
+        spanning_counts=[]
+        for id in span_judge_true:
+            spanning_counts.append(span_judge_true[id])
+        spanning_count_median= statistics.median(spanning_counts)
+        spanning_high_threshold= spanning_count_median * params.spanning_high_threshold_coeff
+        spanning_zero_threshold= spanning_count_median * params.spanning_zero_threshold_coeff
+        global cn_est_spanning
+        cn_est_spanning={}
+        spanning_outlier= args.cov * params.spanning_outlier_coeff
+        with open(args.ins_bed) as infile:
+            for line in infile:
+                ls=line.split()
+                if ls[10] in span_judge_true:
+                    if spanning_outlier <= span_judge_true[ls[10]]:
+                        cn_est_spanning[ls[10]]=[span_judge_true[ls[10]], 'outlier']
+                    elif spanning_high_threshold <= span_judge_true[ls[10]] < spanning_outlier:
+                        cn_est_spanning[ls[10]]=[span_judge_true[ls[10]], 'bi_high']
+                    elif spanning_zero_threshold <= span_judge_true[ls[10]] < spanning_high_threshold:
+                        cn_est_spanning[ls[10]]=[span_judge_true[ls[10]], 'bi_low']
+                    else:
+                        cn_est_spanning[ls[10]]=[span_judge_true[ls[10]], 'mono_low']
+                else:
+                    cn_est_spanning[ls[10]]=[0, 'mono_high']
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

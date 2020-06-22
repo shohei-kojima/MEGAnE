@@ -87,6 +87,7 @@ log.logger.info('Limit BAM/CRAM started.')
 allele_count_ins.evaluate_tsd_depth(args, params, filenames)
 cn_est_tsd_depth=allele_count_ins.cn_est_tsd_depth
 allele_count_ins.evaluate_spanning_read(args, params, filenames)
+cn_est_spanning=allele_count_ins.cn_est_spanning
 
 
 # output comments

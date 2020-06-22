@@ -199,10 +199,17 @@ class load_geno:
             self.ins_slop_len=300
             self.abs_slop_len=300
             self.min_tsd_len_to_remove_1nt=4
-            self.tsd_flank_len=11
-            self.min_len_overhang_for_spanning=21
-            self.min_overhang_match_for_spanning=21
-            self.max_overhang_mismatch_for_spanning=10
+            self.tsd_flank_len=4
+            self.del_mono_high_threshold_coeff=0.666
+            self.del_bi_high_threshold_coeff=1.333
+            self.tsd_outlier=3
+            self.del_outlier=2
+            self.min_len_overhang_for_spanning=31
+            self.min_overhang_match_for_spanning=31
+            self.max_overhang_mismatch_ratio_for_spanning=0.1
+            self.spanning_high_threshold_coeff=0.666
+            self.spanning_zero_threshold_coeff=0.333
+            self.spanning_outlier_coeff= 2
             params_for_debug=[]
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))
