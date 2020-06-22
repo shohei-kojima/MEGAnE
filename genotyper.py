@@ -83,8 +83,8 @@ filenames.depth_ins       =os.path.join(args.outdir, 'depth_ins.txt')
 import allele_count_ins
 log.logger.info('Limit BAM/CRAM started.')
 #allele_count_ins.limit(args, params, filenames)
-allele_count_ins.genotype_ins(args, params, filenames)
-
+allele_count_ins.evaluate_tsd_depth(args, params, filenames)
+cn_est_tsd_depth=evaluate_tsd_depth.cn_est_tsd_depth
 
 
 # output comments

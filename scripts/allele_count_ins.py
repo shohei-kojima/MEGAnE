@@ -9,7 +9,18 @@ See file LICENSE for details.
 import os,gzip,subprocess
 import pysam
 from pybedtools import BedTool
+from scipy import stats
+import numpy as np
+import matplotlib
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
 import log,traceback
+
+matplotlib.rcParams['lines.linewidth']=0.5
+matplotlib.rcParams['axes.linewidth']=0.5
+matplotlib.rcParams['xtick.major.width']=0.5
+matplotlib.rcParams['ytick.major.width']=0.5
+matplotlib.rcParams['font.size']=5
 
 
 def limit(args, params, filenames):
@@ -40,7 +51,7 @@ def limit(args, params, filenames):
 
 
 # main
-def genotype_ins(args, params, filenames):
+def evaluate_tsd_depth(args, params, filenames):
     log.logger.debug('started')
     try:
         # convert to depth
@@ -81,11 +92,8 @@ def genotype_ins(args, params, filenames):
             corrected_dep= sum(one_nt_removed) / len(one_nt_removed)
             return corrected_dep
             
-        chim_count={}
-        back_to_tsd_ratios=[]
-        back_to_chim_ratios=[]
-        structures=[]
-        chimerics=[]
+        back_to_tsd_ratios={}
+        only_tsd,only_del=[],[]
         with open(args.ins_bed) as infile:
             for line in infile:
                 ls=line.split()
@@ -128,7 +136,7 @@ def genotype_ins(args, params, filenames):
                             left_num=int(ls[4].split(',')[1].split('=')[1])
                             right_num=int(ls[5].split(',')[1].split('=')[1])
                             tsd_depth= left_num + right_num
-                            structure='no_tsd'
+                            structure='no_TSD_no_Del'
                         # left flank
                         left_depth=[]
                         for pos in range(left_pos - params.tsd_flank_len, left_pos):
@@ -144,25 +152,98 @@ def genotype_ins(args, params, filenames):
                     left_num=int(ls[4].split(',')[1].split('=')[1])
                     right_num=int(ls[5].split(',')[1].split('=')[1])
                     tsd_depth= left_num + right_num
-                    structure='no_read'
-                left_num=int(ls[4].split(',')[1].split('=')[1])
-                right_num=int(ls[5].split(',')[1].split('=')[1])
+                    structure='no_background_read'
                 if left_depth + right_depth > 0:
                     back_to_tsd_ratio= tsd_depth / ((left_depth + right_depth) / 2)
-                    back_to_chim_ratio= (left_num + right_num) / ((left_depth + right_depth) / 2)
                 else:
                     back_to_tsd_ratio=-1
-                    back_to_chim_ratio=-1
-                back_to_tsd_ratios.append(back_to_tsd_ratio)
-                back_to_chim_ratios.append(back_to_chim_ratio)
-                chimerics.append(left_num + right_num)
-                structures.append(structure)
-        out=[]
-        for r,c,ch,s in zip(back_to_tsd_ratios, back_to_chim_ratios, chimerics, structures):
-            out.append('%f\t%f\t%d\t%s\n' % (r, c, ch, s))
-        with open('./genotype_out/tmp_back_to_tsd_ratio.txt', 'w') as outfile:
-            outfile.write(''.join(out))
+                if back_to_tsd_ratio >= 0:
+                    if structure == 'TSD' and 'confidence:high' in line:
+                        only_tsd.append(back_to_tsd_ratio)
+                    elif structure == 'Del' and 'confidence:high' in line:
+                        only_del.append(back_to_tsd_ratio)
+                back_to_tsd_ratios[ls[10]]=[back_to_tsd_ratio, structure]
+        tsd_kernel=stats.gaussian_kde(only_tsd)
+        tsd_x=np.linspace(0, 3, 600)
+        tsd_y=tsd_kernel(tsd_x)
+        del_kernel=stats.gaussian_kde(only_del)
+        del_x=np.linspace(0, 3, 600)
+        del_y=del_kernel(del_x)
+        
+        def find_threshold(xs, ys):
+            peaks,bottoms=[],[]
+            up=True
+            prev_y=-1
+            for x,y in zip(xs, ys):
+                if y >= prev_y:
+                    if up is False:
+                        bottoms.append(x)
+                    up=True
+                else:
+                    if up is True:
+                        peaks.append(x)
+                    up=False
+                prev_y=y
+            return peaks, bottoms
+        
+        # find threshold
+        xs=np.linspace(1, 2, 200)  # TSD
+        ys=tsd_kernel(xs)
+        peaks,bottoms=find_threshold(xs, ys)
+        tsd_threshold=bottoms[-1]
+        log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,tsd_threshold=%f' % (peaks, bottoms, tsd_threshold))
+        # find threshold, DEL
+        xs=np.linspace(0, 1, 200)
+        ys=del_kernel(xs)
+        peaks,bottoms=find_threshold(xs, ys)
+        del_threshold=bottoms[-1]
+        log.logger.debug('del_kernel,peaks=%s,bottoms=%s,del_threshold=%f' % (peaks, bottoms, del_threshold))
+        # plot
+        plt.figure(figsize=(3, 3))  # (x, y)
+        gs=gridspec.GridSpec(2, 1)   # y, x
+        gs.update(wspace=0.1)
+        ax=plt.subplot(gs[0])  # TSD
+        ax.fill([0]+ tsd_x.tolist() +[3], [0]+ tsd_y.tolist() +[0], c='dodgerblue', alpha=0.25, label='TSD, n=%d' % len(only_tsd))
+        ax.axvline(x=tsd_threshold, linewidth=0.5, alpha=0.5, color='steelblue', linestyle='dashed', label='Threshold=%.2f' % tsd_threshold)
+        ax.set_xlim(0, 3)
+        ax.set_ylim(ymin=0)
+        ax.set_ylabel('Density')
+        ax.legend()
+        ax=plt.subplot(gs[1])  # DEL
+        ax.fill([0]+ del_x.tolist() +[3], [0]+ del_y.tolist() +[0], c='coral', alpha=0.25, label='Short_del, n=%d' % len(only_del))
+        ax.axvline(x=del_threshold, linewidth=0.5, alpha=0.5, color='orangered', linestyle='dashed', label='Threshold=%.2f' % del_threshold)
+        ax.set_xlim(0, 3)
+        ax.set_ylim(ymin=0)
+        ax.set_xlabel('Background depth to TSD/short-del depth ratio')
+        ax.set_ylabel('Density')
+        ax.legend()
+        plt.suptitle('Gaussian kernel-density estimation')
+        plt.savefig('./genotype_out/kde.pdf')
+        
+        # count allele count
+        global cn_est_tsd_depth
+        cn_est_tsd_depth={}
+        for id in back_to_tsd_ratios:
+            ratio,struc=back_to_tsd_ratios[id]
+            allele=1
+            if struc == 'TSD':
+                if ratio >= tsd_threshold:
+                    allele=2
+            elif struc == 'Del':
+                if ratio >= del_threshold:
+                    allele=2
+            else:
+                allele='NA'
+            cn_est_tsd_depth[id]=[allele, ratio, struc]
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
 
+
+def evaluate_spanning_read():
+    log.logger.debug('started')
+    try:
+        pass
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
