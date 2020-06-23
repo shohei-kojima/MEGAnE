@@ -210,6 +210,10 @@ class load_geno:
             self.spanning_high_threshold_coeff=0.666
             self.spanning_zero_threshold_coeff=0.333
             self.spanning_outlier_coeff= 2
+            self.fit_gaussian_init_a_coeff=0.5
+            self.fit_gaussian_init_mu_coeff=1
+            self.fit_gaussian_init_sigma_coeff=0.33
+            self.discordant_outlier_coeff= 3.5
             params_for_debug=[]
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))

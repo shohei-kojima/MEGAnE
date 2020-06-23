@@ -86,10 +86,10 @@ filenames.disc_read_pdf   =os.path.join(args.outdir, 'discordant_read_num.pdf')
 import allele_count_ins
 log.logger.info('Limit BAM/CRAM started.')
 #allele_count_ins.limit(args, params, filenames)
-allele_count_ins.evaluate_tsd_depth(args, params, filenames)
-cn_est_tsd_depth=allele_count_ins.cn_est_tsd_depth
-allele_count_ins.evaluate_spanning_read(args, params, filenames)
-cn_est_spanning=allele_count_ins.cn_est_spanning
+#allele_count_ins.evaluate_tsd_depth(args, params, filenames)
+#cn_est_tsd_depth=allele_count_ins.cn_est_tsd_depth
+#allele_count_ins.evaluate_spanning_read(args, params, filenames)
+#cn_est_spanning=allele_count_ins.cn_est_spanning
 allele_count_ins.evaluate_discordant(args, params, filenames)
 cn_est_disc=allele_count_ins.cn_est_disc
 

@@ -469,7 +469,7 @@ def evaluate_discordant(args, params, filenames):
 
         def fit_gaussian(list_support_read_count):
             x,y=[],[]
-            support_read_bin= int(np.ceil(args.cov / 50))
+            support_read_bin= int(np.ceil(args.cov / 25))
             for i in range(0, max(list_support_read_count), support_read_bin):
                 x.append(i + ((support_read_bin - 1) / 2))
                 y.append(sum([ list_support_read_count.count(i + j) for j in range(support_read_bin) ]))
@@ -517,17 +517,12 @@ def evaluate_discordant(args, params, filenames):
         all_mei_count_range=[]
         for_gaussian_fitting=[]
         disc_read_d={}
-        with open(filenames.ins_bed) as infile:
+        with open(args.ins_bed) as infile:
             for line in infile:
                 ls=line.split('\t')
-                chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', '')) + int(ls[4].split(',')[2].replace('hybrid=', ''))
-                chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', '')) + int(ls[5].split(',')[2].replace('hybrid=', ''))
-                if 'MEI_left_breakpoint=pT' in ls[8]:
-                    count=chimeric_r
-                elif 'MEI_right_breakpoint=pA' in ls[8]:
-                    count=chimeric_l
-                else:
-                    count= math.ceil((chimeric_l + chimeric_r) / 2)
+                discordant_l=int(ls[4].split(',')[1].replace('chimeric=', '')) + int(ls[4].split(',')[2].replace('hybrid=', ''))
+                discordant_r=int(ls[5].split(',')[1].replace('chimeric=', '')) + int(ls[5].split(',')[2].replace('hybrid=', ''))
+                count= discordant_l + discordant_r
                 if ls[6] == 'confidence:high' and 'unique:yes' in ls[7]:
                     for_gaussian_fitting.append(count)
                 all_mei_count_range.append(count)
@@ -539,22 +534,13 @@ def evaluate_discordant(args, params, filenames):
                 input_sample=os.path.basename(args.b)
             else:
                 input_sample=os.path.basename(args.c)
-            input_bed=os.path.basename(filenames.ins_bed)
+            input_bed=os.path.basename(args.ins_bed)
             x,y,popt,pcov,r_squared,coeff=fit_gaussian(for_gaussian_fitting)  # gaussian fitting
             if x is False:
                 log.logger.debug('Gaussian curve fitting failed. Will use other evidences.')
             else:
                 log.logger.debug('popt=%s,pcov=%s' %(str(popt), str(pcov)))
                 xd=np.arange(0, math.ceil(max(all_mei_count_range)) + 1)
-                # prep for plot
-                mono_x,mono_y, di_x,di_y=[],[], [],[]
-                for xval,yval in zip(x,y):
-                    if dosage[math.ceil(xval)] == 1:
-                        mono_x.append(xval)
-                        mono_y.append(yval)
-                    else:
-                        di_x.append(xval)
-                        di_y.append(yval)
                 estimated_curve=gaussian_func_biallelics(coeff)(xd, popt[0], popt[1], popt[2])
                 estimated_curve_single_allele=gaussian_func(xd, (1-coeff) * popt[0], popt[1], popt[2])
                 estimated_curve_bi_allele=gaussian_func(xd, coeff * popt[0], 2 * popt[1], 1.414 * popt[2])
@@ -572,7 +558,7 @@ def evaluate_discordant(args, params, filenames):
                 large_mono=False
                 for tmp_x,mono_y,bi_y in zip(xd, estimated_curve_single_allele, estimated_curve_bi_allele):
                     if mono_y >= bi_y:
-                        large_mono=True:
+                        large_mono=True
                     if mono_y < bi_y and large_mono is True:
                         disc_threshold=tmp_x
                         break
@@ -583,19 +569,31 @@ def evaluate_discordant(args, params, filenames):
                     disc_threshold= popt[1] * 1.5
                     disc_mono_high_conf_threshold= popt[1] * 1.33
                     disc_di_high_conf_threshold= popt[1] * 1.66
-                bi_sd= (popt[2] ** 2) * 2  # standard deviation; sigma ** 2, mono_sd = (popt[2] ** 2)
-                disc_outlier_threshold= (popt[1] * 2) + (bi_sd * 2)  # biallele mean + 2SD
+                disc_outlier_threshold= popt[1] * params.discordant_outlier_coeff  # theoretically 3x depth
                 log.logger.debug('disc_threshold=%f,disc_mono_high_conf_threshold=%f,disc_di_high_conf_threshold=%f,disc_outlier_threshold=%f' % (float(disc_threshold), disc_mono_high_conf_threshold, disc_di_high_conf_threshold, disc_outlier_threshold))
+                # prep for plot
+                mono_x,mono_y, di_x,di_y, outlier_x,outlier_y=[],[], [],[], [],[]
+                for xval,yval in zip(x,y):
+                    if xval < disc_threshold:
+                        mono_x.append(xval)
+                        mono_y.append(yval)
+                    elif disc_threshold <= xval < disc_outlier_threshold:
+                        di_x.append(xval)
+                        di_y.append(yval)
+                    else:
+                        outlier_x.append(xval)
+                        outlier_y.append(yval)
                 # plot
                 fig=plt.figure(figsize=(3,3))
                 ax=fig.add_subplot(111)
-                ax.scatter(mono_x, mono_y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='Dosage=1')
-                ax.scatter(di_x, di_y, s=5, c='coral', linewidths=0.5, alpha=0.5, label='Dosage=2')
+                ax.scatter(mono_x, mono_y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='CN=1')
+                ax.scatter(di_x, di_y, s=5, c='coral', linewidths=0.5, alpha=0.5, label='CN=2')
+                ax.scatter(outlier_x, outlier_y, s=5, c='grey', linewidths=0.5, alpha=0.5, label='CN=outlier')
                 ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
                 ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
                 ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
                 ax.set_xlim(0, popt[1] * 4)
-                ax.set_xlabel('Number of chimeric + hybrid reads per breakpoint')
+                ax.set_xlabel('Number of discordant reads per breakpoint')
                 ax.set_ylabel('Number of MEI')
                 ax.legend()
                 plt.suptitle('sample=%s;%s,\nn=%d, r_squared=%f,' % (input_sample, input_bed, len(for_gaussian_fitting), r_squared))  # popt[1] = mean, popt[2] = sigma
