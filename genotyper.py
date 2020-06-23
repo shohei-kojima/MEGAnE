@@ -79,6 +79,8 @@ filenames.depth_ins       =os.path.join(args.outdir, 'depth_ins.txt')
 filenames.tmp_bam         =os.path.join(args.outdir, 'tmp.bam')
 filenames.out_spanning    =os.path.join(args.outdir, 'spanning_read_summary.txt.gz')
 
+filenames.disc_read_pdf   =os.path.join(args.outdir, 'discordant_read_num.pdf')
+
 
 # 0. limit BAM/CRAM
 import allele_count_ins
@@ -88,6 +90,8 @@ allele_count_ins.evaluate_tsd_depth(args, params, filenames)
 cn_est_tsd_depth=allele_count_ins.cn_est_tsd_depth
 allele_count_ins.evaluate_spanning_read(args, params, filenames)
 cn_est_spanning=allele_count_ins.cn_est_spanning
+allele_count_ins.evaluate_discordant(args, params, filenames)
+cn_est_disc=allele_count_ins.cn_est_disc
 
 
 # output comments

@@ -6,10 +6,11 @@ All Rights Reserved
 See file LICENSE for details.
 '''
 
-import os,gzip,subprocess,statistics
+import os,gzip,subprocess,statistics,math,datetime
 import pysam
 from pybedtools import BedTool
 from scipy import stats
+from scipy.optimize import curve_fit
 import numpy as np
 import matplotlib
 import matplotlib.gridspec as gridspec
@@ -27,6 +28,7 @@ cigar_op={'M', 'I', 'D', 'N', 'S', 'H', 'P', '=', 'X'}
 cigar_ref_retain={'M', 'D', 'N', '=', 'X'}
 cigar_read_retain={'M', 'I', '=', 'X'}
 nums={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+
 
 def limit(args, params, filenames):
     log.logger.debug('started')
@@ -78,7 +80,7 @@ def evaluate_tsd_depth(args, params, filenames):
                 ls=line.split()
                 if not ls[0] in dep:
                     dep[ls[0]]={}
-                dep[ls[0]][int(ls[1])]=int(ls[2])
+                dep[ls[0]][int(ls[1]) - 1]=int(ls[2])
         
         # calc depth at breakpoints
         def remove_1nt(lis):
@@ -245,6 +247,7 @@ def evaluate_tsd_depth(args, params, filenames):
         ax.legend()
         plt.suptitle('Gaussian kernel-density estimation')
         plt.savefig('./genotype_out/kde.pdf')
+        plt.close()
         
         # count allele count
         global cn_est_tsd_depth
@@ -451,3 +454,170 @@ def evaluate_spanning_read(args, params, filenames):
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
+
+
+def evaluate_discordant(args, params, filenames):
+    log.logger.debug('started')
+    try:
+        def gaussian_func_biallelics(coeff):
+            def gaussian_func_biallelic(x, a, mu, sigma):
+                return ((1-coeff)*a*np.exp(-(x-mu)**2/(2*sigma**2))) + (coeff*a*np.exp(-(x-(2*mu))**2/(4*sigma**2)))
+            return gaussian_func_biallelic
+        
+        def gaussian_func(x, a, mu, sigma):
+            return a*np.exp(-(x-mu)**2/(2*sigma**2))
+
+        def fit_gaussian(list_support_read_count):
+            x,y=[],[]
+            support_read_bin= int(np.ceil(args.cov / 50))
+            for i in range(0, max(list_support_read_count), support_read_bin):
+                x.append(i + ((support_read_bin - 1) / 2))
+                y.append(sum([ list_support_read_count.count(i + j) for j in range(support_read_bin) ]))
+            init_param_a=max(y)
+            x_few,y_few=[],[]
+            for i,j in zip(x,y):
+                if j < (init_param_a / 2):
+                    x_few.append(i)
+                    y_few.append(j)
+                if j == init_param_a:
+                    init_param_mu=i
+                    break
+            init_param=[init_param_a, init_param_mu, args.cov * params.fit_gaussian_init_sigma_coeff]
+            log.logger.debug('init_param_a=%d,init_param_mu=%f,init_param_sigma=%f' %(init_param_a, init_param_mu, float(args.cov * params.fit_gaussian_init_sigma_coeff)))
+            fits=[]
+            for coeff in range(100):
+                coeff= coeff / 100
+                func=gaussian_func_biallelics(coeff)
+                try:
+                    popt,pcov=curve_fit(func, x, y, init_param)
+                    residuals= y - func(x, *popt)  # all x
+                    rss=np.sum(residuals**2)
+                    tss=np.sum((y - np.mean(y))**2)
+                    r_squared= 1 - (rss / tss)
+                    residuals= y_few - func(x_few, *popt)  # few x
+                    rss=np.sum(residuals**2)
+                    tss=np.sum((y_few - np.mean(y_few))**2)
+                    r_squared_few= 1 - (rss / tss)
+                    fits.append([r_squared, r_squared_few, coeff, popt, pcov])
+                except RuntimeError:
+                    log.logger.debug('curve_fit,RuntimeError,coeff=%f' % coeff)
+            fits=sorted(fits)
+            if len(fits) >= 1:
+                r_squared=fits[-1][0]
+                r_squared_few=fits[-1][1]
+                coeff=fits[-1][2]
+                popt=fits[-1][3]
+                pcov=fits[-1][4]
+                log.logger.debug('r_squared=%f,biallelic_coeff=%f' %(r_squared, coeff))
+                return x, y, popt, pcov, r_squared, coeff
+            else:
+                return False, False, False, False, False, False
+
+        # main
+        all_mei_count_range=[]
+        for_gaussian_fitting=[]
+        disc_read_d={}
+        with open(filenames.ins_bed) as infile:
+            for line in infile:
+                ls=line.split('\t')
+                chimeric_l=int(ls[4].split(',')[1].replace('chimeric=', '')) + int(ls[4].split(',')[2].replace('hybrid=', ''))
+                chimeric_r=int(ls[5].split(',')[1].replace('chimeric=', '')) + int(ls[5].split(',')[2].replace('hybrid=', ''))
+                if 'MEI_left_breakpoint=pT' in ls[8]:
+                    count=chimeric_r
+                elif 'MEI_right_breakpoint=pA' in ls[8]:
+                    count=chimeric_l
+                else:
+                    count= math.ceil((chimeric_l + chimeric_r) / 2)
+                if ls[6] == 'confidence:high' and 'unique:yes' in ls[7]:
+                    for_gaussian_fitting.append(count)
+                all_mei_count_range.append(count)
+                disc_read_d[ls[10]]=count
+        if len(for_gaussian_fitting) < 10:
+            log.logger.warning('Not enough data found. Will skip allele count estimation from discordant read number. Will use other evidences.')
+        else:
+            if args.b is not None:
+                input_sample=os.path.basename(args.b)
+            else:
+                input_sample=os.path.basename(args.c)
+            input_bed=os.path.basename(filenames.ins_bed)
+            x,y,popt,pcov,r_squared,coeff=fit_gaussian(for_gaussian_fitting)  # gaussian fitting
+            if x is False:
+                log.logger.debug('Gaussian curve fitting failed. Will use other evidences.')
+            else:
+                log.logger.debug('popt=%s,pcov=%s' %(str(popt), str(pcov)))
+                xd=np.arange(0, math.ceil(max(all_mei_count_range)) + 1)
+                # prep for plot
+                mono_x,mono_y, di_x,di_y=[],[], [],[]
+                for xval,yval in zip(x,y):
+                    if dosage[math.ceil(xval)] == 1:
+                        mono_x.append(xval)
+                        mono_y.append(yval)
+                    else:
+                        di_x.append(xval)
+                        di_y.append(yval)
+                estimated_curve=gaussian_func_biallelics(coeff)(xd, popt[0], popt[1], popt[2])
+                estimated_curve_single_allele=gaussian_func(xd, (1-coeff) * popt[0], popt[1], popt[2])
+                estimated_curve_bi_allele=gaussian_func(xd, coeff * popt[0], 2 * popt[1], 1.414 * popt[2])
+                # determine threshold
+                # if threshold = zscore
+#                mono_sd= popt[2] ** 2  # standard deviation; sigma ** 2
+#                mono_zscore= (xd - popt[1]) / mono_sd  # zscore = (value - mu) / stdev
+#                di_zscore= (xd - (popt[1] * 2)) / (mono_sd * 2)
+#                for pos,mono,di in zip(xd,mono_zscore,di_zscore):
+#                    if abs(mono) < abs(di):
+#                        dosage[pos]=1
+#                    else:
+#                        dosage[pos]=2
+                # if threshold = curve bottom
+                large_mono=False
+                for tmp_x,mono_y,bi_y in zip(xd, estimated_curve_single_allele, estimated_curve_bi_allele):
+                    if mono_y >= bi_y:
+                        large_mono=True:
+                    if mono_y < bi_y and large_mono is True:
+                        disc_threshold=tmp_x
+                        break
+                if popt[1] < disc_threshold < (popt[1] * 2):
+                   disc_mono_high_conf_threshold= (popt[1] + disc_threshold + disc_threshold) / 3
+                   disc_di_high_conf_threshold= ((popt[1] * 2) + disc_threshold + disc_threshold) / 3
+                else:  # would be corner cases
+                    disc_threshold= popt[1] * 1.5
+                    disc_mono_high_conf_threshold= popt[1] * 1.33
+                    disc_di_high_conf_threshold= popt[1] * 1.66
+                bi_sd= (popt[2] ** 2) * 2  # standard deviation; sigma ** 2, mono_sd = (popt[2] ** 2)
+                disc_outlier_threshold= (popt[1] * 2) + (bi_sd * 2)  # biallele mean + 2SD
+                log.logger.debug('disc_threshold=%f,disc_mono_high_conf_threshold=%f,disc_di_high_conf_threshold=%f,disc_outlier_threshold=%f' % (float(disc_threshold), disc_mono_high_conf_threshold, disc_di_high_conf_threshold, disc_outlier_threshold))
+                # plot
+                fig=plt.figure(figsize=(3,3))
+                ax=fig.add_subplot(111)
+                ax.scatter(mono_x, mono_y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='Dosage=1')
+                ax.scatter(di_x, di_y, s=5, c='coral', linewidths=0.5, alpha=0.5, label='Dosage=2')
+                ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
+                ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
+                ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
+                ax.set_xlim(0, popt[1] * 4)
+                ax.set_xlabel('Number of chimeric + hybrid reads per breakpoint')
+                ax.set_ylabel('Number of MEI')
+                ax.legend()
+                plt.suptitle('sample=%s;%s,\nn=%d, r_squared=%f,' % (input_sample, input_bed, len(for_gaussian_fitting), r_squared))  # popt[1] = mean, popt[2] = sigma
+                plt.savefig(filenames.disc_read_pdf)
+                plt.close()
+                log.logger.debug('gaussian_fitting_n=%d,r_squared=%f' %(len(for_gaussian_fitting), r_squared))
+                # count allele count
+                global cn_est_disc
+                cn_est_disc={}
+                for id in disc_read_d:
+                    if disc_read_d[id] < disc_mono_high_conf_threshold:
+                        cn_est_disc[id]=['mono_high', disc_read_d[id]]
+                    elif disc_mono_high_conf_threshold <= disc_read_d[id] < disc_threshold:
+                        cn_est_disc[id]=['mono_low', disc_read_d[id]]
+                    elif disc_threshold <= disc_read_d[id] < disc_di_high_conf_threshold:
+                        cn_est_disc[id]=['bi_low', disc_read_d[id]]
+                    elif disc_di_high_conf_threshold <= disc_read_d[id] < disc_outlier_threshold:
+                        cn_est_disc[id]=['bi_high', disc_read_d[id]]
+                    else:
+                        cn_est_disc[id]=['outlier', disc_read_d[id]]
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
