@@ -209,7 +209,7 @@ class load_geno:
             self.max_overhang_mismatch_ratio_for_spanning=0.1
             self.spanning_high_threshold_coeff=0.666
             self.spanning_zero_threshold_coeff=0.333
-            self.spanning_outlier_coeff= 2
+            self.spanning_outlier_coeff= 1.5
             self.fit_gaussian_init_a_coeff=0.5
             self.fit_gaussian_init_mu_coeff=1
             self.fit_gaussian_init_sigma_coeff=0.33

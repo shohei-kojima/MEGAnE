@@ -10,7 +10,7 @@ See file LICENSE for details.
 import os,sys,datetime,argparse,glob,logging
 
 '''
-python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -c NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa -fai /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai -ins_bed result_out/MEI_final_percentile.bed -p 4 -overwrite
+python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -c NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa -fai /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai -ins_bed result_out/MEI_final_percentile.bed -p 4 -overwrite -cov 35
 '''
 
 

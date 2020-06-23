@@ -309,6 +309,7 @@ def plot_merged(args, params, filenames, data):
                 else:
                     mei_filter[ls[10]]=False
         # load genotyping results
+        spanning_threshold_for_merge= 1 + math.ceil(args.cov * params.spanning_threshold_for_merge)
         if not data.disc_thresholds is False:
             plt.figure(figsize=(6.2, 4))  # (x, y)
             gs=gridspec.GridSpec(5, 8, height_ratios=[0.05, 0.3, 0.1, 0.05, 0.3], width_ratios=[0.3, 0.05, 0.1, 0.3, 0.05, 0.1, 0.3, 0.05])  # (y, x)
@@ -352,8 +353,7 @@ def plot_merged(args, params, filenames, data):
             ax.scatter(x_bi, y_bi, s=5, c='steelblue', linewidths=0.5, alpha=0.1)
             ax.axvline(x=data.tsd_thresholds[1], linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[0], linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[1], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
+            ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
             ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
             ax.set_xlabel('Relative depth, TSD')
             ax.set_ylabel('# spanning read')
@@ -445,8 +445,7 @@ def plot_merged(args, params, filenames, data):
             ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
             ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
             ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[0], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[1], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+            ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
             ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
             ax.set_xlabel('Relative depth, Del')
             ax.set_ylabel('# spanning read')
@@ -540,8 +539,7 @@ def plot_merged(args, params, filenames, data):
             ax.axvline(x=data.disc_thresholds[1], linewidth=0.5, alpha=0.50, color='forestgreen', linestyle='dashed')
             ax.axvline(x=data.disc_thresholds[2], linewidth=0.5, alpha=0.25, color='forestgreen', linestyle='dashed')
             ax.axvline(x=data.disc_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[0], linewidth=0.5, alpha=0.50, color='forestgreen', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[1], linewidth=0.5, alpha=0.25, color='forestgreen', linestyle='dashed')
+            ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='forestgreen', linestyle='dashed')
             ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
             ax.set_xlabel('# discordant read')
             ax.set_ylabel('# spanning read')
@@ -553,11 +551,21 @@ def plot_merged(args, params, filenames, data):
             gs=gridspec.GridSpec(2, 5, height_ratios=[0.05, 0.3], width_ratios=[0.3, 0.05, 0.1, 0.3, 0.05])  # (y, x)
             gs.update(hspace=0.05, wspace=0.05)
             
-            x,y=[],[]
+            x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
             for id in data.cn_est_tsd_depth:
                 if data.cn_est_tsd_depth[id][2] == 'TSD':
                     x.append(data.cn_est_tsd_depth[id][1])
                     y.append(data.cn_est_spanning[id][1])
+                    if mei_filter[id] is True:
+                        if data.merged_res[id][0] == 1:
+                            x_mono.append(data.cn_est_tsd_depth[id][1])
+                            y_mono.append(data.cn_est_spanning[id][1])
+                        else:
+                            x_bi.append(data.cn_est_tsd_depth[id][1])
+                            y_bi.append(data.cn_est_spanning[id][1])
+                    else:
+                        x_failed.append(data.cn_est_tsd_depth[id][1])
+                        y_failed.append(data.cn_est_spanning[id][1])
             
             ax=plt.subplot(gs[0,0])  # tsd, x=tsd
             sns_x=[ i for i in x if i < data.tsd_thresholds[3] ]
@@ -576,24 +584,33 @@ def plot_merged(args, params, filenames, data):
             ax.yaxis.set_ticks([])
             
             ax=plt.subplot(gs[1,0])  # tsd, x=tsd, y=spanning
-            ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.1)
-            ax.axvline(x=data.tsd_thresholds[0], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
+            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
+            ax.scatter(x_mono, y_mono, s=5, c='lightskyblue', linewidths=0.5, alpha=0.1)
+            ax.scatter(x_bi, y_bi, s=5, c='steelblue', linewidths=0.5, alpha=0.1)
             ax.axvline(x=data.tsd_thresholds[1], linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
-            ax.axvline(x=data.tsd_thresholds[2], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[0], linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[1], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
+            ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
             ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
             ax.set_xlabel('Relative depth, TSD')
             ax.set_ylabel('# spanning read')
             ax.set_xlim(0, data.tsd_thresholds[3])
             ax.set_ylim(-5, data.spanning_thresholds[2])
-
-            x,y=[],[]
+            
+            x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
             for id in data.cn_est_tsd_depth:
                 if data.cn_est_tsd_depth[id][2] == 'Del':
                     x.append(data.cn_est_tsd_depth[id][1])
                     y.append(data.cn_est_spanning[id][1])
+                    if mei_filter[id] is True:
+                        if data.merged_res[id][0] == 1:
+                            x_mono.append(data.cn_est_tsd_depth[id][1])
+                            y_mono.append(data.cn_est_spanning[id][1])
+                        else:
+                            x_bi.append(data.cn_est_tsd_depth[id][1])
+                            y_bi.append(data.cn_est_spanning[id][1])
+                    else:
+                        x_failed.append(data.cn_est_tsd_depth[id][1])
+                        y_failed.append(data.cn_est_spanning[id][1])
             
             ax=plt.subplot(gs[0,3])  # del, x=tsd
             sns_x=[ i for i in x if i < data.del_thresholds[3] ]
@@ -612,13 +629,12 @@ def plot_merged(args, params, filenames, data):
             ax.yaxis.set_ticks([])
 
             ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
-            ax.scatter(x, y, s=5, c='coral', linewidths=0.5, alpha=0.1)
-            ax.axvline(x=data.del_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
+            ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2)
+            ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
             ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
             ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[0], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[1], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+            ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
             ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
             ax.set_xlabel('Relative depth, Del')
             ax.set_ylabel('# spanning read')
@@ -696,6 +712,7 @@ def merge(args, params, filenames, data):
                     status='L'
                 merged_res[id]=[allele_count, outlier_judge, status]
         else:
+            log.logger.warning('No discordant read stat available. Will use other evidences.')
             def judge_outlier(id, data):
                 tmp=[]
                 if data.cn_est_spanning[id][0] == 'outlier':
