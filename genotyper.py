@@ -81,10 +81,12 @@ filenames.out_spanning    =os.path.join(args.outdir, 'spanning_read_summary.txt.
 filenames.disc_read_pdf   =os.path.join(args.outdir, 'discordant_read_num.pdf')
 
 filenames.debug_pdf1      =os.path.join(args.outdir, 'plot_out_genotype_ins_for_debug.pdf')
+filenames.merged_pdf      =os.path.join(args.outdir, 'plot_out_genotyping_insertions.pdf')
 
 
 # 0. limit BAM/CRAM
 import allele_count_ins
+import merge_allele_evidence_ins
 log.logger.info('Limit BAM/CRAM started.')
 #allele_count_ins.limit(args, params, filenames)
 
@@ -109,9 +111,13 @@ log.logger.info('Merging evidence, insertion.')
 
 
 # 2. deletion
-import merge_allele_evidence_ins
+#import merge_allele_evidence_ins
 log.logger.info('Evidence search started, deletion.')
 merge_allele_evidence_ins.plot_orig(args, params, filenames, data)
+merge_allele_evidence_ins.merge(args, params, filenames, data)
+data.merged_res=merge_allele_evidence_ins.merged_res
+merge_allele_evidence_ins.plot_merged(args, params, filenames, data)
+data.mei_filter=merge_allele_evidence_ins.mei_filter
 
 
 # output comments

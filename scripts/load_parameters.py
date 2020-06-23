@@ -214,6 +214,7 @@ class load_geno:
             self.fit_gaussian_init_mu_coeff=1
             self.fit_gaussian_init_sigma_coeff=0.33
             self.discordant_outlier_coeff= 3.5
+            self.spanning_threshold_for_merge=0.01
             params_for_debug=[]
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))
