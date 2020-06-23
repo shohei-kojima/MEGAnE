@@ -103,7 +103,7 @@ def evaluate_tsd_depth(args, params, filenames):
         only_tsd,only_del=[],[]
         with open(args.ins_bed) as infile:
             for line in infile:
-                ls=line.split()
+                ls=line.strip().split('\t')
                 if ls[0] in dep:
                     left_pos=int(ls[4].split(',')[0].split('=')[1])
                     right_pos=int(ls[5].split(',')[0].split('=')[1])
@@ -214,7 +214,7 @@ def evaluate_tsd_depth(args, params, filenames):
             tsd_threshold= ((highest[0] - 1) * 1.5) + 1  # would be corner cases
             tsd_mono_high_conf_threshold= ((highest[0] - 1) * 1.333) + 1
             tsd_bi_high_conf_threshold=   ((highest[0] - 1) * 1.666) + 1
-        log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,tsd_threshold=%f' % (peaks, bottoms, tsd_threshold))
+        log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,tsd_threshold=%f,tsd_mono_high_conf_threshold=%f,tsd_bi_high_conf_threshold=%f' % (peaks, bottoms, tsd_threshold, tsd_mono_high_conf_threshold, tsd_bi_high_conf_threshold))
         # find threshold, DEL
         xs=np.linspace(0, 1, 200)
         ys=del_kernel(xs)
@@ -225,7 +225,10 @@ def evaluate_tsd_depth(args, params, filenames):
             del_threshold= 0.25  # would be corner cases
         del_mono_high_conf_threshold= del_threshold * params.del_mono_high_threshold_coeff  # 0.66
         del_bi_high_conf_threshold=   del_threshold * params.del_bi_high_threshold_coeff  # 1.33
-        log.logger.debug('del_kernel,peaks=%s,bottoms=%s,del_threshold=%f' % (peaks, bottoms, del_threshold))
+        log.logger.debug('del_kernel,peaks=%s,bottoms=%s,del_threshold=%f,del_mono_high_conf_threshold=%f,del_bi_high_conf_threshold=%f' % (peaks, bottoms, del_threshold, del_mono_high_conf_threshold, del_bi_high_conf_threshold))
+        global tsd_thresholds, del_thresholds
+        tsd_thresholds=[tsd_mono_high_conf_threshold, tsd_threshold, tsd_bi_high_conf_threshold, params.tsd_outlier]
+        del_thresholds=[del_mono_high_conf_threshold, del_threshold, del_bi_high_conf_threshold, params.del_outlier]
         # plot
         plt.figure(figsize=(3, 3))  # (x, y)
         gs=gridspec.GridSpec(2, 1)  # (y, x)
@@ -385,7 +388,7 @@ def evaluate_spanning_read(args, params, filenames):
         bps={}
         with open(args.ins_bed) as infile:
             for line in infile:
-                ls=line.split()
+                ls=line.strip().split('\t')
                 if not ls[0] in bps:
                     bps[ls[0]]=[]
                 bps[ls[0]].append([int(ls[1]), int(ls[2]), ls[10]])
@@ -437,20 +440,23 @@ def evaluate_spanning_read(args, params, filenames):
         global cn_est_spanning
         cn_est_spanning={}
         spanning_outlier= args.cov * params.spanning_outlier_coeff
+        log.logger.debug('spanning_zero_threshold=%f,spanning_high_threshold=%f,spanning_outlier=%f' % (spanning_zero_threshold, spanning_high_threshold, spanning_outlier))
+        global spanning_thresholds
+        spanning_thresholds=[spanning_zero_threshold, spanning_high_threshold, spanning_outlier]
         with open(args.ins_bed) as infile:
             for line in infile:
-                ls=line.split()
+                ls=line.strip().split('\t')
                 if ls[10] in span_judge_true:
                     if spanning_outlier <= span_judge_true[ls[10]]:
-                        cn_est_spanning[ls[10]]=[span_judge_true[ls[10]], 'outlier']
+                        cn_est_spanning[ls[10]]=['outlier', span_judge_true[ls[10]]]
                     elif spanning_high_threshold <= span_judge_true[ls[10]] < spanning_outlier:
-                        cn_est_spanning[ls[10]]=[span_judge_true[ls[10]], 'bi_high']
+                        cn_est_spanning[ls[10]]=['bi_high', span_judge_true[ls[10]]]
                     elif spanning_zero_threshold <= span_judge_true[ls[10]] < spanning_high_threshold:
-                        cn_est_spanning[ls[10]]=[span_judge_true[ls[10]], 'bi_low']
+                        cn_est_spanning[ls[10]]=['bi_low', span_judge_true[ls[10]]]
                     else:
-                        cn_est_spanning[ls[10]]=[span_judge_true[ls[10]], 'mono_low']
+                        cn_est_spanning[ls[10]]=['mono_low', span_judge_true[ls[10]]]
                 else:
-                    cn_est_spanning[ls[10]]=[0, 'mono_high']
+                    cn_est_spanning[ls[10]]=['mono_high', 0]
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
@@ -519,7 +525,7 @@ def evaluate_discordant(args, params, filenames):
         disc_read_d={}
         with open(args.ins_bed) as infile:
             for line in infile:
-                ls=line.split('\t')
+                ls=line.strip().split('\t')
                 discordant_l=int(ls[4].split(',')[1].replace('chimeric=', '')) + int(ls[4].split(',')[2].replace('hybrid=', ''))
                 discordant_r=int(ls[5].split(',')[1].replace('chimeric=', '')) + int(ls[5].split(',')[2].replace('hybrid=', ''))
                 count= discordant_l + discordant_r
@@ -527,8 +533,11 @@ def evaluate_discordant(args, params, filenames):
                     for_gaussian_fitting.append(count)
                 all_mei_count_range.append(count)
                 disc_read_d[ls[10]]=count
+        global disc_thresholds, cn_est_disc
         if len(for_gaussian_fitting) < 10:
             log.logger.warning('Not enough data found. Will skip allele count estimation from discordant read number. Will use other evidences.')
+            disc_thresholds=False
+            cn_est_disc=False
         else:
             if args.b is not None:
                 input_sample=os.path.basename(args.b)
@@ -536,8 +545,11 @@ def evaluate_discordant(args, params, filenames):
                 input_sample=os.path.basename(args.c)
             input_bed=os.path.basename(args.ins_bed)
             x,y,popt,pcov,r_squared,coeff=fit_gaussian(for_gaussian_fitting)  # gaussian fitting
+            
             if x is False:
-                log.logger.debug('Gaussian curve fitting failed. Will use other evidences.')
+                log.logger.warning('Gaussian curve fitting failed. Will use other evidences.')
+                disc_thresholds=False
+                cn_est_disc=False
             else:
                 log.logger.debug('popt=%s,pcov=%s' %(str(popt), str(pcov)))
                 xd=np.arange(0, math.ceil(max(all_mei_count_range)) + 1)
@@ -571,6 +583,7 @@ def evaluate_discordant(args, params, filenames):
                     disc_di_high_conf_threshold= popt[1] * 1.66
                 disc_outlier_threshold= popt[1] * params.discordant_outlier_coeff  # theoretically 3x depth
                 log.logger.debug('disc_threshold=%f,disc_mono_high_conf_threshold=%f,disc_di_high_conf_threshold=%f,disc_outlier_threshold=%f' % (float(disc_threshold), disc_mono_high_conf_threshold, disc_di_high_conf_threshold, disc_outlier_threshold))
+                disc_thresholds=[disc_mono_high_conf_threshold, disc_threshold, disc_di_high_conf_threshold, disc_outlier_threshold]
                 # prep for plot
                 mono_x,mono_y, di_x,di_y, outlier_x,outlier_y=[],[], [],[], [],[]
                 for xval,yval in zip(x,y):
@@ -601,7 +614,6 @@ def evaluate_discordant(args, params, filenames):
                 plt.close()
                 log.logger.debug('gaussian_fitting_n=%d,r_squared=%f' %(len(for_gaussian_fitting), r_squared))
                 # count allele count
-                global cn_est_disc
                 cn_est_disc={}
                 for id in disc_read_d:
                     if disc_read_d[id] < disc_mono_high_conf_threshold:
