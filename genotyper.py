@@ -15,7 +15,7 @@ python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -
 
 
 # version
-version='2020/06/21'
+version='2020/06/24'
 
 
 # args
@@ -27,7 +27,9 @@ parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fas
 parser.add_argument('-ins_bed', metavar='str', type=str, help='Specify input bed file containing information of MEIs.')
 parser.add_argument('-abs_bed', metavar='str', type=str, help='Specify input bed file containing information of absent MEs.')
 parser.add_argument('-cov', metavar='int', type=int, help='Optional. Specify coverage depth. Default: 30', default=30)
+parser.add_argument('-sample_name', metavar='int', type=int, help='Optional. Specify sample name which will be labeled in the VCF output. If not specified, BAM/CRAM filename will be output.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./genotype_out', default='./genotype_out')
+parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
 parser.add_argument('-gender', metavar='str', type=str, help='Optional. Specify gender of the sample; male or female or unknown. Available only when human sample. Default: unknown', default='unknown')
 parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/prog/lib/parameter_settings.txt')
 parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
@@ -65,6 +67,8 @@ import initial_check
 import setup
 setup.setup_geno(args, init.base)
 params=setup.params
+args.main_chrs=setup.main_chrs
+args.main_chrs_set=set(args.main_chrs)
 
 
 # output file names
@@ -83,6 +87,10 @@ filenames.disc_read_pdf   =os.path.join(args.outdir, 'discordant_read_num.pdf')
 filenames.debug_pdf1      =os.path.join(args.outdir, 'plot_out_genotype_ins_for_debug.pdf')
 filenames.merged_pdf      =os.path.join(args.outdir, 'plot_out_genotyping_insertions.pdf')
 
+base=os.path.splitext(os.path.basename(args.ins_bed))[0]
+filenames.ins_out_bed     =os.path.join(args.outdir, '%s_genotyped.bed' % base)
+filenames.ins_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
+
 
 # 0. limit BAM/CRAM
 import allele_count_ins
@@ -90,7 +98,8 @@ import merge_allele_evidence_ins
 log.logger.info('Limit BAM/CRAM started.')
 #allele_count_ins.limit(args, params, filenames)
 
-# 1. insertion
+
+# 1. check for evidences; insertion
 log.logger.info('Evidence search started, insertion.')
 data=utils.empclass()
 
@@ -107,17 +116,22 @@ allele_count_ins.evaluate_discordant(args, params, filenames)
 data.cn_est_disc=allele_count_ins.cn_est_disc
 data.disc_thresholds=allele_count_ins.disc_thresholds  # could be False
 
-log.logger.info('Merging evidence, insertion.')
 
-
-# 2. deletion
+# 2. merge evidences; insertion
 #import merge_allele_evidence_ins
-log.logger.info('Evidence search started, deletion.')
+log.logger.info('Evidence merge started, insertion.')
 merge_allele_evidence_ins.plot_orig(args, params, filenames, data)
 merge_allele_evidence_ins.merge(args, params, filenames, data)
 data.merged_res=merge_allele_evidence_ins.merged_res
 merge_allele_evidence_ins.plot_merged(args, params, filenames, data)
 data.mei_filter=merge_allele_evidence_ins.mei_filter
+#merge_allele_evidence_ins.plot_gt(args, params, filenames, data)
+
+
+# 3. output; insertion
+import output_genotyped_vcf
+output_genotyped_vcf.output_ins_bed_vcf(args, params, filenames, data)
+log.logger.info('Did output VCF, insertion.')
 
 
 # output comments

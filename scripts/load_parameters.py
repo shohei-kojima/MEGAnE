@@ -202,6 +202,7 @@ class load_geno:
             self.tsd_flank_len=4
             self.del_mono_high_threshold_coeff=0.666
             self.del_bi_high_threshold_coeff=1.333
+            self.tsd_outlier_low_coeff=0.25
             self.tsd_outlier=3
             self.del_outlier=2
             self.min_len_overhang_for_spanning=31
@@ -214,7 +215,7 @@ class load_geno:
             self.fit_gaussian_init_mu_coeff=1
             self.fit_gaussian_init_sigma_coeff=0.33
             self.discordant_outlier_coeff= 3.5
-            self.spanning_threshold_for_merge=0.01
+            self.spanning_threshold_coeff_for_merge=0.01
             params_for_debug=[]
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))

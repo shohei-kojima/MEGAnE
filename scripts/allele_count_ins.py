@@ -210,10 +210,12 @@ def evaluate_tsd_depth(args, params, filenames):
                     break
             tsd_mono_high_conf_threshold= (mono_peak + tsd_threshold + tsd_threshold) / 3
             tsd_bi_high_conf_threshold=   (bi_peak   + tsd_threshold + tsd_threshold) / 3
+            tsd_outlier_low_threshold= 1 + ((mono_peak - 1) * params.tsd_outlier_low_coeff)
         else:
             tsd_threshold= ((highest[0] - 1) * 1.5) + 1  # would be corner cases
             tsd_mono_high_conf_threshold= ((highest[0] - 1) * 1.333) + 1
             tsd_bi_high_conf_threshold=   ((highest[0] - 1) * 1.666) + 1
+            tsd_outlier_low_threshold= 1 + (highest[0] * params.tsd_outlier_low_coeff)
         log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,tsd_threshold=%f,tsd_mono_high_conf_threshold=%f,tsd_bi_high_conf_threshold=%f' % (peaks, bottoms, tsd_threshold, tsd_mono_high_conf_threshold, tsd_bi_high_conf_threshold))
         # find threshold, DEL
         xs=np.linspace(0, 1, 200)
@@ -227,7 +229,7 @@ def evaluate_tsd_depth(args, params, filenames):
         del_bi_high_conf_threshold=   del_threshold * params.del_bi_high_threshold_coeff  # 1.33
         log.logger.debug('del_kernel,peaks=%s,bottoms=%s,del_threshold=%f,del_mono_high_conf_threshold=%f,del_bi_high_conf_threshold=%f' % (peaks, bottoms, del_threshold, del_mono_high_conf_threshold, del_bi_high_conf_threshold))
         global tsd_thresholds, del_thresholds
-        tsd_thresholds=[tsd_mono_high_conf_threshold, tsd_threshold, tsd_bi_high_conf_threshold, params.tsd_outlier]
+        tsd_thresholds=[tsd_mono_high_conf_threshold, tsd_threshold, tsd_bi_high_conf_threshold, params.tsd_outlier, tsd_outlier_low_threshold]
         del_thresholds=[del_mono_high_conf_threshold, del_threshold, del_bi_high_conf_threshold, params.del_outlier]
         # plot
         plt.figure(figsize=(3, 3))  # (x, y)
@@ -257,9 +259,10 @@ def evaluate_tsd_depth(args, params, filenames):
         cn_est_tsd_depth={}
         for id in back_to_tsd_ratios:
             ratio,struc=back_to_tsd_ratios[id]
-            allele=1
             if struc == 'TSD':
-                if ratio < tsd_mono_high_conf_threshold:
+                if ratio < tsd_outlier_low_threshold:
+                    allele='outlier'
+                elif tsd_outlier_low_threshold <= ratio < tsd_mono_high_conf_threshold:
                     allele='mono_high'
                 elif tsd_mono_high_conf_threshold <= ratio < tsd_threshold:
                     allele='mono_low'

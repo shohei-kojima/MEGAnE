@@ -78,6 +78,23 @@ def setup(args, base):
 def setup_geno(args, base):
     log.logger.debug('started')
     try:
+        # load main chrs
+        global main_chrs
+        if args.mainchr is not None:
+            main_chr_path=args.mainchr
+        else:
+            main_chr_path=join(base, 'lib/hg38_human_main_chrs_plus_alt_ucsc_style.txt')
+        main_chrs=[]
+        with open(main_chr_path) as infile:
+            for line in infile:
+                chr=line.strip()
+                if not chr == '':
+                    main_chrs.append(chr)
+        if args.mainchr is None:
+            if args.gender == 'female':
+                main_chrs=main_chrs[:-1]
+                print('You specified "female" as gender, chrY was excluded.')
+        
         # load parameter settings
         global params
         param_path=join(base, 'lib/parameter_settings_geno.txt')
