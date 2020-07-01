@@ -99,6 +99,35 @@ def evaluate_tsd_depth(args, params, filenames):
             corrected_dep= sum(one_nt_removed) / len(one_nt_removed)
             return corrected_dep
             
+        ############### from here; for plot_tsd_dep in misc.py; not related to the main analysis
+#        left_tsds,middles,right_tsds=[],[],[]
+#        with open(args.ins_bed) as infile:
+#            for line in infile:
+#                ls=line.strip().split('\t')
+#                if ls[0] in dep:
+#                    left_pos=int(ls[4].split(',')[0].split('=')[1])
+#                    right_pos=int(ls[5].split(',')[0].split('=')[1])
+#                    if right_pos < left_pos:
+#                        # tsd
+#                        tsd_depth=[]
+#                        for pos in range(right_pos, left_pos):
+#                            tsd_depth.append(dep[ls[0]][pos] / args.cov)
+#                        if np.mean(tsd_depth) < 3:
+#                            middles.append(np.mean(tsd_depth))
+#                            # left flank
+#                            left_depth=[]
+#                            for pos in range(right_pos - 10, right_pos):
+#                                left_depth.append(dep[ls[0]][pos] / args.cov)
+#                            left_tsds.append(left_depth)
+#                            # right flank
+#                            right_depth=[]
+#                            for pos in range(left_pos, left_pos + 10):
+#                                right_depth.append(dep[ls[0]][pos] / args.cov)
+#                            right_tsds.append(right_depth)
+#        import misc
+#        misc.plot_tsd_dep(left_tsds, middles, right_tsds)
+#        exit()
+        ############### until here
         back_to_tsd_ratios={}
         only_tsd,only_del=[],[]
         with open(args.ins_bed) as infile:

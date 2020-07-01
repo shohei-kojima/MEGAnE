@@ -15,7 +15,7 @@ python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -
 
 
 # version
-version='2020/06/24'
+version='2020/07/01'
 
 
 # args
@@ -94,7 +94,6 @@ filenames.ins_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
 
 # 0. limit BAM/CRAM
 import allele_count_ins
-import merge_allele_evidence_ins
 log.logger.info('Limit BAM/CRAM started.')
 #allele_count_ins.limit(args, params, filenames)
 
@@ -118,7 +117,7 @@ data.disc_thresholds=allele_count_ins.disc_thresholds  # could be False
 
 
 # 2. merge evidences; insertion
-#import merge_allele_evidence_ins
+import merge_allele_evidence_ins
 log.logger.info('Evidence merge started, insertion.')
 merge_allele_evidence_ins.plot_orig(args, params, filenames, data)
 merge_allele_evidence_ins.merge(args, params, filenames, data)
@@ -132,6 +131,11 @@ data.mei_filter=merge_allele_evidence_ins.mei_filter
 import output_genotyped_vcf
 output_genotyped_vcf.output_ins_bed_vcf(args, params, filenames, data)
 log.logger.info('Did output VCF, insertion.')
+
+
+# 4. chekc for evidences; absent ME
+import allele_count_abs
+
 
 
 # output comments
