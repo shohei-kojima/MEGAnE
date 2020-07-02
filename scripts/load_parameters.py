@@ -216,6 +216,18 @@ class load_geno:
             self.fit_gaussian_init_sigma_coeff=0.33
             self.discordant_outlier_coeff= 3.5
             self.spanning_threshold_coeff_for_merge=0.01
+            
+            self.abs_slop_len=300
+            self.min_len_overhang_for_spanning_abs=31
+            self.min_overhang_match_for_spanning_abs=31
+            self.max_overhang_mismatch_ratio_for_spanning_abs=0.1
+            self.spanning_high_threshold_coeff_abs=0.666
+            self.spanning_zero_threshold_coeff_abs=0.333
+            self.spanning_outlier_coeff_abs= 1.5
+            self.abs_flank_len=5
+            self.mono_peak_notfound=0.7
+            self.abs_depth_outlier=0.9
+
             params_for_debug=[]
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))

@@ -6,7 +6,7 @@ All Rights Reserved
 See file LICENSE for details.
 '''
 
-import os,gzip,subprocess,statistics,math,datetime
+import os,gzip,subprocess,math,datetime
 import pysam
 from pybedtools import BedTool
 from scipy import stats
@@ -36,7 +36,14 @@ def limit(args, params, filenames):
         if args.ins_bed is not None and args.abs_bed is not None:
             insbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai)
             absbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai)
-            slopbed= insbed + absbed
+            slopbed=[]
+            for line in insbed:
+                ls=str(line).strip().split('\t')
+                slopbed.append('\t'.join(ls[:3]))
+            for line in absbed:
+                ls=str(line).strip().split('\t')
+                slopbed.append('\t'.join(ls[:3]))
+            slopbed=BedTool('\n'.join(slopbed), from_string=True)
             slopbed=slopbed.sort().merge()
         elif args.ins_bed is not None:
             slopbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
@@ -260,28 +267,28 @@ def evaluate_tsd_depth(args, params, filenames):
         global tsd_thresholds, del_thresholds
         tsd_thresholds=[tsd_mono_high_conf_threshold, tsd_threshold, tsd_bi_high_conf_threshold, params.tsd_outlier, tsd_outlier_low_threshold]
         del_thresholds=[del_mono_high_conf_threshold, del_threshold, del_bi_high_conf_threshold, params.del_outlier]
-        # plot
-        plt.figure(figsize=(3, 3))  # (x, y)
-        gs=gridspec.GridSpec(2, 1)  # (y, x)
-        gs.update(wspace=0.1)
-        ax=plt.subplot(gs[0])  # TSD
-        ax.fill([0]+ tsd_x.tolist() +[3], [0]+ tsd_y.tolist() +[0], c='dodgerblue', alpha=0.25, label='TSD, n=%d' % len(only_tsd))
-        ax.axvline(x=tsd_threshold, linewidth=0.5, alpha=0.5, color='steelblue', linestyle='dashed', label='Threshold=%.2f' % tsd_threshold)
-        ax.set_xlim(0, 3)
-        ax.set_ylim(ymin=0)
-        ax.set_ylabel('Density')
-        ax.legend()
-        ax=plt.subplot(gs[1])  # DEL
-        ax.fill([0]+ del_x.tolist() +[3], [0]+ del_y.tolist() +[0], c='coral', alpha=0.25, label='Short_del, n=%d' % len(only_del))
-        ax.axvline(x=del_threshold, linewidth=0.5, alpha=0.5, color='orangered', linestyle='dashed', label='Threshold=%.2f' % del_threshold)
-        ax.set_xlim(0, 3)
-        ax.set_ylim(ymin=0)
-        ax.set_xlabel('Background depth to TSD/short-del depth ratio')
-        ax.set_ylabel('Density')
-        ax.legend()
-        plt.suptitle('Gaussian kernel-density estimation')
-        plt.savefig('./genotype_out/kde.pdf')
-        plt.close()
+        # plot; this is for debug
+#        plt.figure(figsize=(3, 3))  # (x, y)
+#        gs=gridspec.GridSpec(2, 1)  # (y, x)
+#        gs.update(wspace=0.1)
+#        ax=plt.subplot(gs[0])  # TSD
+#        ax.fill([0]+ tsd_x.tolist() +[3], [0]+ tsd_y.tolist() +[0], c='dodgerblue', alpha=0.25, label='TSD, n=%d' % len(only_tsd))
+#        ax.axvline(x=tsd_threshold, linewidth=0.5, alpha=0.5, color='steelblue', linestyle='dashed', label='Threshold=%.2f' % tsd_threshold)
+#        ax.set_xlim(0, 3)
+#        ax.set_ylim(ymin=0)
+#        ax.set_ylabel('Density')
+#        ax.legend()
+#        ax=plt.subplot(gs[1])  # DEL
+#        ax.fill([0]+ del_x.tolist() +[3], [0]+ del_y.tolist() +[0], c='coral', alpha=0.25, label='Short_del, n=%d' % len(only_del))
+#        ax.axvline(x=del_threshold, linewidth=0.5, alpha=0.5, color='orangered', linestyle='dashed', label='Threshold=%.2f' % del_threshold)
+#        ax.set_xlim(0, 3)
+#        ax.set_ylim(ymin=0)
+#        ax.set_xlabel('Background depth to TSD/short-del depth ratio')
+#        ax.set_ylabel('Density')
+#        ax.legend()
+#        plt.suptitle('Gaussian kernel-density estimation')
+#        plt.savefig('./genotype_out/kde.pdf')
+#        plt.close()
         
         # count allele count
         global cn_est_tsd_depth
@@ -402,8 +409,10 @@ def evaluate_spanning_read(args, params, filenames):
         
         # load
         insbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
-        if os.path.exists(filenames.limited_b +'.fai') is True:
-            os.remove(filenames.limited_b +'.fai')
+        if os.path.exists(filenames.limited_b +'.bai') is True:
+            os.remove(filenames.limited_b +'.bai')
+        elif os.path.exists(filenames.limited_c +'.crai') is True:
+            os.remove(filenames.limited_c +'.crai')
         if args.b is not None:
             pysam.index(filenames.limited_b)
             cmd='samtools view -@ %d %s -bh -M -L %s -o %s' % (args.p, filenames.limited_b, insbed.fn, filenames.tmp_bam)
@@ -466,7 +475,7 @@ def evaluate_spanning_read(args, params, filenames):
         spanning_counts=[]
         for id in span_judge_true:
             spanning_counts.append(span_judge_true[id])
-        spanning_count_median= statistics.median(spanning_counts)
+        spanning_count_median= np.median(spanning_counts)
         spanning_high_threshold= spanning_count_median * params.spanning_high_threshold_coeff
         spanning_zero_threshold= spanning_count_median * params.spanning_zero_threshold_coeff
         global cn_est_spanning

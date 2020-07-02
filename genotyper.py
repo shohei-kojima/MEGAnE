@@ -10,7 +10,7 @@ See file LICENSE for details.
 import os,sys,datetime,argparse,glob,logging
 
 '''
-python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -c NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa -fai /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai -ins_bed result_out/MEI_final_percentile.bed -p 4 -overwrite -cov 35
+python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -c NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa -fai /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai -ins_bed result_out/MEI_final_percentile.bed -abs_bed result_out/absent_MEs.bed -p 4 -overwrite -cov 35
 '''
 
 
@@ -22,10 +22,12 @@ version='2020/07/01'
 parser=argparse.ArgumentParser(description='')
 parser.add_argument('-b', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end BAM file.')
 parser.add_argument('-c', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end CRAM file.')
-parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: hg38.fa')
-parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fasta index of the reference genome. Example: hg38.fa.fai')
+parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: GRCh38DH.fa')
+parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fasta index of the reference genome. Example: GRCh38DH.fa.fai')
 parser.add_argument('-ins_bed', metavar='str', type=str, help='Specify input bed file containing information of MEIs.')
 parser.add_argument('-abs_bed', metavar='str', type=str, help='Specify input bed file containing information of absent MEs.')
+parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
+parser.add_argument('-repout', metavar='str', type=str, help='Required. Specify RepeatMasker output. Must be masked using the input RepBase file. Example: GRCh38DH.fa.out')
 parser.add_argument('-cov', metavar='int', type=int, help='Optional. Specify coverage depth. Default: 30', default=30)
 parser.add_argument('-sample_name', metavar='int', type=int, help='Optional. Specify sample name which will be labeled in the VCF output. If not specified, BAM/CRAM filename will be output.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./genotype_out', default='./genotype_out')
@@ -91,8 +93,10 @@ base=os.path.splitext(os.path.basename(args.ins_bed))[0]
 filenames.ins_out_bed     =os.path.join(args.outdir, '%s_genotyped.bed' % base)
 filenames.ins_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
 
+filenames.depth_abs       =os.path.join(args.outdir, 'depth_abs.txt')
 
-# 0. limit BAM/CRAM
+
+#  0. limit BAM/CRAM
 import allele_count_ins
 log.logger.info('Limit BAM/CRAM started.')
 #allele_count_ins.limit(args, params, filenames)
@@ -102,39 +106,47 @@ log.logger.info('Limit BAM/CRAM started.')
 log.logger.info('Evidence search started, insertion.')
 data=utils.empclass()
 
-allele_count_ins.evaluate_tsd_depth(args, params, filenames)
-data.cn_est_tsd_depth=allele_count_ins.cn_est_tsd_depth
-data.tsd_thresholds=allele_count_ins.tsd_thresholds
-data.del_thresholds=allele_count_ins.del_thresholds
+#allele_count_ins.evaluate_tsd_depth(args, params, filenames)
+#data.cn_est_tsd_depth=allele_count_ins.cn_est_tsd_depth
+#data.tsd_thresholds=allele_count_ins.tsd_thresholds
+#data.del_thresholds=allele_count_ins.del_thresholds
+#
+#allele_count_ins.evaluate_spanning_read(args, params, filenames)
+#data.cn_est_spanning=allele_count_ins.cn_est_spanning
+#data.spanning_thresholds=allele_count_ins.spanning_thresholds
+#
+#allele_count_ins.evaluate_discordant(args, params, filenames)
+#data.cn_est_disc=allele_count_ins.cn_est_disc
+#data.disc_thresholds=allele_count_ins.disc_thresholds  # could be False
 
-allele_count_ins.evaluate_spanning_read(args, params, filenames)
-data.cn_est_spanning=allele_count_ins.cn_est_spanning
-data.spanning_thresholds=allele_count_ins.spanning_thresholds
-
-allele_count_ins.evaluate_discordant(args, params, filenames)
-data.cn_est_disc=allele_count_ins.cn_est_disc
-data.disc_thresholds=allele_count_ins.disc_thresholds  # could be False
-
-
-# 2. merge evidences; insertion
+# merge evidences; insertion
 import merge_allele_evidence_ins
 log.logger.info('Evidence merge started, insertion.')
-merge_allele_evidence_ins.plot_orig(args, params, filenames, data)
-merge_allele_evidence_ins.merge(args, params, filenames, data)
-data.merged_res=merge_allele_evidence_ins.merged_res
-merge_allele_evidence_ins.plot_merged(args, params, filenames, data)
-data.mei_filter=merge_allele_evidence_ins.mei_filter
-#merge_allele_evidence_ins.plot_gt(args, params, filenames, data)
+#merge_allele_evidence_ins.plot_orig(args, params, filenames, data)
+#merge_allele_evidence_ins.merge(args, params, filenames, data)
+#data.merged_res=merge_allele_evidence_ins.merged_res
+#merge_allele_evidence_ins.plot_merged(args, params, filenames, data)
+#data.mei_filter=merge_allele_evidence_ins.mei_filter
+#merge_allele_evidence_ins.plot_gt(args, params, filenames, data)   # always commentout unless debug
 
-
-# 3. output; insertion
+# output; insertion
 import output_genotyped_vcf
-output_genotyped_vcf.output_ins_bed_vcf(args, params, filenames, data)
+#output_genotyped_vcf.output_ins_bed_vcf(args, params, filenames, data)
 log.logger.info('Did output VCF, insertion.')
 
 
-# 4. chekc for evidences; absent ME
+# 2. check for evidences; absent
 import allele_count_abs
+#allele_count_abs.evaluate_spanning_read(args, params, filenames)
+#data.cn_est_spanning=allele_count_abs.cn_est_spanning
+#data.spanning_thresholds=allele_count_abs.spanning_thresholds
+
+allele_count_abs.evaluate_bp_depth(args, params, filenames)
+data.back_to_bp_ratios=allele_count_abs.back_to_bp_ratios
+data.abs_thresholds=allele_count_abs.abs_thresholds
+
+# merge evidences; absent
+import merge_allele_evidence_abs
 
 
 

@@ -38,6 +38,8 @@ def plot_tsd_dep(left, middle, right):  # 20-nt flank
 #    plt.setp(ax.collections, alpha=0.25)
     sns.boxplot(data=df, width=0.75, showfliers=False, palette='cool', boxprops=dict(alpha=.3))
     ax.set_ylim(0, 2.5)
+    ax.set_xlabel('Position relative to TSD')
+    ax.set_ylabel('Depth relative to autosome')
     plt.xticks(rotation=90)
     plt.suptitle('misc/plot_tsd_dep')
     plt.subplots_adjust(left=0.1, right=0.9, bottom=0.2, top=0.9)
