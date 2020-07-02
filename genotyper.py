@@ -94,6 +94,7 @@ filenames.ins_out_bed     =os.path.join(args.outdir, '%s_genotyped.bed' % base)
 filenames.ins_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
 
 filenames.depth_abs       =os.path.join(args.outdir, 'depth_abs.txt')
+filenames.merged_pdf_abs  =os.path.join(args.outdir, 'plot_out_genotyping_absents.pdf')
 
 
 #  0. limit BAM/CRAM
@@ -137,16 +138,19 @@ log.logger.info('Did output VCF, insertion.')
 
 # 2. check for evidences; absent
 import allele_count_abs
-#allele_count_abs.evaluate_spanning_read(args, params, filenames)
-#data.cn_est_spanning=allele_count_abs.cn_est_spanning
-#data.spanning_thresholds=allele_count_abs.spanning_thresholds
+allele_count_abs.evaluate_spanning_read(args, params, filenames)
+data.cn_est_spanning=allele_count_abs.cn_est_spanning
+data.spanning_thresholds=allele_count_abs.spanning_thresholds
 
 allele_count_abs.evaluate_bp_depth(args, params, filenames)
-data.back_to_bp_ratios=allele_count_abs.back_to_bp_ratios
+data.cn_est_depth=allele_count_abs.cn_est_depth
 data.abs_thresholds=allele_count_abs.abs_thresholds
 
 # merge evidences; absent
 import merge_allele_evidence_abs
+merge_allele_evidence_abs.merge(args, params, filenames, data)
+data.merged_res=merge_allele_evidence_abs.merged_res
+merge_allele_evidence_abs.plot_merged(args, params, filenames, data)
 
 
 

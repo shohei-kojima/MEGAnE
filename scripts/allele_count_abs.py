@@ -220,14 +220,15 @@ def evaluate_spanning_read(args, params, filenames):
                 if id in span_judge_true:
                     if spanning_outlier <= sum(span_judge_true[id]):
                         cn_est_spanning[id]=['outlier', span_judge_true[id][0], span_judge_true[id][1]]
-                    elif spanning_high_threshold <= span_judge_true[id] < spanning_outlier:
+                    elif spanning_high_threshold <= sum(span_judge_true[id]) < spanning_outlier:
                         cn_est_spanning[id]=['bi_high', span_judge_true[id][0], span_judge_true[id][1]]
-                    elif spanning_zero_threshold <= span_judge_true[id] < spanning_high_threshold:
+                    elif spanning_zero_threshold <= sum(span_judge_true[id]) < spanning_high_threshold:
                         cn_est_spanning[id]=['bi_low', span_judge_true[id][0], span_judge_true[id][1]]
                     else:
                         cn_est_spanning[id]=['mono_low', span_judge_true[id][0], span_judge_true[id][1]]
                 else:
                     cn_est_spanning[id]=['mono_high', 0, 0]
+                n += 1
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
@@ -275,13 +276,14 @@ def evaluate_bp_depth(args, params, filenames):
             corrected_dep= sum(one_nt_removed) / len(one_nt_removed)
             return corrected_dep
         
-        global back_to_bp_ratios
-        back_to_bp_ratios={}
+        global cn_est_depth
+        cn_est_depth={}
         min_ratios=[]
         n=0
         with open(args.abs_bed) as infile:
             for line in infile:
                 id='ID=%d' % n
+                n += 1
                 ls=line.strip().split('\t')
                 if ls[0] in dep:
                     left_pos=int(ls[1])
@@ -305,23 +307,35 @@ def evaluate_bp_depth(args, params, filenames):
                         right_del.append(dep[ls[0]][pos])
                     right_del=remove_1nt(right_del)
                     # judge
+                    status='ok'
                     if left_flank > 0 and right_flank > 0:
                         left_ratio= left_del / left_flank
                         right_ratio= right_del / right_flank
-                        min_ratios.append(min(left_ratio, right_ratio))
+                        min_ratio=min(left_ratio, right_ratio)
+                        min_ratios.append(min_ratio)
                     elif left_flank > 0:
                         left_ratio= left_del / left_flank
-                        min_ratios.append(left_ratio)
+                        right_ratio=-1
+                        min_ratio=left_ratio
+                        min_ratios.append(min_ratio)
                     elif right_flank > 0:
+                        left_ratio=-1
                         right_ratio= right_del / right_flank
-                        min_ratios.append(right_ratio)
+                        min_ratio=right_ratio
+                        min_ratios.append(min_ratio)
                     else:
-                        left_ratio=0
-                        right_ratio=0
+                        left_ratio=-1
+                        right_ratio=-1
+                        min_ratios=-1
+                        status='outlier'
                 else:
-                    left_ratio=0
-                    right_ratio=0
-                back_to_bp_ratios[id]=[left_ratio, right_ratio]
+                    left_ratio=-1
+                    right_ratio=-1
+                    min_ratios=-1
+                    status='outlier'
+                if min_ratio > params.abs_depth_outlier:
+                    status='outlier'
+                cn_est_depth[id]=[status, left_ratio, right_ratio, min_ratio]
         abs_kernel=stats.gaussian_kde(min_ratios)
         abs_x=np.linspace(0, 2, 400)
         abs_y=abs_kernel(abs_x)
@@ -350,14 +364,20 @@ def evaluate_bp_depth(args, params, filenames):
         ys=abs_kernel(xs)
         peaks,bottoms,highest=find_threshold(xs, ys)
         plausibles=[]
+        threshold_determined=False
         for peak in peaks:
             if 0.5 <= peak < 1:
                 plausibles.append(peak)
         if len(plausibles) == 1:
             mono_peak=plausibles[0]
+            if len(bottoms) == 1:
+                if 0 < bottoms[0] < 0.5:
+                    abs_mono_high_conf_threshold=bottoms[0]
+                    threshold_determined=True
         else:
             mono_peak=params.mono_peak_notfound
-        abs_mono_high_conf_threshold= mono_peak / 3
+        if threshold_determined is False:
+            abs_mono_high_conf_threshold= mono_peak / 3
         log.logger.debug('abs_kernel,peaks=%s,bottoms=%s,highest=%s,abs_mono_high_conf_threshold=%f' % (peaks, bottoms, highest, abs_mono_high_conf_threshold))
         global abs_thresholds
         abs_thresholds=[abs_mono_high_conf_threshold, params.abs_depth_outlier]
@@ -375,39 +395,6 @@ def evaluate_bp_depth(args, params, filenames):
         plt.suptitle('Gaussian kernel-density estimation')
         plt.savefig('./genotype_out/kde_abs.pdf')
         plt.close()
-        exit()
-        # count allele count
-        global cn_est_tsd_depth
-        cn_est_tsd_depth={}
-        for id in back_to_bp_ratios:
-            ratio,struc=back_to_bp_ratios[id]
-            if struc == 'TSD':
-                if ratio < tsd_outlier_low_threshold:
-                    allele='outlier'
-                elif tsd_outlier_low_threshold <= ratio < tsd_mono_high_conf_threshold:
-                    allele='mono_high'
-                elif tsd_mono_high_conf_threshold <= ratio < tsd_threshold:
-                    allele='mono_low'
-                elif tsd_threshold <= ratio < tsd_bi_high_conf_threshold:
-                    allele='bi_low'
-                elif tsd_bi_high_conf_threshold <= ratio < params.tsd_outlier:
-                    allele='bi_high'
-                else:
-                    allele='outlier'
-            elif struc == 'Del':
-                if ratio < del_mono_high_conf_threshold:
-                    allele='mono_high'
-                elif del_mono_high_conf_threshold <= ratio < del_threshold:
-                    allele='mono_low'
-                elif del_threshold <= ratio < del_bi_high_conf_threshold:
-                    allele='bi_low'
-                elif del_bi_high_conf_threshold <= ratio < params.del_outlier:
-                    allele='bi_high'
-                else:
-                    allele='outlier'
-            else:
-                allele='NA'
-            cn_est_tsd_depth[id]=[allele, ratio, struc]
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
