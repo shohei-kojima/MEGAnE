@@ -98,6 +98,7 @@ filenames.merged_pdf_abs  =os.path.join(args.outdir, 'plot_out_genotyping_absent
 
 
 #  0. limit BAM/CRAM
+import output_genotyped_vcf
 import allele_count_ins
 log.logger.info('Limit BAM/CRAM started.')
 #allele_count_ins.limit(args, params, filenames)
@@ -131,7 +132,6 @@ log.logger.info('Evidence merge started, insertion.')
 #merge_allele_evidence_ins.plot_gt(args, params, filenames, data)   # always commentout unless debug
 
 # output; insertion
-import output_genotyped_vcf
 #output_genotyped_vcf.output_ins_bed_vcf(args, params, filenames, data)
 log.logger.info('Did output VCF, insertion.')
 
@@ -152,7 +152,10 @@ merge_allele_evidence_abs.merge(args, params, filenames, data)
 data.merged_res=merge_allele_evidence_abs.merged_res
 merge_allele_evidence_abs.plot_merged(args, params, filenames, data)
 
+# output; absent
+output_genotyped_vcf.output_abs_bed_vcf(args, params, filenames, data)
+log.logger.info('Did output VCF, absent MEs.')
 
 
 # output comments
-log.logger.info('Output vcf finished!')
+log.logger.info('Genotyping finished!')
