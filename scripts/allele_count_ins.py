@@ -79,17 +79,17 @@ def evaluate_tsd_depth(args, params, filenames):
     log.logger.debug('started')
     try:
         # convert to depth
-#        insbed=BedTool(args.ins_bed).slop(b=params.tsd_flank_len + 1, g=args.fai).sort().merge()
-#        if args.b is not None:
-#            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, insbed.fn, filenames.depth_ins)
-#        else:
-#            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, insbed.fn, filenames.depth_ins)
-#        log.logger.debug('samtools depth command = `'+ cmd +'`')
-#        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-#        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-#        if not out.returncode == 0:
-#            log.logger.error('Error occurred during samtools depth running.')
-#            exit(1)
+        insbed=BedTool(args.ins_bed).slop(b=params.tsd_flank_len + 1, g=args.fai).sort().merge()
+        if args.b is not None:
+            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, insbed.fn, filenames.depth_ins)
+        else:
+            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, insbed.fn, filenames.depth_ins)
+        log.logger.debug('samtools depth command = `'+ cmd +'`')
+        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+        if not out.returncode == 0:
+            log.logger.error('Error occurred during samtools depth running.')
+            exit(1)
         # load depth
         dep={}
         with open(filenames.depth_ins) as infile:
