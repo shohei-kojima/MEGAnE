@@ -138,6 +138,16 @@ def evaluate_spanning_read(args, params, filenames):
                     bps[ls[0]]=[]
                 bps[ls[0]].append([int(ls[1]), int(ls[2]), 'ID=%d' % id])
                 id += 1
+        # load breakpoints; 3' transduction
+        if not args.abs_3t_bed is None:
+            id=0
+            with open(args.abs_3t_bed) as infile:
+                for line in infile:
+                    ls=line.strip().split('\t')
+                    if not ls[0] in bps:
+                        bps[ls[0]]=[]
+                    bps[ls[0]].append([int(ls[1]), int(ls[2]), 'ID=3T%d' % id])
+                    id += 1
         # load reads
         infile=pysam.AlignmentFile(filenames.tmp_bam, 'rb')
         span_judge_true={}
@@ -229,6 +239,25 @@ def evaluate_spanning_read(args, params, filenames):
                 else:
                     cn_est_spanning[id]=['mono_high', 0, 0]
                 n += 1
+        # 3' transduction
+        if not args.abs_3t_bed is None:
+            n=0
+            with open(args.abs_3t_bed) as infile:
+                for line in infile:
+                    id='ID=3T%d' % n
+                    ls=line.strip().split('\t')
+                    if id in span_judge_true:
+                        if spanning_outlier <= sum(span_judge_true[id]):
+                            cn_est_spanning[id]=['outlier', span_judge_true[id][0], span_judge_true[id][1]]
+                        elif spanning_high_threshold <= sum(span_judge_true[id]) < spanning_outlier:
+                            cn_est_spanning[id]=['bi_high', span_judge_true[id][0], span_judge_true[id][1]]
+                        elif spanning_zero_threshold <= sum(span_judge_true[id]) < spanning_high_threshold:
+                            cn_est_spanning[id]=['bi_low', span_judge_true[id][0], span_judge_true[id][1]]
+                        else:
+                            cn_est_spanning[id]=['mono_low', span_judge_true[id][0], span_judge_true[id][1]]
+                    else:
+                        cn_est_spanning[id]=['mono_high', 0, 0]
+                    n += 1
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
@@ -238,17 +267,27 @@ def evaluate_bp_depth(args, params, filenames):
     log.logger.debug('started')
     try:
         # convert to depth
-#        absbed=BedTool(args.abs_bed).slop(b=params.abs_flank_len + 1, g=args.fai).sort().merge()
-#        if args.b is not None:
-#            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, absbed.fn, filenames.depth_abs)
-#        else:
-#            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, absbed.fn, filenames.depth_abs)
-#        log.logger.debug('samtools depth command = `'+ cmd +'`')
-#        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-#        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-#        if not out.returncode == 0:
-#            log.logger.error('Error occurred during samtools depth running.')
-#            exit(1)
+        if not args.abs_3t_bed is None:
+            tmp=[]
+            with open(args.abs_bed) as infile:
+                for line in infile:
+                    tmp.append(line)
+            with open(args.abs_3t_bed) as infile:
+                for line in infile:
+                    tmp.append(line)
+            absbed=BedTool(''.join(tmp), from_string=True).slop(b=params.abs_flank_len + 1, g=args.fai).sort().merge()
+        else:
+            absbed=BedTool(args.abs_bed).slop(b=params.abs_flank_len + 1, g=args.fai).sort().merge()
+        if args.b is not None:
+            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, absbed.fn, filenames.depth_abs)
+        else:
+            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, absbed.fn, filenames.depth_abs)
+        log.logger.debug('samtools depth command = `'+ cmd +'`')
+        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+        if not out.returncode == 0:
+            log.logger.error('Error occurred during samtools depth running.')
+            exit(1)
         
         # load depth
         dep={}
@@ -326,16 +365,68 @@ def evaluate_bp_depth(args, params, filenames):
                     else:
                         left_ratio=-1
                         right_ratio=-1
-                        min_ratios=-1
                         status='outlier'
                 else:
                     left_ratio=-1
                     right_ratio=-1
-                    min_ratios=-1
                     status='outlier'
                 if min_ratio > params.abs_depth_outlier:
                     status='outlier'
                 cn_est_depth[id]=[status, left_ratio, right_ratio, min_ratio]
+        # 3' transduction
+        if not args.abs_3t_bed is None:
+            n=0
+            with open(args.abs_3t_bed) as infile:
+                for line in infile:
+                    id='ID=3T%d' % n
+                    n += 1
+                    ls=line.strip().split('\t')
+                    if ls[0] in dep:
+                        left_pos=int(ls[1])
+                        right_pos=int(ls[2])
+                        # left
+                        left_flank=[]
+                        for pos in range(left_pos - params.abs_flank_len, left_pos):
+                            left_flank.append(dep[ls[0]][pos])
+                        left_flank=remove_1nt(left_flank)
+                        left_del=[]
+                        for pos in range(left_pos, left_pos + params.abs_flank_len):
+                            left_del.append(dep[ls[0]][pos])
+                        left_del=remove_1nt(left_del)
+                        # right
+                        right_flank=[]
+                        for pos in range(right_pos, right_pos + params.abs_flank_len):
+                            right_flank.append(dep[ls[0]][pos])
+                        right_flank=remove_1nt(right_flank)
+                        right_del=[]
+                        for pos in range(right_pos - params.abs_flank_len, right_pos):
+                            right_del.append(dep[ls[0]][pos])
+                        right_del=remove_1nt(right_del)
+                        # judge
+                        status='ok'
+                        if left_flank > 0 and right_flank > 0:
+                            left_ratio= left_del / left_flank
+                            right_ratio= right_del / right_flank
+                            min_ratio=min(left_ratio, right_ratio)
+                        elif left_flank > 0:
+                            left_ratio= left_del / left_flank
+                            right_ratio=-1
+                            min_ratio=left_ratio
+                        elif right_flank > 0:
+                            left_ratio=-1
+                            right_ratio= right_del / right_flank
+                            min_ratio=right_ratio
+                        else:
+                            left_ratio=-1
+                            right_ratio=-1
+                            status='outlier'
+                    else:
+                        left_ratio=-1
+                        right_ratio=-1
+                        status='outlier'
+                    if min_ratio > params.abs_depth_outlier:
+                        status='outlier'
+                    cn_est_depth[id]=[status, left_ratio, right_ratio, min_ratio]
         abs_kernel=stats.gaussian_kde(min_ratios)
         abs_x=np.linspace(0, 2, 400)
         abs_y=abs_kernel(abs_x)
@@ -381,20 +472,20 @@ def evaluate_bp_depth(args, params, filenames):
         log.logger.debug('abs_kernel,peaks=%s,bottoms=%s,highest=%s,abs_mono_high_conf_threshold=%f' % (peaks, bottoms, highest, abs_mono_high_conf_threshold))
         global abs_thresholds
         abs_thresholds=[abs_mono_high_conf_threshold, params.abs_depth_outlier]
-        # plot
-        plt.figure(figsize=(3, 2))  # (x, y)
-        gs=gridspec.GridSpec(1, 1)  # (y, x)
-        ax=plt.subplot(gs[0])  # DEL
-        ax.fill([0]+ abs_x.tolist() +[2], [0]+ abs_y.tolist() +[0], c='coral', alpha=0.25, label='Absent, n=%d' % len(min_ratios))
-        ax.axvline(x=abs_mono_high_conf_threshold, linewidth=0.5, alpha=0.5, color='orangered', linestyle='dashed', label='Threshold=%.2f' % abs_mono_high_conf_threshold)
-        ax.set_xlim(0, 2)
-        ax.set_ylim(ymin=0)
-        ax.set_xlabel('Background depth to abs depth ratio')
-        ax.set_ylabel('Density')
-        ax.legend()
-        plt.suptitle('Gaussian kernel-density estimation')
-        plt.savefig('./genotype_out/kde_abs.pdf')
-        plt.close()
+        # plot; this is for debug
+#        plt.figure(figsize=(3, 2))  # (x, y)
+#        gs=gridspec.GridSpec(1, 1)  # (y, x)
+#        ax=plt.subplot(gs[0])  # DEL
+#        ax.fill([0]+ abs_x.tolist() +[2], [0]+ abs_y.tolist() +[0], c='coral', alpha=0.25, label='Absent, n=%d' % len(min_ratios))
+#        ax.axvline(x=abs_mono_high_conf_threshold, linewidth=0.5, alpha=0.5, color='orangered', linestyle='dashed', label='Threshold=%.2f' % abs_mono_high_conf_threshold)
+#        ax.set_xlim(0, 2)
+#        ax.set_ylim(ymin=0)
+#        ax.set_xlabel('Background depth to abs depth ratio')
+#        ax.set_ylabel('Density')
+#        ax.legend()
+#        plt.suptitle('Gaussian kernel-density estimation')
+#        plt.savefig('./genotype_out/kde_abs.pdf')
+#        plt.close()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

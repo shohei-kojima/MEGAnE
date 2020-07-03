@@ -10,7 +10,7 @@ See file LICENSE for details.
 import os,sys,datetime,argparse,glob,logging
 
 '''
-python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -c NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa -fai /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai -ins_bed result_out/MEI_final_percentile.bed -abs_bed result_out/absent_MEs.bed -p 4 -overwrite -cov 35
+python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -c NA12878.final.cram -fa /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa -fai /home/kooojiii/Documents/genomes/hg38/1kGP/GRCh38_full_analysis_set_plus_decoy_hla.fa.fai -ins_bed result_out/MEI_final_percentile.bed -abs_bed result_out/absent_MEs.bed -abs_3t_bed result_out/absent_MEs_transduction.bed  -p 4 -overwrite -cov 35
 '''
 
 
@@ -26,6 +26,7 @@ parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify refe
 parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fasta index of the reference genome. Example: GRCh38DH.fa.fai')
 parser.add_argument('-ins_bed', metavar='str', type=str, help='Specify input bed file containing information of MEIs.')
 parser.add_argument('-abs_bed', metavar='str', type=str, help='Specify input bed file containing information of absent MEs.')
+parser.add_argument('-abs_3t_bed', metavar='str', type=str, help='Specify input bed file containing information of absent MEs.')
 parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
 parser.add_argument('-repout', metavar='str', type=str, help='Required. Specify RepeatMasker output. Must be masked using the input RepBase file. Example: GRCh38DH.fa.out')
 parser.add_argument('-cov', metavar='int', type=int, help='Optional. Specify coverage depth. Default: 30', default=30)
@@ -59,10 +60,10 @@ log.logger.debug('Logging started.')
 
 # initial check
 import initial_check
-#log.logger.debug('This is version %s' % version)
-#print()
-#log.logger.info('Initial check started.')
-#initial_check.check(args, sys.argv)
+log.logger.debug('This is version %s' % version)
+print()
+log.logger.info('Initial check started.')
+initial_check.check(args, sys.argv)
 
 
 # set up
@@ -81,63 +82,67 @@ filenames.limited_b       =os.path.join(args.outdir, 'only_necessary.bam')
 filenames.limited_c       =os.path.join(args.outdir, 'only_necessary.cram')
 filenames.limited_f2       =os.path.join(args.outdir, 'only_necessary_f')
 filenames.depth_ins       =os.path.join(args.outdir, 'depth_ins.txt')
-
 filenames.tmp_bam         =os.path.join(args.outdir, 'tmp.bam')
 filenames.out_spanning    =os.path.join(args.outdir, 'spanning_read_summary.txt.gz')
 filenames.disc_read_pdf   =os.path.join(args.outdir, 'discordant_read_num.pdf')
 
 filenames.debug_pdf1      =os.path.join(args.outdir, 'plot_out_genotype_ins_for_debug.pdf')
 filenames.merged_pdf      =os.path.join(args.outdir, 'plot_out_genotyping_insertions.pdf')
-
 base=os.path.splitext(os.path.basename(args.ins_bed))[0]
 filenames.ins_out_bed     =os.path.join(args.outdir, '%s_genotyped.bed' % base)
 filenames.ins_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
 
 filenames.depth_abs       =os.path.join(args.outdir, 'depth_abs.txt')
 filenames.merged_pdf_abs  =os.path.join(args.outdir, 'plot_out_genotyping_absents.pdf')
+base=os.path.splitext(os.path.basename(args.abs_bed))[0]
+filenames.abs_out_bed     =os.path.join(args.outdir, '%s_genotyped.bed' % base)
+filenames.abs_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
 
 
 #  0. limit BAM/CRAM
 import output_genotyped_vcf
 import allele_count_ins
 log.logger.info('Limit BAM/CRAM started.')
-#allele_count_ins.limit(args, params, filenames)
+allele_count_ins.limit(args, params, filenames)
 
 
-# 1. check for evidences; insertion
+# 1. insertions
 log.logger.info('Evidence search started, insertion.')
 data=utils.empclass()
 
-#allele_count_ins.evaluate_tsd_depth(args, params, filenames)
-#data.cn_est_tsd_depth=allele_count_ins.cn_est_tsd_depth
-#data.tsd_thresholds=allele_count_ins.tsd_thresholds
-#data.del_thresholds=allele_count_ins.del_thresholds
-#
-#allele_count_ins.evaluate_spanning_read(args, params, filenames)
-#data.cn_est_spanning=allele_count_ins.cn_est_spanning
-#data.spanning_thresholds=allele_count_ins.spanning_thresholds
-#
-#allele_count_ins.evaluate_discordant(args, params, filenames)
-#data.cn_est_disc=allele_count_ins.cn_est_disc
-#data.disc_thresholds=allele_count_ins.disc_thresholds  # could be False
+allele_count_ins.evaluate_tsd_depth(args, params, filenames)
+data.cn_est_tsd_depth=allele_count_ins.cn_est_tsd_depth
+data.tsd_thresholds=allele_count_ins.tsd_thresholds
+data.del_thresholds=allele_count_ins.del_thresholds
+
+allele_count_ins.evaluate_spanning_read(args, params, filenames)
+data.cn_est_spanning=allele_count_ins.cn_est_spanning
+data.spanning_thresholds=allele_count_ins.spanning_thresholds
+
+allele_count_ins.evaluate_discordant(args, params, filenames)
+data.cn_est_disc=allele_count_ins.cn_est_disc
+data.disc_thresholds=allele_count_ins.disc_thresholds  # could be False
 
 # merge evidences; insertion
 import merge_allele_evidence_ins
 log.logger.info('Evidence merge started, insertion.')
-#merge_allele_evidence_ins.plot_orig(args, params, filenames, data)
-#merge_allele_evidence_ins.merge(args, params, filenames, data)
-#data.merged_res=merge_allele_evidence_ins.merged_res
-#merge_allele_evidence_ins.plot_merged(args, params, filenames, data)
-#data.mei_filter=merge_allele_evidence_ins.mei_filter
+merge_allele_evidence_ins.plot_orig(args, params, filenames, data)
+merge_allele_evidence_ins.merge(args, params, filenames, data)
+data.merged_res=merge_allele_evidence_ins.merged_res
+merge_allele_evidence_ins.plot_merged(args, params, filenames, data)
+data.mei_filter=merge_allele_evidence_ins.mei_filter
 #merge_allele_evidence_ins.plot_gt(args, params, filenames, data)   # always commentout unless debug
 
 # output; insertion
-#output_genotyped_vcf.output_ins_bed_vcf(args, params, filenames, data)
+output_genotyped_vcf.output_ins_bed_vcf(args, params, filenames, data)
 log.logger.info('Did output VCF, insertion.')
 
 
-# 2. check for evidences; absent
+# 2. absent MEs
 import allele_count_abs
+log.logger.info('Evidence search started, absent MEs.')
+data=utils.empclass()
+
 allele_count_abs.evaluate_spanning_read(args, params, filenames)
 data.cn_est_spanning=allele_count_abs.cn_est_spanning
 data.spanning_thresholds=allele_count_abs.spanning_thresholds
@@ -148,6 +153,7 @@ data.abs_thresholds=allele_count_abs.abs_thresholds
 
 # merge evidences; absent
 import merge_allele_evidence_abs
+log.logger.info('Evidence merge started, absent MEs.')
 merge_allele_evidence_abs.merge(args, params, filenames, data)
 data.merged_res=merge_allele_evidence_abs.merged_res
 merge_allele_evidence_abs.plot_merged(args, params, filenames, data)

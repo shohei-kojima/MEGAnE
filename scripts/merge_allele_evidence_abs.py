@@ -181,6 +181,8 @@ def merge(args, params, filenames, data):
             
         def judge_outlier(id, data):
             tmp=[]
+            if 'ID=3T' in id:
+                tmp.append('3')
             if data.cn_est_depth[id][0] == 'outlier':
                 tmp.append('D')
             if data.cn_est_spanning[id][0] == 'outlier':
@@ -188,7 +190,7 @@ def merge(args, params, filenames, data):
             if len(tmp) == 0:
                 tmp='PASS'
             else:
-                tmp=''.join(tmp)
+                tmp=';'.join(tmp)
             return tmp
             
         spanning_threshold_for_merge= math.ceil(args.cov * params.spanning_threshold_coeff_for_merge) * 2

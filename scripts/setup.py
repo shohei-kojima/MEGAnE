@@ -30,7 +30,7 @@ def setup(args, base):
         if args.mainchr is None:
             if args.gender == 'female':
                 main_chrs=main_chrs[:-1]
-                print('You specified "female" as gender, chrY was excluded.')
+                log.logger.info('You specified "female" as gender, chrY was excluded.')
 
         # load parameter settings
         global params
@@ -78,6 +78,12 @@ def setup(args, base):
 def setup_geno(args, base):
     log.logger.debug('started')
     try:
+        # potential 3' transduction
+        if not args.abs_3t_bed is None:
+            if args.abs_bed is None:
+                log.logger.error('Cannot run genotyping of %s without -abs_bed option.' % args.abs_3t_bed)
+                exit(1)
+        
         # load main chrs
         global main_chrs
         if args.mainchr is not None:
@@ -93,7 +99,7 @@ def setup_geno(args, base):
         if args.mainchr is None:
             if args.gender == 'female':
                 main_chrs=main_chrs[:-1]
-                print('You specified "female" as gender, chrY was excluded.')
+                log.logger.info('You specified "female" as gender, chrY was excluded.')
         
         # load parameter settings
         global params

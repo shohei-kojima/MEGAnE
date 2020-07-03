@@ -35,7 +35,17 @@ def limit(args, params, filenames):
     try:
         if args.ins_bed is not None and args.abs_bed is not None:
             insbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai)
-            absbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai)
+            if not args.abs_3t_bed is None:
+                tmp=[]
+                with open(args.abs_bed) as infile:
+                    for line in infile:
+                        tmp.append(line)
+                with open(args.abs_3t_bed) as infile:
+                    for line in infile:
+                        tmp.append(line)
+                absbed=BedTool(''.join(tmp), from_string=True).slop(b=params.abs_slop_len, g=args.fai)
+            else:
+                absbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai)
             slopbed=[]
             for line in insbed:
                 ls=str(line).strip().split('\t')
