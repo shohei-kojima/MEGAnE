@@ -78,14 +78,15 @@ filenames=utils.empclass()
 
 filenames.limited_b       =os.path.join(args.outdir, 'only_necessary.bam')
 filenames.limited_c       =os.path.join(args.outdir, 'only_necessary.cram')
-filenames.depth_ins       =os.path.join(args.outdir, 'depth_ins.txt')
 filenames.tmp_bam         =os.path.join(args.outdir, 'tmp.bam')
-filenames.out_spanning    =os.path.join(args.outdir, 'spanning_read_summary.txt.gz')
-filenames.disc_read_pdf   =os.path.join(args.outdir, 'discordant_read_num.pdf')
 
-filenames.debug_pdf1      =os.path.join(args.outdir, 'plot_out_genotype_ins_for_debug.pdf')
-filenames.merged_pdf      =os.path.join(args.outdir, 'plot_out_genotyping_insertions.pdf')
 base=os.path.splitext(os.path.basename(args.ins_bed))[0]
+filenames.depth_ins       =os.path.join(args.outdir, '%s_depth_ins.txt' % base)
+filenames.out_spanning    =os.path.join(args.outdir, '%s_spanning_read_summary.txt.gz' % base)
+filenames.disc_read_pdf   =os.path.join(args.outdir, '%s_discordant_read_num.pdf' % base)
+
+filenames.debug_pdf1      =os.path.join(args.outdir, 'plot_out_%s_genotype_ins_for_debug.pdf' % base)
+filenames.merged_pdf      =os.path.join(args.outdir, 'plot_out_%s_genotyping_insertions.pdf' % base)
 filenames.ins_out_bed     =os.path.join(args.outdir, '%s_genotyped.bed' % base)
 filenames.ins_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
 

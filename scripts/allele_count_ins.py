@@ -57,8 +57,46 @@ def limit(args, params, filenames):
             slopbed=slopbed.sort().merge()
         elif args.ins_bed is not None:
             slopbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
-        else:
+        elif args.abs_bed is not None:
             slopbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai).sort().merge()
+        else:  # search and genotyping
+            do_ins=False if args.only_abs is True else True
+            do_abs=False if args.only_ins is True else True
+            slopbed=[]
+            if do_ins is True:
+                if args.gaussian_executed is True:
+                    tmp=[]
+                    with open(filenames.bp_final_g) as infile:
+                        for line in infile:
+                            tmp.append(line)
+                    with open(filenames.bp_final_p) as infile:
+                        for line in infile:
+                            tmp.append(line)
+                    insbed=BedTool(''.join(tmp), from_string=True).slop(b=params.ins_slop_len, g=args.fai)
+                elif os.path.exists(filenames.bp_final_f) is True:
+                    insbed=BedTool(filenames.bp_final_f).slop(b=params.ins_slop_len, g=args.fai)
+                elif os.path.exists(filenames.bp_final_u) is True:
+                    insbed=BedTool(filenames.bp_final_u).slop(b=params.ins_slop_len, g=args.fai)
+                else:
+                    log.logger.error('Available ins_bed not found.')
+                    exit(1)
+                for line in insbed:
+                    ls=str(line).strip().split('\t')
+                    slopbed.append('\t'.join(ls[:3]))
+            if do_abs is True:
+                tmp=[]
+                with open(args.abs_bed) as infile:
+                    for line in infile:
+                        tmp.append(line)
+                with open(args.abs_3t_bed) as infile:
+                    for line in infile:
+                        tmp.append(line)
+                absbed=BedTool(''.join(tmp), from_string=True).slop(b=params.abs_slop_len, g=args.fai)
+                for line in absbed:
+                    ls=str(line).strip().split('\t')
+                    slopbed.append('\t'.join(ls[:3]))
+            slopbed=BedTool('\n'.join(slopbed), from_string=True)
+            slopbed=slopbed.sort().merge()
         if args.b is not None:
             if os.path.exists(args.b + '.bai') is False:
                 pysam.index(args.b)
@@ -450,7 +488,7 @@ def evaluate_spanning_read(args, params, filenames):
         # load reads
         infile=pysam.AlignmentFile(filenames.tmp_bam, 'rb')
         span_judge_true={}
-        out_spanning=[]
+        outfile=gzip.open(filenames.out_spanning, 'wt')
         for line in infile:
             line=line.tostring()
             ls=line.strip().split('\t')
@@ -481,11 +519,10 @@ def evaluate_spanning_read(args, params, filenames):
                                 strand='/1' if b[-7] == '1' else '/2'
                             else:
                                 strand=''
-                            out_spanning.append('%s\t%s%s\t%s\t%d\t%d\t%d\t%d\n' % (id, ls[0], strand, judge_span, s - start, left_match, end - e, right_match))
-        with gzip.open(filenames.out_spanning, 'wt') as outfile:
-            outfile.write(''.join(out_spanning))
-            outfile.flush()
-            os.fdatasync(outfile.fileno())
+                            outfile.write('%s\t%s%s\t%s\t%d\t%d\t%d\t%d\n' % (id, ls[0], strand, judge_span, s - start, left_match, end - e, right_match))
+        outfile.flush()
+        os.fdatasync(outfile.fileno())
+        outfile.close()
         spanning_counts=[]
         for id in span_judge_true:
             spanning_counts.append(span_judge_true[id])
