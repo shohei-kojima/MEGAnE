@@ -91,9 +91,10 @@ filenames.ins_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
 
 filenames.depth_abs       =os.path.join(args.outdir, 'depth_abs.txt')
 filenames.merged_pdf_abs  =os.path.join(args.outdir, 'plot_out_genotyping_absents.pdf')
-base=os.path.splitext(os.path.basename(args.abs_bed))[0]
-filenames.abs_out_bed     =os.path.join(args.outdir, '%s_genotyped.bed' % base)
-filenames.abs_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
+if not args.abs_bed is None:
+    base=os.path.splitext(os.path.basename(args.abs_bed))[0]
+    filenames.abs_out_bed     =os.path.join(args.outdir, '%s_genotyped.bed' % base)
+    filenames.abs_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
 
 
 #  0. limit BAM/CRAM
