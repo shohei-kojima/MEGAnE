@@ -15,7 +15,7 @@ python /home/kooojiii/results/2020/prog_develop/koji_mei_pipeline/genotyper.py -
 
 
 # version
-version='2020/07/03'
+version='2020/07/06'
 
 
 # args

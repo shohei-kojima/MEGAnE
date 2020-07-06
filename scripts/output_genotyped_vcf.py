@@ -92,6 +92,7 @@ def output_ins_bed_vcf(args, params, filenames, data):
             meinfo=ls[8].split(',', 1)[1].replace('MEI_left_breakpoint', 'MEI_lbp').replace('MEI_right_breakpoint', 'MEI_rbp')
             mepred='PASS' if 'subfamily_pred:status=PASS' in ls[8] else 'FAILED'
             tmp=ls[:-1]
+            tmp[6]='%s;%s' % (tmp[6], filt)
             tmp.append('%d;%s;%s' % tuple(data.merged_res[id]))
             tmp.append(';'.join([ str(i) for i in data.cn_est_tsd_depth[id] ]))
             tmp.append(';'.join([ str(i) for i in data.cn_est_spanning[id] ]))

@@ -160,7 +160,7 @@ def plot_merged(args, params, filenames, data):
         ax.axvline(x=data.abs_thresholds[0], linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
         ax.axvline(x=data.abs_thresholds[1], linewidth=0.5, alpha=0.50, color='silver', linestyle='dashed')
         ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
-        ax.set_xlabel('Relative depth to flanking, left + right')
+        ax.set_xlabel('Relative depth to flanking, min(left, right)')
         ax.set_ylabel('# spanning read, left + right')
         ax.set_xlim(-0.2, 1.5)
         ax.set_ylim(-5, data.spanning_thresholds[2])

@@ -226,7 +226,7 @@ class load_geno:
             self.spanning_outlier_coeff_abs= 1.5
             self.abs_flank_len=5
             self.mono_peak_notfound=0.7
-            self.abs_depth_outlier=0.9
+            self.abs_depth_outlier=0.8
             self.spanning_threshold_coeff_for_merge_abs=0.01
 
             params_for_debug=[]
