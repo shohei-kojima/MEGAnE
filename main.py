@@ -24,7 +24,6 @@ parser=argparse.ArgumentParser(description='')
 parser.add_argument('-b', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end BAM file.')  # , required=True
 parser.add_argument('-c', metavar='str', type=str, help='Either -b or -c is Required. Specify input mapped paired-end CRAM file.')  # , required=True
 parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: GRCh38DH.fa')
-parser.add_argument('-fai', metavar='str', type=str, help='Required. Specify fasta index of the reference genome. Example: GRCh38DH.fa.fai')
 parser.add_argument('-fadb', metavar='str', type=str, help='Required. Specify blastdb of reference genome. Example: GRCh38DH.fa.db')
 parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
 parser.add_argument('-repout', metavar='str', type=str, help='Required. Specify RepeatMasker output. Must be masked using the input RepBase file. Example: GRCh38DH.fa.out')
@@ -35,7 +34,7 @@ parser.add_argument('-sample_name', metavar='int', type=int, help='Optional. Spe
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
 parser.add_argument('-monoallelic', help='Optional. Specify if you use monoalellic sample, such as mouse strains or HAP1 cells.', action='store_true')
-parser.add_argument('-gender', metavar='str', type=str, help='Optional. Specify gender of the sample; male or female or unknown. Available only when human sample. Default: unknown', default='unknown')
+parser.add_argument('-sex', metavar='str', type=str, help='Optional. Specify "female" if input is female sample. Available only when human and mouse sample. Default: male', default='male')
 parser.add_argument('-verylowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 10x).', action='store_true')
 parser.add_argument('-lowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 15x).', action='store_true')
 parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/prog/lib/parameter_settings.txt')
@@ -45,7 +44,7 @@ parser.add_argument('-only_ins', help='Optional. Specify if you only analyze non
 parser.add_argument('-only_abs', help='Optional. Specify if you only analyze absence of reference MEI.', action='store_true')
 parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
-parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 1', default=1)
+parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
 parser.add_argument('-v', '--version', help='Print version.', action='store_true')
 args=parser.parse_args()
 args.version=version
@@ -81,6 +80,9 @@ args.main_chrs=setup.main_chrs
 args.main_chrs_set=set(args.main_chrs)
 args.rep_headers_to_be_removed=setup.rep_headers_to_be_removed
 args.rep_with_pA=setup.rep_with_pA
+args.fai=setup.fai_path
+params.chrY=setup.chrY
+params.female=setup.female
 do_ins=False if args.only_abs is True else True
 do_abs=False if args.only_ins is True else True
 

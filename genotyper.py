@@ -70,6 +70,9 @@ setup.setup_geno(args, init.base)
 params=setup.params
 args.main_chrs=setup.main_chrs
 args.main_chrs_set=set(args.main_chrs)
+args.fai=setup.fai_path
+params.chrY=setup.chrY
+params.female=setup.female
 
 
 # output file names

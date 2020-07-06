@@ -27,11 +27,30 @@ def setup(args, base):
                 chr=line.strip()
                 if not chr == '':
                     main_chrs.append(chr)
-        if args.mainchr is None:
-            if args.gender == 'female':
-                main_chrs=main_chrs[:-1]
-                log.logger.info('You specified "female" as gender, chrY was excluded.')
-
+        global female, chrY
+        female={'female', 'Female', 'F', 'f'}
+        chrY={'chrY', 'Y', '24'}
+        if not args.sex == 'male':
+            if args.sex in female:
+                new_main_chr=[]
+                for chr in main_chrs:
+                    if not chr in chrY:
+                        new_main_chr.append(chr)
+                main_chrs=[]
+                main_chrs.extend(new_main_chr)
+                log.logger.info('You specified "female" as sex, chrY is going to be excluded from analysis.')
+            else:
+                log.logger.error('Unknown value was specified with -sex. Please check again.')
+                exit(1)
+        
+        # fai
+        global fai_path
+        if os.path.exists(args.fa + '.fai') is False:
+            import pysam
+            pysam.faidx(args.fa)
+            log.logger.info('Fasta index not found. Generated %s.fai.' % args.fa)
+        fai_path=args.fa + '.fai'
+        
         # load parameter settings
         global params
         if args.setting is not None:
@@ -109,10 +128,29 @@ def setup_geno(args, base):
                 chr=line.strip()
                 if not chr == '':
                     main_chrs.append(chr)
-        if args.mainchr is None:
-            if args.gender == 'female':
-                main_chrs=main_chrs[:-1]
-                log.logger.info('You specified "female" as gender, chrY was excluded.')
+        global female, chrY
+        female={'female', 'Female', 'F', 'f'}
+        chrY={'chrY', 'Y', '24'}
+        if not args.sex == 'male':
+            if args.sex in female:
+                new_main_chr=[]
+                for chr in main_chrs:
+                    if not chr in chrY:
+                        new_main_chr.append(chr)
+                main_chrs=[]
+                main_chrs.extend(new_main_chr)
+                log.logger.info('You specified "female" as sex, chrY is going to be excluded from analysis.')
+            else:
+                log.logger.error('Unknown value was specified with -sex. Please check again.')
+                exit(1)
+        
+        # fai
+        global fai_path
+        if os.path.exists(args.fa + '.fai') is False:
+            import pysam
+            pysam.faidx(args.fa)
+            log.logger.info('Fasta index not found. Generated %s.fai.' % args.fa)
+        fai_path=args.fa + '.fai'
         
         # load parameter settings
         global params

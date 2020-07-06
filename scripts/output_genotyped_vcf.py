@@ -47,6 +47,7 @@ def output_ins_bed_vcf(args, params, filenames, data):
         header.append('##FILTER=<ID=NU,Description="Not unique">\n')
         header.append('##FILTER=<ID=S,Description="Shorter than 50-bp">\n')
         header.append('##FILTER=<ID=G,Description="Outliers during genotyping">\n')
+        header.append('##FILTER=<ID=Y,Description="Variants on chrY. This is only available when female">\n')
         header.append('##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">\n')
         header.append('##INFO=<ID=MEPRED,Number=1,Type=String,Description="ME prediction status">\n')
         header.append('##INFO=<ID=HOMLEN,Number=1,Type=Integer,Description="Length of base pair identical micro-homology at event breakpoints">\n')
@@ -65,6 +66,7 @@ def output_ins_bed_vcf(args, params, filenames, data):
         for h in tmp:
             fa[h.split('::')[0]]=tmp[h].upper()
         # output
+        remove_Y=True if args.sex in params.female else False
         out_vcf=[]
         out_bed=[]
         for id in orig:
@@ -82,6 +84,8 @@ def output_ins_bed_vcf(args, params, filenames, data):
                 filt.append('S')
             if not data.merged_res[id][1] == 'PASS':
                 filt.append(data.merged_res[id][1])
+            if remove_Y is True and ls[0] in params.chrY:
+                filt.append('Y')
             if len(filt) == 0:
                 filt='PASS'
             else:
@@ -165,6 +169,7 @@ def output_abs_bed_vcf(args, params, filenames, data):
         header.append('##FILTER=<ID=3,Description="Potential 3\' transduction">\n')
         header.append('##FILTER=<ID=D,Description="Relative depth of breakpoint is outlier">\n')
         header.append('##FILTER=<ID=S,Description="Spanning read num is outlier">\n')
+        header.append('##FILTER=<ID=Y,Description="Variants on chrY. This is only available when female">\n')
         header.append('##INFO=<ID=MEI,Number=.,Type=String,Description="Mobile element info">\n')
         header.append('##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">\n')
         header.append('##INFO=<ID=HOMLEN,Number=1,Type=Integer,Description="Length of base pair identical micro-homology at event breakpoints">\n')
@@ -178,6 +183,7 @@ def output_abs_bed_vcf(args, params, filenames, data):
         for h in tmp:
             fa[h.split('::')[0]]=tmp[h].upper()
         # output
+        remove_Y=True if args.sex in params.female else False
         out_vcf=[]
         out_bed=[]
         for id in orig:
@@ -186,6 +192,11 @@ def output_abs_bed_vcf(args, params, filenames, data):
             seq=fa['>%s' % id]
             homlen=ls[5].replace('TSD_len=', '')
             svlen= int(ls[2]) - int(ls[1])
+            if remove_Y is True and ls[0] in params.chrY:
+                if data.merged_res[id][1] == 'PASS':
+                    data.merged_res[id][1]='Y'
+                else:
+                    data.merged_res[id][1]=data.merged_res[id][1] +';Y'
             tmp=[]
             tmp.extend(ls)
             tmp.append('%s;%s' % tuple(data.merged_res[id]))
