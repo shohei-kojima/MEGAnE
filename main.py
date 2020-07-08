@@ -342,11 +342,11 @@ def genotype_ins(args, params, filenames, data):
     filenames.ins_out_bed   =os.path.join(args.outdir, '%s_genotyped.bed' % base)
     filenames.ins_out_vcf   =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
     
-    filenames.depth_ins     =os.path.join(args.outdir, '%s_depth_ins.txt' % base))
-    filenames.out_spanning  =os.path.join(args.outdir, '%s_spanning_read_summary.txt.gz' % base))
-    filenames.disc_read_pdf =os.path.join(args.outdir, '%s_discordant_read_num.pdf' % base))
-    filenames.debug_pdf1    =os.path.join(args.outdir, 'plot_out_%s_genotype_ins_for_debug.pdf' % base))
-    filenames.merged_pdf    =os.path.join(args.outdir, 'plot_out_%s_genotyping_insertions.pdf' % base))
+    filenames.depth_ins     =os.path.join(args.outdir, '%s_depth_ins.txt' % base)
+    filenames.out_spanning  =os.path.join(args.outdir, '%s_spanning_read_summary.txt.gz' % base)
+    filenames.disc_read_pdf =os.path.join(args.outdir, '%s_discordant_read_num.pdf' % base)
+    filenames.debug_pdf1    =os.path.join(args.outdir, 'plot_out_%s_genotype_ins_for_debug.pdf' % base)
+    filenames.merged_pdf    =os.path.join(args.outdir, 'plot_out_%s_genotyping_insertions.pdf' % base)
     
     log.logger.info('Evidence search started, insertion: %s' % args.ins_bed)
     allele_count_ins.evaluate_tsd_depth(args, params, filenames)
