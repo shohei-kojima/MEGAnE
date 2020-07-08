@@ -31,7 +31,7 @@ parser.add_argument('-cov', metavar='int', type=int, help='Optional. Specify cov
 parser.add_argument('-sample_name', metavar='int', type=int, help='Optional. Specify sample name which will be labeled in the VCF output. If not specified, BAM/CRAM filename will be output.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./genotype_out', default='./genotype_out')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
-parser.add_argument('-gender', metavar='str', type=str, help='Optional. Specify gender of the sample; male or female or unknown. Available only when human sample. Default: unknown', default='unknown')
+parser.add_argument('-sex', metavar='str', type=str, help='Optional. Specify gender of the sample; male or female or unknown. Available only when human sample. Default: male', default='male')
 parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/prog/lib/parameter_settings.txt')
 parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
@@ -134,7 +134,7 @@ if not args.ins_bed is None:
     data.merged_res=merge_allele_evidence_ins.merged_res
     merge_allele_evidence_ins.plot_merged(args, params, filenames, data)
     data.mei_filter=merge_allele_evidence_ins.mei_filter
-    #merge_allele_evidence_ins.plot_gt(args, params, filenames, data)   # always commentout unless debug
+#    merge_allele_evidence_ins.plot_custom(args, params, filenames, data)   # always commentout unless debug
 
     # output; insertion
     output_genotyped_vcf.output_ins_bed_vcf(args, params, filenames, data)
