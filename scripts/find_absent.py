@@ -74,8 +74,10 @@ def find_abs(args, params, filenames):
                 te=[]
                 for s,e,n,_,_,_ in d[id]:
                     te.append('%s\t%d\t%d\n' % (chr, s, e))
+                    te.append([chr, s, e])
                 te=sorted(te, key=lambda x:(x[1], x[2]))
-                te=BedTool(''.join(te), from_string=True).merge()
+                te=[ '\t'.join([ str(i) for i in l ]) for l in te ]
+                te=BedTool('\n'.join(te), from_string=True).merge()
                 abs_bed=BedTool('%s\t%d\t%d\n' % (chr, start, end), from_string=True)
                 intersect=te.intersect(abs_bed)
                 count=0
