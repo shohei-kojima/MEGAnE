@@ -73,7 +73,7 @@ def find_abs(args, params, filenames):
             if (te_start <= params.breakpoint_annotation_gap) and (te_end <= params.breakpoint_annotation_gap):
                 te=[]
                 for s,e,n,_,_,_ in d[id]:
-                    te.append('%s\t%d\t%d\n' % (chr, s, e))
+#                    te.append('%s\t%d\t%d\n' % (chr, s, e))
                     te.append([chr, s, e])
                 te=sorted(te, key=lambda x:(x[1], x[2]))
                 te=[ '\t'.join([ str(i) for i in l ]) for l in te ]
