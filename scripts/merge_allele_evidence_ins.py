@@ -766,7 +766,7 @@ def merge(args, params, filenames, data):
                         else:
                             allele_count=1
                     elif data.cn_est_tsd_depth[id][2] == 'Del':
-                        if if not data.del_thresholds[0] is None:
+                        if not data.del_thresholds[0] is None:
                             if data.cn_est_tsd_depth[id][1] < data.del_thresholds[1]:
                                 allele_count=2
                             else:
