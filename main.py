@@ -306,6 +306,7 @@ params=setup.params
 
 args.ins_bed=None
 args.abs_bed=None
+args.only_abs=False #####
 
 if do_abs is True:
     args.abs_bed=filenames.abs_res
