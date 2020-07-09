@@ -301,15 +301,11 @@ log.logger.info('pME search finished!')
 
 
 # 8. start genotyping
-# logging
-args.logfilename='for_debug_genotyping.log'
-if os.path.exists(os.path.join(args.outdir, args.logfilename)) is True:
-    os.remove(os.path.join(args.outdir, args.logfilename))
-log.start_log(args)
-log.logger.debug('Logging started.')
-
 setup.setup_geno_only_load_params(args, init.base)
 params=setup.params
+
+args.ins_bed=None
+args.abs_bed=None
 
 if do_abs is True:
     args.abs_bed=filenames.abs_res
