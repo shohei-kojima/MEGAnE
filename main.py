@@ -303,6 +303,8 @@ log.logger.info('pME search finished!')
 # 8. start genotyping
 setup.setup_geno_only_load_params(args, init.base)
 params=setup.params
+params.chrY=setup.chrY
+params.female=setup.female
 
 args.ins_bed=None
 args.abs_bed=None
