@@ -106,7 +106,7 @@ def plot_orig(args, params, filenames, data):
             ax.set_ylim(0, data.disc_thresholds[3])
             
             # 3
-            if not data.del_thresholds is None:
+            if not data.del_thresholds[0] is None:
                 x,y=[],[]
                 for id in data.cn_est_tsd_depth:
                     if data.cn_est_tsd_depth[id][2] == 'Del':
@@ -260,7 +260,7 @@ def plot_orig(args, params, filenames, data):
             ax.set_ylim(-5, data.spanning_thresholds[2])
 
             # 2
-            if not data.del_thresholds is None:
+            if not data.del_thresholds[0] is None:
                 x,y=[],[]
                 for id in data.cn_est_tsd_depth:
                     if data.cn_est_tsd_depth[id][2] == 'Del':
@@ -421,7 +421,7 @@ def plot_merged(args, params, filenames, data):
             ax.set_ylim(0, data.disc_thresholds[3])
             
             # 3
-            if not data.del_thresholds is None:
+            if not data.del_thresholds[0] is None:
                 x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
                 for id in data.cn_est_tsd_depth:
                     if data.cn_est_tsd_depth[id][2] == 'Del':
@@ -615,7 +615,7 @@ def plot_merged(args, params, filenames, data):
             ax.set_ylim(-5, data.spanning_thresholds[2])
             
             # 2
-            if not data.del_thresholds is None:
+            if not data.del_thresholds[0] is None:
                 x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
                 for id in data.cn_est_tsd_depth:
                     if data.cn_est_tsd_depth[id][2] == 'Del':
@@ -700,8 +700,11 @@ def merge(args, params, filenames, data):
                         else:
                             status='L'
                     elif data.cn_est_tsd_depth[id][2] == 'Del':
-                        if data.cn_est_tsd_depth[id][1] >= data.del_thresholds[1] and data.cn_est_disc[id][1] >= data.disc_thresholds[0]:
-                            status='H'
+                        if not data.del_thresholds[0] is None:
+                            if data.cn_est_tsd_depth[id][1] >= data.del_thresholds[1] and data.cn_est_disc[id][1] >= data.disc_thresholds[0]:
+                                status='H'
+                            else:
+                                status='L'
                         else:
                             status='L'
                     else:  # 'no_TSD_no_Del'
@@ -715,12 +718,19 @@ def merge(args, params, filenames, data):
                             allele_count=1
                             status='L'
                     elif data.cn_est_tsd_depth[id][2] == 'Del':
-                        if data.cn_est_tsd_depth[id][1] < data.del_thresholds[1] and data.cn_est_disc[id][1] >= data.disc_thresholds[0]:
-                            allele_count=2
-                            status='H'
+                        if not data.del_thresholds[0] is None:
+                            if data.cn_est_tsd_depth[id][1] < data.del_thresholds[1] and data.cn_est_disc[id][1] >= data.disc_thresholds[0]:
+                                allele_count=2
+                                status='H'
+                            else:
+                                allele_count=1
+                                status='L'
                         else:
-                            allele_count=1
                             status='L'
+                            if data.cn_est_disc[id][1] >= data.disc_thresholds[0]:
+                                allele_count=2
+                            else:
+                                allele_count=1
                     else:  # 'no_TSD_no_Del' and 'no_background_read'
                         if data.cn_est_disc[id][1] >= data.disc_thresholds[2]:
                             allele_count=2
@@ -756,8 +766,11 @@ def merge(args, params, filenames, data):
                         else:
                             allele_count=1
                     elif data.cn_est_tsd_depth[id][2] == 'Del':
-                        if data.cn_est_tsd_depth[id][1] < data.del_thresholds[1]:
-                            allele_count=2
+                        if if not data.del_thresholds[0] is None:
+                            if data.cn_est_tsd_depth[id][1] < data.del_thresholds[1]:
+                                allele_count=2
+                            else:
+                                allele_count=1
                         else:
                             allele_count=1
                     else:  # 'no_TSD_no_Del' and 'no_background_read'

@@ -318,6 +318,8 @@ def evaluate_tsd_depth(args, params, filenames):
             del_mono_high_conf_threshold= del_threshold * params.del_mono_high_threshold_coeff  # 0.66
             del_bi_high_conf_threshold=   del_threshold * params.del_bi_high_threshold_coeff  # 1.33
             log.logger.debug('del_kernel,peaks=%s,bottoms=%s,del_threshold=%f,del_mono_high_conf_threshold=%f,del_bi_high_conf_threshold=%f' % (peaks, bottoms, del_threshold, del_mono_high_conf_threshold, del_bi_high_conf_threshold))
+        else:
+            log.logger.debug('Not enough MEI with small del at breakpoint found (n=%d).' % len(only_del))
         global tsd_thresholds, del_thresholds
         tsd_thresholds=[tsd_mono_high_conf_threshold, tsd_threshold, tsd_bi_high_conf_threshold, params.tsd_outlier, tsd_outlier_low_threshold]
         if len(only_del) >= 2:
@@ -378,7 +380,7 @@ def evaluate_tsd_depth(args, params, filenames):
                     else:
                         allele='outlier'
                 else:
-                    allele='outlier'
+                    allele='NA'
             else:
                 allele='NA'
             cn_est_tsd_depth[id]=[allele, ratio, struc]
