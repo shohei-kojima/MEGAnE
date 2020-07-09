@@ -279,16 +279,16 @@ if do_ins is True:
 
 
 # 7. search for absent MEs
-if do_abs is True:
-    import find_absent
-    print()
-    log.logger.info('Absent ME search started.')
-    find_absent.find_abs(args, params, filenames)
-    # gzip files
-    utils.gzip_file(params, filenames.abs_txt)
-    # output comments
-    log.logger.info('%d absent ME candidates found.' % find_absent.abs_n)
-    log.logger.info('Absent ME search finished!')
+#if do_abs is True:
+#    import find_absent
+#    print()
+#    log.logger.info('Absent ME search started.')
+#    find_absent.find_abs(args, params, filenames)
+#    # gzip files
+#    utils.gzip_file(params, filenames.abs_txt)
+#    # output comments
+#    log.logger.info('%d absent ME candidates found.' % find_absent.abs_n)
+#    log.logger.info('Absent ME search finished!')
 
 
 # remove unnecessary files
