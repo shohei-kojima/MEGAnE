@@ -30,6 +30,7 @@ def plot_orig(args, params, filenames, data):
             gs=gridspec.GridSpec(5, 8, height_ratios=[0.05, 0.3, 0.1, 0.05, 0.3], width_ratios=[0.3, 0.05, 0.1, 0.3, 0.05, 0.1, 0.3, 0.05])  # (y, x)
             gs.update(hspace=0.05, wspace=0.05)
             
+            # 1
             x,y=[],[]
             for id in data.cn_est_tsd_depth:
                 if data.cn_est_tsd_depth[id][2] == 'TSD':
@@ -66,6 +67,7 @@ def plot_orig(args, params, filenames, data):
             ax.set_xlim(0, data.tsd_thresholds[3])
             ax.set_ylim(-5, data.spanning_thresholds[2])
             
+            # 2
             x,y=[],[]
             for id in data.cn_est_tsd_depth:
                 if data.cn_est_tsd_depth[id][2] == 'TSD':
@@ -102,80 +104,84 @@ def plot_orig(args, params, filenames, data):
             ax.set_ylabel('# discordant read')
             ax.set_xlim(0, data.tsd_thresholds[3])
             ax.set_ylim(0, data.disc_thresholds[3])
+            
+            # 3
+            if not data.del_thresholds is None:
+                x,y=[],[]
+                for id in data.cn_est_tsd_depth:
+                    if data.cn_est_tsd_depth[id][2] == 'Del':
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_spanning[id][1])
+                
+                ax=plt.subplot(gs[0,3])  # del, x=tsd
+                sns_x=[ i for i in x if i < data.del_thresholds[3] ]
+                sns.violinplot(sns_x, orient='h', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
+                
+                ax=plt.subplot(gs[1,4])  # tsd, y=spanning
+                sns_x=[ i for i in y if i < data.spanning_thresholds[2] ]
+                sns.violinplot(sns_x, orient='v', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_ylim(-5, data.spanning_thresholds[2])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
 
-            x,y=[],[]
-            for id in data.cn_est_tsd_depth:
-                if data.cn_est_tsd_depth[id][2] == 'Del':
-                    x.append(data.cn_est_tsd_depth[id][1])
-                    y.append(data.cn_est_spanning[id][1])
-            
-            ax=plt.subplot(gs[0,3])  # del, x=tsd
-            sns_x=[ i for i in x if i < data.del_thresholds[3] ]
-            sns.violinplot(sns_x, orient='h', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
-            
-            ax=plt.subplot(gs[1,4])  # tsd, y=spanning
-            sns_x=[ i for i in y if i < data.spanning_thresholds[2] ]
-            sns.violinplot(sns_x, orient='v', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_ylim(-5, data.spanning_thresholds[2])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
+                ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
+                ax.scatter(x, y, s=5, c='coral', linewidths=0.5, alpha=0.1)
+                ax.axvline(x=data.del_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.axhline(y=data.spanning_thresholds[0], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.spanning_thresholds[1], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.set_xlabel('Relative depth, Del')
+                ax.set_ylabel('# spanning read')
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.set_ylim(-5, data.spanning_thresholds[2])
+                
+                # 4
+                x,y=[],[]
+                for id in data.cn_est_tsd_depth:
+                    if data.cn_est_tsd_depth[id][2] == 'Del':
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_disc[id][1])
+                
+                ax=plt.subplot(gs[3,3])  # del, x=tsd
+                sns_x=[ i for i in x if i < data.del_thresholds[3] ]
+                sns.violinplot(sns_x, orient='h', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
+                
+                ax=plt.subplot(gs[4,4])  # tsd, y=spanning
+                sns_x=[ i for i in y if i < data.disc_thresholds[3] ]
+                sns.violinplot(sns_x, orient='v', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_ylim(0, data.disc_thresholds[3])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
 
-            ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
-            ax.scatter(x, y, s=5, c='coral', linewidths=0.5, alpha=0.1)
-            ax.axvline(x=data.del_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[0], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[1], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.set_xlabel('Relative depth, Del')
-            ax.set_ylabel('# spanning read')
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.set_ylim(-5, data.spanning_thresholds[2])
+                ax=plt.subplot(gs[4,3])  # del, x=tsd, y=discordant reads
+                ax.scatter(x, y, s=5, c='coral', linewidths=0.5, alpha=0.1)
+                ax.axvline(x=data.del_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.axhline(y=data.disc_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.disc_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.disc_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.disc_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.set_xlabel('Relative depth, Del')
+                ax.set_ylabel('# discordant read')
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.set_ylim(0, data.disc_thresholds[3])
             
-            x,y=[],[]
-            for id in data.cn_est_tsd_depth:
-                if data.cn_est_tsd_depth[id][2] == 'Del':
-                    x.append(data.cn_est_tsd_depth[id][1])
-                    y.append(data.cn_est_disc[id][1])
-            
-            ax=plt.subplot(gs[3,3])  # del, x=tsd
-            sns_x=[ i for i in x if i < data.del_thresholds[3] ]
-            sns.violinplot(sns_x, orient='h', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
-            
-            ax=plt.subplot(gs[4,4])  # tsd, y=spanning
-            sns_x=[ i for i in y if i < data.disc_thresholds[3] ]
-            sns.violinplot(sns_x, orient='v', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_ylim(0, data.disc_thresholds[3])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
-
-            ax=plt.subplot(gs[4,3])  # del, x=tsd, y=discordant reads
-            ax.scatter(x, y, s=5, c='coral', linewidths=0.5, alpha=0.1)
-            ax.axvline(x=data.del_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=data.disc_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.disc_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.disc_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.disc_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.set_xlabel('Relative depth, Del')
-            ax.set_ylabel('# discordant read')
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.set_ylim(0, data.disc_thresholds[3])
-
+            # 5
             x,y=[],[]
             for id in data.cn_est_disc:
                 x.append(data.cn_est_disc[id][1])
@@ -216,6 +222,7 @@ def plot_orig(args, params, filenames, data):
             gs=gridspec.GridSpec(2, 5, height_ratios=[0.05, 0.3], width_ratios=[0.3, 0.05, 0.1, 0.3, 0.05])  # (y, x)
             gs.update(hspace=0.05, wspace=0.05)
             
+            # 1
             x,y=[],[]
             for id in data.cn_est_tsd_depth:
                 if data.cn_est_tsd_depth[id][2] == 'TSD':
@@ -252,41 +259,43 @@ def plot_orig(args, params, filenames, data):
             ax.set_xlim(0, data.tsd_thresholds[3])
             ax.set_ylim(-5, data.spanning_thresholds[2])
 
-            x,y=[],[]
-            for id in data.cn_est_tsd_depth:
-                if data.cn_est_tsd_depth[id][2] == 'Del':
-                    x.append(data.cn_est_tsd_depth[id][1])
-                    y.append(data.cn_est_spanning[id][1])
-            
-            ax=plt.subplot(gs[0,3])  # del, x=tsd
-            sns_x=[ i for i in x if i < data.del_thresholds[3] ]
-            sns.violinplot(sns_x, orient='h', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
-            
-            ax=plt.subplot(gs[1,4])  # tsd, y=spanning
-            sns_x=[ i for i in y if i < data.spanning_thresholds[2] ]
-            sns.violinplot(sns_x, orient='v', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_ylim(-5, data.spanning_thresholds[2])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
+            # 2
+            if not data.del_thresholds is None:
+                x,y=[],[]
+                for id in data.cn_est_tsd_depth:
+                    if data.cn_est_tsd_depth[id][2] == 'Del':
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_spanning[id][1])
+                
+                ax=plt.subplot(gs[0,3])  # del, x=tsd
+                sns_x=[ i for i in x if i < data.del_thresholds[3] ]
+                sns.violinplot(sns_x, orient='h', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
+                
+                ax=plt.subplot(gs[1,4])  # tsd, y=spanning
+                sns_x=[ i for i in y if i < data.spanning_thresholds[2] ]
+                sns.violinplot(sns_x, orient='v', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_ylim(-5, data.spanning_thresholds[2])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
 
-            ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
-            ax.scatter(x, y, s=5, c='coral', linewidths=0.5, alpha=0.1)
-            ax.axvline(x=data.del_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[0], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[1], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.set_xlabel('Relative depth, Del')
-            ax.set_ylabel('# spanning read')
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.set_ylim(-5, data.spanning_thresholds[2])
+                ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
+                ax.scatter(x, y, s=5, c='coral', linewidths=0.5, alpha=0.1)
+                ax.axvline(x=data.del_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.axhline(y=data.spanning_thresholds[0], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.spanning_thresholds[1], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.set_xlabel('Relative depth, Del')
+                ax.set_ylabel('# spanning read')
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.set_ylim(-5, data.spanning_thresholds[2])
         plt.suptitle('This is a figure for debugging')
         plt.savefig(filenames.debug_pdf1)
         plt.close()
@@ -331,6 +340,7 @@ def plot_merged(args, params, filenames, data):
                         x_failed.append(data.cn_est_tsd_depth[id][1])
                         y_failed.append(data.cn_est_spanning[id][1])
             
+            # 1
             ax=plt.subplot(gs[0,0])  # tsd, x=tsd
             sns_x=[ i for i in x if i < data.tsd_thresholds[3] ]
             sns.violinplot(sns_x, orient='h', color='steelblue')
@@ -361,6 +371,7 @@ def plot_merged(args, params, filenames, data):
             ax.set_xlim(0, data.tsd_thresholds[3])
             ax.set_ylim(-5, data.spanning_thresholds[2])
             
+            # 2
             x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
             for id in data.cn_est_tsd_depth:
                 if data.cn_est_tsd_depth[id][2] == 'TSD':
@@ -408,100 +419,104 @@ def plot_merged(args, params, filenames, data):
             ax.set_ylabel('# discordant read')
             ax.set_xlim(0, data.tsd_thresholds[3])
             ax.set_ylim(0, data.disc_thresholds[3])
-
-            x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
-            for id in data.cn_est_tsd_depth:
-                if data.cn_est_tsd_depth[id][2] == 'Del':
-                    x.append(data.cn_est_tsd_depth[id][1])
-                    y.append(data.cn_est_spanning[id][1])
-                    if mei_filter[id] is True:
-                        if data.merged_res[id][0] == 1:
-                            x_mono.append(data.cn_est_tsd_depth[id][1])
-                            y_mono.append(data.cn_est_spanning[id][1])
+            
+            # 3
+            if not data.del_thresholds is None:
+                x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
+                for id in data.cn_est_tsd_depth:
+                    if data.cn_est_tsd_depth[id][2] == 'Del':
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_spanning[id][1])
+                        if mei_filter[id] is True:
+                            if data.merged_res[id][0] == 1:
+                                x_mono.append(data.cn_est_tsd_depth[id][1])
+                                y_mono.append(data.cn_est_spanning[id][1])
+                            else:
+                                x_bi.append(data.cn_est_tsd_depth[id][1])
+                                y_bi.append(data.cn_est_spanning[id][1])
                         else:
-                            x_bi.append(data.cn_est_tsd_depth[id][1])
-                            y_bi.append(data.cn_est_spanning[id][1])
-                    else:
-                        x_failed.append(data.cn_est_tsd_depth[id][1])
-                        y_failed.append(data.cn_est_spanning[id][1])
-            
-            ax=plt.subplot(gs[0,3])  # del, x=tsd
-            sns_x=[ i for i in x if i < data.del_thresholds[3] ]
-            sns.violinplot(sns_x, orient='h', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
-            
-            ax=plt.subplot(gs[1,4])  # tsd, y=spanning
-            sns_x=[ i for i in y if i < data.spanning_thresholds[2] ]
-            sns.violinplot(sns_x, orient='v', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_ylim(-5, data.spanning_thresholds[2])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
+                            x_failed.append(data.cn_est_tsd_depth[id][1])
+                            y_failed.append(data.cn_est_spanning[id][1])
+                
+                ax=plt.subplot(gs[0,3])  # del, x=tsd
+                sns_x=[ i for i in x if i < data.del_thresholds[3] ]
+                sns.violinplot(sns_x, orient='h', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
+                
+                ax=plt.subplot(gs[1,4])  # tsd, y=spanning
+                sns_x=[ i for i in y if i < data.spanning_thresholds[2] ]
+                sns.violinplot(sns_x, orient='v', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_ylim(-5, data.spanning_thresholds[2])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
 
-            ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
-            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
-            ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2)
-            ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
-            ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.set_xlabel('Relative depth, Del')
-            ax.set_ylabel('# spanning read')
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.set_ylim(-5, data.spanning_thresholds[2])
+                ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
+                ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
+                ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2)
+                ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
+                ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.set_xlabel('Relative depth, Del')
+                ax.set_ylabel('# spanning read')
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.set_ylim(-5, data.spanning_thresholds[2])
             
-            x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
-            for id in data.cn_est_tsd_depth:
-                if data.cn_est_tsd_depth[id][2] == 'Del':
-                    x.append(data.cn_est_tsd_depth[id][1])
-                    y.append(data.cn_est_disc[id][1])
-                    if mei_filter[id] is True:
-                        if data.merged_res[id][0] == 1:
-                            x_mono.append(data.cn_est_tsd_depth[id][1])
-                            y_mono.append(data.cn_est_disc[id][1])
+                # 4
+                x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
+                for id in data.cn_est_tsd_depth:
+                    if data.cn_est_tsd_depth[id][2] == 'Del':
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_disc[id][1])
+                        if mei_filter[id] is True:
+                            if data.merged_res[id][0] == 1:
+                                x_mono.append(data.cn_est_tsd_depth[id][1])
+                                y_mono.append(data.cn_est_disc[id][1])
+                            else:
+                                x_bi.append(data.cn_est_tsd_depth[id][1])
+                                y_bi.append(data.cn_est_disc[id][1])
                         else:
-                            x_bi.append(data.cn_est_tsd_depth[id][1])
-                            y_bi.append(data.cn_est_disc[id][1])
-                    else:
-                        x_failed.append(data.cn_est_tsd_depth[id][1])
-                        y_failed.append(data.cn_est_disc[id][1])
+                            x_failed.append(data.cn_est_tsd_depth[id][1])
+                            y_failed.append(data.cn_est_disc[id][1])
 
+                
+                ax=plt.subplot(gs[3,3])  # del, x=tsd
+                sns_x=[ i for i in x if i < data.del_thresholds[3] ]
+                sns.violinplot(sns_x, orient='h', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
+                
+                ax=plt.subplot(gs[4,4])  # tsd, y=spanning
+                sns_x=[ i for i in y if i < data.disc_thresholds[3] ]
+                sns.violinplot(sns_x, orient='v', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_ylim(0, data.disc_thresholds[3])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
+
+                ax=plt.subplot(gs[4,3])  # del, x=tsd, y=discordant reads
+                ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
+                ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2)
+                ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
+                ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.axhline(y=data.disc_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.disc_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.disc_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.disc_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.set_xlabel('Relative depth, Del')
+                ax.set_ylabel('# discordant read')
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.set_ylim(0, data.disc_thresholds[3])
             
-            ax=plt.subplot(gs[3,3])  # del, x=tsd
-            sns_x=[ i for i in x if i < data.del_thresholds[3] ]
-            sns.violinplot(sns_x, orient='h', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
-            
-            ax=plt.subplot(gs[4,4])  # tsd, y=spanning
-            sns_x=[ i for i in y if i < data.disc_thresholds[3] ]
-            sns.violinplot(sns_x, orient='v', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_ylim(0, data.disc_thresholds[3])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
-
-            ax=plt.subplot(gs[4,3])  # del, x=tsd, y=discordant reads
-            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
-            ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2)
-            ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
-            ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=data.disc_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.disc_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.disc_thresholds[2], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.disc_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.set_xlabel('Relative depth, Del')
-            ax.set_ylabel('# discordant read')
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.set_ylim(0, data.disc_thresholds[3])
-
+            # 5
             x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
             for id in data.cn_est_disc:
                 x.append(data.cn_est_disc[id][1])
@@ -553,6 +568,7 @@ def plot_merged(args, params, filenames, data):
             gs=gridspec.GridSpec(2, 5, height_ratios=[0.05, 0.3], width_ratios=[0.3, 0.05, 0.1, 0.3, 0.05])  # (y, x)
             gs.update(hspace=0.05, wspace=0.05)
             
+            # 1
             x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
             for id in data.cn_est_tsd_depth:
                 if data.cn_est_tsd_depth[id][2] == 'TSD':
@@ -598,50 +614,52 @@ def plot_merged(args, params, filenames, data):
             ax.set_xlim(0, data.tsd_thresholds[3])
             ax.set_ylim(-5, data.spanning_thresholds[2])
             
-            x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
-            for id in data.cn_est_tsd_depth:
-                if data.cn_est_tsd_depth[id][2] == 'Del':
-                    x.append(data.cn_est_tsd_depth[id][1])
-                    y.append(data.cn_est_spanning[id][1])
-                    if mei_filter[id] is True:
-                        if data.merged_res[id][0] == 1:
-                            x_mono.append(data.cn_est_tsd_depth[id][1])
-                            y_mono.append(data.cn_est_spanning[id][1])
+            # 2
+            if not data.del_thresholds is None:
+                x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
+                for id in data.cn_est_tsd_depth:
+                    if data.cn_est_tsd_depth[id][2] == 'Del':
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_spanning[id][1])
+                        if mei_filter[id] is True:
+                            if data.merged_res[id][0] == 1:
+                                x_mono.append(data.cn_est_tsd_depth[id][1])
+                                y_mono.append(data.cn_est_spanning[id][1])
+                            else:
+                                x_bi.append(data.cn_est_tsd_depth[id][1])
+                                y_bi.append(data.cn_est_spanning[id][1])
                         else:
-                            x_bi.append(data.cn_est_tsd_depth[id][1])
-                            y_bi.append(data.cn_est_spanning[id][1])
-                    else:
-                        x_failed.append(data.cn_est_tsd_depth[id][1])
-                        y_failed.append(data.cn_est_spanning[id][1])
-            
-            ax=plt.subplot(gs[0,3])  # del, x=tsd
-            sns_x=[ i for i in x if i < data.del_thresholds[3] ]
-            sns.violinplot(sns_x, orient='h', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
-            
-            ax=plt.subplot(gs[1,4])  # tsd, y=spanning
-            sns_x=[ i for i in y if i < data.spanning_thresholds[2] ]
-            sns.violinplot(sns_x, orient='v', color='darkred')
-            plt.setp(ax.collections, alpha=0.25)
-            ax.set_ylim(-5, data.spanning_thresholds[2])
-            ax.xaxis.set_ticks([])
-            ax.yaxis.set_ticks([])
+                            x_failed.append(data.cn_est_tsd_depth[id][1])
+                            y_failed.append(data.cn_est_spanning[id][1])
+                
+                ax=plt.subplot(gs[0,3])  # del, x=tsd
+                sns_x=[ i for i in x if i < data.del_thresholds[3] ]
+                sns.violinplot(sns_x, orient='h', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
+                
+                ax=plt.subplot(gs[1,4])  # tsd, y=spanning
+                sns_x=[ i for i in y if i < data.spanning_thresholds[2] ]
+                sns.violinplot(sns_x, orient='v', color='darkred')
+                plt.setp(ax.collections, alpha=0.25)
+                ax.set_ylim(-5, data.spanning_thresholds[2])
+                ax.xaxis.set_ticks([])
+                ax.yaxis.set_ticks([])
 
-            ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
-            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
-            ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2)
-            ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
-            ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
-            ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
-            ax.set_xlabel('Relative depth, Del')
-            ax.set_ylabel('# spanning read')
-            ax.set_xlim(-0.25, data.del_thresholds[3])
-            ax.set_ylim(-5, data.spanning_thresholds[2])
+                ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
+                ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
+                ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2)
+                ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
+                ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
+                ax.axhline(y=data.spanning_thresholds[2], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
+                ax.set_xlabel('Relative depth, Del')
+                ax.set_ylabel('# spanning read')
+                ax.set_xlim(-0.25, data.del_thresholds[3])
+                ax.set_ylim(-5, data.spanning_thresholds[2])
         plt.suptitle('Genotyping result for insertions')
         plt.savefig(filenames.merged_pdf)
         plt.close()

@@ -261,9 +261,10 @@ def evaluate_tsd_depth(args, params, filenames):
         tsd_kernel=stats.gaussian_kde(only_tsd)
         tsd_x=np.linspace(0, 3, 600)
         tsd_y=tsd_kernel(tsd_x)
-        del_kernel=stats.gaussian_kde(only_del)
-        del_x=np.linspace(0, 3, 600)
-        del_y=del_kernel(del_x)
+        if len(only_del) >= 2:
+            del_kernel=stats.gaussian_kde(only_del)
+            del_x=np.linspace(0, 3, 600)
+            del_y=del_kernel(del_x)
         
         def find_threshold(xs, ys):
             highest=[-1, -1]
@@ -306,19 +307,23 @@ def evaluate_tsd_depth(args, params, filenames):
             tsd_outlier_low_threshold= 1 + (highest[0] * params.tsd_outlier_low_coeff)
         log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,tsd_threshold=%f,tsd_mono_high_conf_threshold=%f,tsd_bi_high_conf_threshold=%f' % (peaks, bottoms, tsd_threshold, tsd_mono_high_conf_threshold, tsd_bi_high_conf_threshold))
         # find threshold, DEL
-        xs=np.linspace(0, 1, 200)
-        ys=del_kernel(xs)
-        peaks,bottoms,highest=find_threshold(xs, ys)
-        if len(bottoms) >= 1:
-            del_threshold=bottoms[-1]
-        else:
-            del_threshold= 0.25  # would be corner cases
-        del_mono_high_conf_threshold= del_threshold * params.del_mono_high_threshold_coeff  # 0.66
-        del_bi_high_conf_threshold=   del_threshold * params.del_bi_high_threshold_coeff  # 1.33
-        log.logger.debug('del_kernel,peaks=%s,bottoms=%s,del_threshold=%f,del_mono_high_conf_threshold=%f,del_bi_high_conf_threshold=%f' % (peaks, bottoms, del_threshold, del_mono_high_conf_threshold, del_bi_high_conf_threshold))
+        if len(only_del) >= 2:
+            xs=np.linspace(0, 1, 200)
+            ys=del_kernel(xs)
+            peaks,bottoms,highest=find_threshold(xs, ys)
+            if len(bottoms) >= 1:
+                del_threshold=bottoms[-1]
+            else:
+                del_threshold= 0.25  # would be corner cases
+            del_mono_high_conf_threshold= del_threshold * params.del_mono_high_threshold_coeff  # 0.66
+            del_bi_high_conf_threshold=   del_threshold * params.del_bi_high_threshold_coeff  # 1.33
+            log.logger.debug('del_kernel,peaks=%s,bottoms=%s,del_threshold=%f,del_mono_high_conf_threshold=%f,del_bi_high_conf_threshold=%f' % (peaks, bottoms, del_threshold, del_mono_high_conf_threshold, del_bi_high_conf_threshold))
         global tsd_thresholds, del_thresholds
         tsd_thresholds=[tsd_mono_high_conf_threshold, tsd_threshold, tsd_bi_high_conf_threshold, params.tsd_outlier, tsd_outlier_low_threshold]
-        del_thresholds=[del_mono_high_conf_threshold, del_threshold, del_bi_high_conf_threshold, params.del_outlier]
+        if len(only_del) >= 2:
+            del_thresholds=[del_mono_high_conf_threshold, del_threshold, del_bi_high_conf_threshold, params.del_outlier]
+        else:
+            del_thresholds=[None, None, None, None]
         # plot; this is for debug
 #        plt.figure(figsize=(3, 3))  # (x, y)
 #        gs=gridspec.GridSpec(2, 1)  # (y, x)
@@ -361,14 +366,17 @@ def evaluate_tsd_depth(args, params, filenames):
                 else:
                     allele='outlier'
             elif struc == 'Del':
-                if ratio < del_mono_high_conf_threshold:
-                    allele='mono_high'
-                elif del_mono_high_conf_threshold <= ratio < del_threshold:
-                    allele='mono_low'
-                elif del_threshold <= ratio < del_bi_high_conf_threshold:
-                    allele='bi_low'
-                elif del_bi_high_conf_threshold <= ratio < params.del_outlier:
-                    allele='bi_high'
+                if len(only_del) >= 2:
+                    if ratio < del_mono_high_conf_threshold:
+                        allele='mono_high'
+                    elif del_mono_high_conf_threshold <= ratio < del_threshold:
+                        allele='mono_low'
+                    elif del_threshold <= ratio < del_bi_high_conf_threshold:
+                        allele='bi_low'
+                    elif del_bi_high_conf_threshold <= ratio < params.del_outlier:
+                        allele='bi_high'
+                    else:
+                        allele='outlier'
                 else:
                     allele='outlier'
             else:
