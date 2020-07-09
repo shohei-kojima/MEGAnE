@@ -33,32 +33,33 @@ nums={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 def limit(args, params, filenames):
     log.logger.debug('started')
     try:
-        if args.ins_bed is not None and args.abs_bed is not None:
-            insbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai)
-            if not args.abs_3t_bed is None:
-                tmp=[]
-                with open(args.abs_bed) as infile:
-                    for line in infile:
-                        tmp.append(line)
-                with open(args.abs_3t_bed) as infile:
-                    for line in infile:
-                        tmp.append(line)
-                absbed=BedTool(''.join(tmp), from_string=True).slop(b=params.abs_slop_len, g=args.fai)
-            else:
-                absbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai)
-            slopbed=[]
-            for line in insbed:
-                ls=str(line).strip().split('\t')
-                slopbed.append('\t'.join(ls[:3]))
-            for line in absbed:
-                ls=str(line).strip().split('\t')
-                slopbed.append('\t'.join(ls[:3]))
-            slopbed=BedTool('\n'.join(slopbed), from_string=True)
-            slopbed=slopbed.sort().merge()
-        elif args.ins_bed is not None:
-            slopbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
-        elif args.abs_bed is not None:
-            slopbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai).sort().merge()
+        if args.search_geno is False:
+            if args.ins_bed is not None and args.abs_bed is not None:
+                insbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai)
+                if not args.abs_3t_bed is None:
+                    tmp=[]
+                    with open(args.abs_bed) as infile:
+                        for line in infile:
+                            tmp.append(line)
+                    with open(args.abs_3t_bed) as infile:
+                        for line in infile:
+                            tmp.append(line)
+                    absbed=BedTool(''.join(tmp), from_string=True).slop(b=params.abs_slop_len, g=args.fai)
+                else:
+                    absbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai)
+                slopbed=[]
+                for line in insbed:
+                    ls=str(line).strip().split('\t')
+                    slopbed.append('\t'.join(ls[:3]))
+                for line in absbed:
+                    ls=str(line).strip().split('\t')
+                    slopbed.append('\t'.join(ls[:3]))
+                slopbed=BedTool('\n'.join(slopbed), from_string=True)
+                slopbed=slopbed.sort().merge()
+            elif args.ins_bed is not None:
+                slopbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
+            elif args.abs_bed is not None:
+                slopbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai).sort().merge()
         else:  # search and genotyping
             do_ins=False if args.only_abs is True else True
             do_abs=False if args.only_ins is True else True
@@ -67,15 +68,19 @@ def limit(args, params, filenames):
                 if args.gaussian_executed is True:
                     tmp=[]
                     with open(filenames.bp_final_g) as infile:
+                        log.logger.debug('%s loading.' % filenames.bp_final_g)
                         for line in infile:
                             tmp.append(line)
                     with open(filenames.bp_final_p) as infile:
+                        log.logger.debug('%s loading.' % filenames.bp_final_p)
                         for line in infile:
                             tmp.append(line)
                     insbed=BedTool(''.join(tmp), from_string=True).slop(b=params.ins_slop_len, g=args.fai)
                 elif os.path.exists(filenames.bp_final_f) is True:
+                    log.logger.debug('%s loading.' % filenames.bp_final_f)
                     insbed=BedTool(filenames.bp_final_f).slop(b=params.ins_slop_len, g=args.fai)
                 elif os.path.exists(filenames.bp_final_u) is True:
+                    log.logger.debug('%s loading.' % filenames.bp_final_u)
                     insbed=BedTool(filenames.bp_final_u).slop(b=params.ins_slop_len, g=args.fai)
                 else:
                     log.logger.error('Available ins_bed not found.')
@@ -86,9 +91,11 @@ def limit(args, params, filenames):
             if do_abs is True:
                 tmp=[]
                 with open(args.abs_bed) as infile:
+                    log.logger.debug('%s loading.' % args.abs_bed)
                     for line in infile:
                         tmp.append(line)
                 with open(args.abs_3t_bed) as infile:
+                    log.logger.debug('%s loading.' % args.abs_bed)
                     for line in infile:
                         tmp.append(line)
                 absbed=BedTool(''.join(tmp), from_string=True).slop(b=params.abs_slop_len, g=args.fai)
@@ -97,6 +104,18 @@ def limit(args, params, filenames):
                     slopbed.append('\t'.join(ls[:3]))
             slopbed=BedTool('\n'.join(slopbed), from_string=True)
             slopbed=slopbed.sort().merge()
+        # slopbed; sort at the order of cram file
+        tmp={}
+        for chr in args.main_chrs:
+            tmp[chr]=[]
+        for line in slopbed:
+            line=str(line)
+            ls=line.split()
+            tmp[ls[0]].append(line)
+        slopbed=[]
+        for chr in tmp:
+            slopbed.extend(tmp[chr])
+        slopbed=BedTool(''.join(slopbed), from_string=True)
         if args.b is not None:
             if os.path.exists(args.b + '.bai') is False:
                 pysam.index(args.b)

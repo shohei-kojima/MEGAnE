@@ -73,6 +73,7 @@ args.main_chrs_set=set(args.main_chrs)
 args.fai=setup.fai_path
 params.chrY=setup.chrY
 params.female=setup.female
+args.search_geno=False
 
 
 # output file names
