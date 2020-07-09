@@ -309,6 +309,7 @@ params.female=setup.female
 args.ins_bed=None
 args.abs_bed=None
 args.only_abs=False #####
+args.gaussian_executed=True ####
 
 if do_abs is True:
     args.abs_bed=filenames.abs_res
