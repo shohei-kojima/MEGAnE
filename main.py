@@ -166,16 +166,16 @@ if do_ins is True:
 # 1. process unmapped overhangs
 import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
 log.logger.info('Discordant read search started.')
-if args.p >= 2:
-    from multiprocessing import Pool
-    def extract_discordant_exe(n):
-        extract_discordant_c.main(args, params, filenames, n)  ### c
-    with Pool(args.p) as p:
-        p.map(extract_discordant_exe, range(args.p))
-    if do_abs is True:
-        extract_discordant.concat_for_abs(args, filenames)
-else:
-    extract_discordant_c.main(args, params, filenames, None)  ### c
+#if args.p >= 2:
+#    from multiprocessing import Pool
+#    def extract_discordant_exe(n):
+#        extract_discordant_c.main(args, params, filenames, n)  ### c
+#    with Pool(args.p) as p:
+#        p.map(extract_discordant_exe, range(args.p))
+#    if do_abs is True:
+#        extract_discordant.concat_for_abs(args, filenames)
+#else:
+#    extract_discordant_c.main(args, params, filenames, None)  ### c
 if do_ins is True:
     log.logger.info('Clipped read processing started.')
     if args.p >= 2:
