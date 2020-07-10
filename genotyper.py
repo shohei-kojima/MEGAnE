@@ -142,9 +142,6 @@ if not args.ins_bed is None:
     log.logger.info('Did output VCF, insertion.')
 
     # delete unnecessary files
-    if args.keep is False:
-        if os.path.exists(filenames.depth_ins) is True:
-            os.remove(filenames.depth_ins)
     if os.path.exists(filenames.tmp_bam) is True:
         os.remove(filenames.tmp_bam)
     
@@ -176,8 +173,8 @@ if not args.abs_bed is None:
 
     # delete unnecessary files
     if args.keep is False:
-        if os.path.exists(filenames.depth_abs) is True:
-            os.remove(filenames.depth_abs)
+        if os.path.exists(filenames.depth) is True:
+            os.remove(filenames.depth)
     if os.path.exists(filenames.tmp_bam) is True:
         os.remove(filenames.tmp_bam)
 

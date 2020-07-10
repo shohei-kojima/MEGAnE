@@ -16,7 +16,7 @@ time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/koooji
 
 
 # version
-version='2020/07/06'
+version='2020/07/10'
 
 
 # args
@@ -42,6 +42,7 @@ parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Speci
 parser.add_argument('-pA_ME', metavar='str', type=str, help='Optional. Specify full path to a file containing repat class with polyA tail. Default: /path/to/prog/lib/ME_with_polyA_tail.txt')
 parser.add_argument('-only_ins', help='Optional. Specify if you only analyze non-reference MEI insertions.', action='store_true')
 parser.add_argument('-only_abs', help='Optional. Specify if you only analyze absence of reference MEI.', action='store_true')
+parser.add_argument('-only_geno', help='Optional. Specify if you only genotype using previously analyzed data.', action='store_true')
 parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
@@ -57,7 +58,10 @@ init.init(args, version)
 
 # logging
 import log
-args.logfilename='for_debug.log'
+if args.only_geno is False:
+    args.logfilename='for_debug.log'
+else:
+    args.logfilename='for_debug_geno.log'
 if os.path.exists(os.path.join(args.outdir, args.logfilename)) is True:
     os.remove(os.path.join(args.outdir, args.logfilename))
 log.start_log(args)
@@ -148,156 +152,159 @@ filenames.abs_res         =os.path.join(args.outdir, 'absent_MEs.bed')
 filenames.transd_res      =os.path.join(args.outdir, 'absent_MEs_transduction.bed')
 
 
-# 0. preprocess repbase file
-import reshape_rep, blastn
-print()
-log.logger.info('Preprocess started.')
-reshape_rep.reshape_repout_to_bed(args, filenames)
-reshape_rep.reshape(args, params, filenames)
-if do_ins is True:
-    blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
-    reshape_rep.slide_rep_file(args, params, filenames)
-    blastn.blastn(args, params, filenames.rep_slide_file, filenames.repdb, filenames.blast0_res)  # params, q_path, db_path, outfpath
-    reshape_rep.parse_slide_rep_blastn_res(args, filenames)
-    # del files
-    os.remove(filenames.blast0_res)
-    os.remove(filenames.rep_slide_file)
-
-# 1. process unmapped overhangs
-import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
-log.logger.info('Discordant read search started.')
-if args.p >= 2:
-    from multiprocessing import Pool
-    def extract_discordant_exe(n):
-        extract_discordant_c.main(args, params, filenames, n)  ### c
-    with Pool(args.p) as p:
-        p.map(extract_discordant_exe, range(args.p))
-    if do_abs is True:
-        extract_discordant.concat_for_abs(args, filenames)
-else:
-    extract_discordant_c.main(args, params, filenames, None)  ### c
-if do_ins is True:
-    log.logger.info('Clipped read processing started.')
-    if args.p >= 2:
-        def blast_exe(n):
-            infpath =filenames.overhang_fa + str(n) + '.txt'
-            outfpath=filenames.blast1_res  + str(n) + '.txt'
-            blastn.blastn_single_thread(args, params, infpath, filenames.repdb, outfpath)
-        with Pool(args.p) as p:
-            p.map(blast_exe, range(args.p))
-        extract_discordant.concat_for_ins(args, filenames)
-    else:
-        blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
-    parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)
-    find_additional_pA.find(params, filenames.blast1_res, filenames.overhang_fa, filenames.additional_pA)
-    # del files
-    utils.gzip_or_del(args, params, filenames.blast1_res)
-
-    # 2. process unmapped reads
-    log.logger.info('Unmapped read processing started.')
-    blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
-    parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
-    utils.gzip_or_del(args, params, filenames.blast2_res)
-    blastn.blastn(args, params, filenames.unmapped_hit_fa, args.fadb, filenames.blast3_res)
-    parse_blastn_result.find_chimeric_unmapped(args, params, filenames.blast3_res, filenames.unmapped_MEI)
-    # del files
-    utils.gzip_or_del(args, params, filenames.unmapped_fa)
-    utils.gzip_or_del(args, params, filenames.blast3_res)
-    utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
-
-    # 3. process hybrid reads
-    import process_distant_read
-    log.logger.info('Hybrid read processing started.')
-    process_distant_read.process_reads(args, params, filenames)
-    # del files
-    utils.gzip_file(params, filenames.distant_txt)
-
-    # 4. merge all results, identify MEI outside of similar MEs
-    import pair_breakpoints
-    log.logger.info('Integration junction search (outside of TEs) started.')
-    pair_breakpoints.pairing(args, params, filenames)
-    pair_breakpoints.add_TE_subclass(args, filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
-    pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
-
-    # 5. identify MEI nested in similar MEs
-    import process_mapped_seq
-    log.logger.info('Integration junction search (nested in TEs) started.')
-    process_mapped_seq.retrieve_mapped_seq(params, filenames)
-    utils.gzip_or_del(args, params, filenames.mapped_fa)  # del file
-    process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
-    process_mapped_seq.pairing(params, filenames)
-    pair_breakpoints.add_TE_subclass(args, filenames, filenames.bp_pair_single, filenames.bp_info_single)
-    # del files
-    utils.gzip_or_del(args, params, filenames.mapped_fa_select)
-    utils.gzip_or_del(args, params, filenames.blast4_res)
-
-    # 6. pool results and filter candidates
-    import pool_results
-    log.logger.info('Filtering started.')
-    pool_results.merge_breakpoints(filenames)
-    pool_results.add_hybrid(params, filenames)
-    import filter_candidates
-    filter_candidates.filter(args, params, filenames)
-    args.gaussian_executed=filter_candidates.gaussian_executed
-    filter_candidates.grouping(args, filenames)
-    import after_processing
-    after_processing.grouped_mei_to_bed(args, params, filenames)
-    after_processing.retrieve_3transd_reads(args, params, filenames)
-    # del files
-    utils.gzip_or_del(args, params, filenames.overhang_fa)
-    utils.gzip_or_del(args, params, filenames.similar_rep_list)
-    utils.gzip_or_del(args, params, filenames.breakpoint_clean)
-    utils.gzip_or_del(args, params, filenames.breakpoint_info)
-    utils.gzip_or_del(args, params, filenames.bp_info_single)
-    utils.gzip_or_del(args, params, filenames.bp_pair_single)
-    utils.gzip_or_del(args, params, filenames.bp_merged)
-    if os.path.exists(filenames.bp_merged_filt_g) is True:
-        utils.gzip_or_del(args, params, filenames.bp_merged_filt_g)
-    if os.path.exists(filenames.bp_merged_filt_p) is True:
-        utils.gzip_or_del(args, params, filenames.bp_merged_filt_p)
-    if os.path.exists(filenames.bp_merged_filt_f) is True:
-        utils.gzip_or_del(args, params, filenames.bp_merged_filt_f)
-    if os.path.exists(filenames.bp_merged_groupg) is True:
-        utils.gzip_file(params, filenames.bp_merged_groupg)
-    if os.path.exists(filenames.bp_merged_groupp) is True:
-        utils.gzip_file(params, filenames.bp_merged_groupp)
-    if os.path.exists(filenames.bp_merged_groupf) is True:
-        utils.gzip_file(params, filenames.bp_merged_groupf)
-    utils.gzip_file(params, filenames.breakpoint_pairs)
-    utils.gzip_file(params, filenames.bp_merged_all)
-    utils.gzip_file(params, filenames.overhang_MEI)
-    utils.gzip_file(params, filenames.unmapped_MEI)
-    utils.gzip_file(params, filenames.overhang_pA)
-    utils.gzip_file(params, filenames.additional_pA)
-    utils.gzip_file(params, filenames.hybrid)
-    utils.gzip_file(params, filenames.hybrid_master)
-    if args.keep is not True:
-        os.remove(filenames.distant_txt +'.gz')
-    # output comments
-    log.logger.info('%s ME insertion candidates found.' % filter_candidates.ins_ns)
-    log.logger.info('ME insertion search finished!')
-
-
-# 7. search for absent MEs
-if do_abs is True:
-    import find_absent
+if args.only_geno is False:
+    # 0. preprocess repbase file
+    import reshape_rep, blastn
     print()
-    log.logger.info('Absent ME search started.')
-    find_absent.find_abs(args, params, filenames)
-    # gzip files
-    utils.gzip_file(params, filenames.abs_txt)
-    # output comments
-    log.logger.info('%d absent ME candidates found.' % find_absent.abs_n)
-    log.logger.info('Absent ME search finished!')
+    log.logger.info('Preprocess started.')
+    reshape_rep.reshape_repout_to_bed(args, filenames)
+    reshape_rep.reshape(args, params, filenames)
+    if do_ins is True:
+        blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
+        reshape_rep.slide_rep_file(args, params, filenames)
+        blastn.blastn(args, params, filenames.rep_slide_file, filenames.repdb, filenames.blast0_res)  # params, q_path, db_path, outfpath
+        reshape_rep.parse_slide_rep_blastn_res(args, filenames)
+        # del files
+        os.remove(filenames.blast0_res)
+        os.remove(filenames.rep_slide_file)
+
+    # 1. process unmapped overhangs
+    import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
+    log.logger.info('Discordant read search started.')
+    if args.p >= 2:
+        from multiprocessing import Pool
+        def extract_discordant_exe(n):
+            extract_discordant_c.main(args, params, filenames, n)  ### c
+        with Pool(args.p) as p:
+            p.map(extract_discordant_exe, range(args.p))
+        if do_abs is True:
+            extract_discordant.concat_for_abs(args, filenames)
+    else:
+        extract_discordant_c.main(args, params, filenames, None)  ### c
+    if do_ins is True:
+        log.logger.info('Clipped read processing started.')
+        if args.p >= 2:
+            def blast_exe(n):
+                infpath =filenames.overhang_fa + str(n) + '.txt'
+                outfpath=filenames.blast1_res  + str(n) + '.txt'
+                blastn.blastn_single_thread(args, params, infpath, filenames.repdb, outfpath)
+            with Pool(args.p) as p:
+                p.map(blast_exe, range(args.p))
+            extract_discordant.concat_for_ins(args, filenames)
+        else:
+            blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
+        parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)
+        find_additional_pA.find(params, filenames.blast1_res, filenames.overhang_fa, filenames.additional_pA)
+        # del files
+        utils.gzip_or_del(args, params, filenames.blast1_res)
+
+        # 2. process unmapped reads
+        log.logger.info('Unmapped read processing started.')
+        blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
+        parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
+        utils.gzip_or_del(args, params, filenames.blast2_res)
+        blastn.blastn(args, params, filenames.unmapped_hit_fa, args.fadb, filenames.blast3_res)
+        parse_blastn_result.find_chimeric_unmapped(args, params, filenames.blast3_res, filenames.unmapped_MEI)
+        # del files
+        utils.gzip_or_del(args, params, filenames.unmapped_fa)
+        utils.gzip_or_del(args, params, filenames.blast3_res)
+        utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
+
+        # 3. process hybrid reads
+        import process_distant_read
+        log.logger.info('Hybrid read processing started.')
+        process_distant_read.process_reads(args, params, filenames)
+        # del files
+        utils.gzip_file(params, filenames.distant_txt)
+
+        # 4. merge all results, identify MEI outside of similar MEs
+        import pair_breakpoints
+        log.logger.info('Integration junction search (outside of TEs) started.')
+        pair_breakpoints.pairing(args, params, filenames)
+        pair_breakpoints.add_TE_subclass(args, filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
+        pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
+
+        # 5. identify MEI nested in similar MEs
+        import process_mapped_seq
+        log.logger.info('Integration junction search (nested in TEs) started.')
+        process_mapped_seq.retrieve_mapped_seq(params, filenames)
+        utils.gzip_or_del(args, params, filenames.mapped_fa)  # del file
+        process_mapped_seq.blastn_for_mapped(args, params, filenames.mapped_fa_select, args.fadb, filenames.blast4_res)
+        process_mapped_seq.pairing(params, filenames)
+        pair_breakpoints.add_TE_subclass(args, filenames, filenames.bp_pair_single, filenames.bp_info_single)
+        # del files
+        utils.gzip_or_del(args, params, filenames.mapped_fa_select)
+        utils.gzip_or_del(args, params, filenames.blast4_res)
+
+        # 6. pool results and filter candidates
+        import pool_results
+        log.logger.info('Filtering started.')
+        pool_results.merge_breakpoints(filenames)
+        pool_results.add_hybrid(params, filenames)
+        import filter_candidates
+        filter_candidates.filter(args, params, filenames)
+        args.gaussian_executed=filter_candidates.gaussian_executed
+        filter_candidates.grouping(args, filenames)
+        import after_processing
+        after_processing.grouped_mei_to_bed(args, params, filenames)
+        after_processing.retrieve_3transd_reads(args, params, filenames)
+        # del files
+        utils.gzip_or_del(args, params, filenames.overhang_fa)
+        utils.gzip_or_del(args, params, filenames.similar_rep_list)
+        utils.gzip_or_del(args, params, filenames.breakpoint_clean)
+        utils.gzip_or_del(args, params, filenames.breakpoint_info)
+        utils.gzip_or_del(args, params, filenames.bp_info_single)
+        utils.gzip_or_del(args, params, filenames.bp_pair_single)
+        utils.gzip_or_del(args, params, filenames.bp_merged)
+        if os.path.exists(filenames.bp_merged_filt_g) is True:
+            utils.gzip_or_del(args, params, filenames.bp_merged_filt_g)
+        if os.path.exists(filenames.bp_merged_filt_p) is True:
+            utils.gzip_or_del(args, params, filenames.bp_merged_filt_p)
+        if os.path.exists(filenames.bp_merged_filt_f) is True:
+            utils.gzip_or_del(args, params, filenames.bp_merged_filt_f)
+        if os.path.exists(filenames.bp_merged_groupg) is True:
+            utils.gzip_file(params, filenames.bp_merged_groupg)
+        if os.path.exists(filenames.bp_merged_groupp) is True:
+            utils.gzip_file(params, filenames.bp_merged_groupp)
+        if os.path.exists(filenames.bp_merged_groupf) is True:
+            utils.gzip_file(params, filenames.bp_merged_groupf)
+        utils.gzip_file(params, filenames.breakpoint_pairs)
+        utils.gzip_file(params, filenames.bp_merged_all)
+        utils.gzip_file(params, filenames.overhang_MEI)
+        utils.gzip_file(params, filenames.unmapped_MEI)
+        utils.gzip_file(params, filenames.overhang_pA)
+        utils.gzip_file(params, filenames.additional_pA)
+        utils.gzip_file(params, filenames.hybrid)
+        utils.gzip_file(params, filenames.hybrid_master)
+        if args.keep is not True:
+            os.remove(filenames.distant_txt +'.gz')
+        # output comments
+        log.logger.info('%s ME insertion candidates found.' % filter_candidates.ins_ns)
+        log.logger.info('ME insertion search finished!')
 
 
-# remove unnecessary files
-os.remove(filenames.repout_bed)
-os.remove(filenames.reshaped_rep)
-for f in glob.glob(filenames.repdb +'*'):
-    os.remove(f)
-log.logger.info('pME search finished!')
+    # 7. search for absent MEs
+    if do_abs is True:
+        import find_absent
+        print()
+        log.logger.info('Absent ME search started.')
+        find_absent.find_abs(args, params, filenames)
+        # gzip files
+        utils.gzip_file(params, filenames.abs_txt)
+        # output comments
+        log.logger.info('%d absent ME candidates found.' % find_absent.abs_n)
+        log.logger.info('Absent ME search finished!')
 
+
+    # remove unnecessary files
+    os.remove(filenames.repout_bed)
+    os.remove(filenames.reshaped_rep)
+    for f in glob.glob(filenames.repdb +'*'):
+        os.remove(f)
+    log.logger.info('pME search finished!')
+
+else:
+    log.logger.info('pME search skipped.')
 
 
 # 8. start genotyping
@@ -305,7 +312,6 @@ setup.setup_geno_only_load_params(args, init.base)
 params=setup.params
 params.chrY=setup.chrY
 params.female=setup.female
-args.search_geno=True
 
 
 if do_abs is True:
@@ -314,9 +320,9 @@ if do_abs is True:
 
 filenames.limited_b       =os.path.join(args.outdir, 'only_necessary.bam')
 filenames.limited_c       =os.path.join(args.outdir, 'only_necessary.cram')
+filenames.depth           =os.path.join(args.outdir, 'read_depth.txt')
 filenames.tmp_bam         =os.path.join(args.outdir, 'tmp.bam')
 
-filenames.depth_abs       =os.path.join(args.outdir, 'depth_abs.txt')
 filenames.merged_pdf_abs  =os.path.join(args.outdir, 'plot_out_genotyping_absents.pdf')
 if do_abs is True:
     base=os.path.splitext(os.path.basename(args.abs_bed))[0]
@@ -339,7 +345,6 @@ def genotype_ins(args, params, filenames, data):
     filenames.ins_out_bed   =os.path.join(args.outdir, '%s_genotyped.bed' % base)
     filenames.ins_out_vcf   =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
     
-    filenames.depth_ins     =os.path.join(args.outdir, '%s_depth_ins.txt' % base)
     filenames.out_spanning  =os.path.join(args.outdir, '%s_spanning_read_summary.txt.gz' % base)
     filenames.disc_read_pdf =os.path.join(args.outdir, '%s_discordant_read_num.pdf' % base)
     filenames.debug_pdf1    =os.path.join(args.outdir, 'plot_out_%s_genotype_ins_for_debug.pdf' % base)
@@ -374,9 +379,6 @@ def genotype_ins(args, params, filenames, data):
     log.logger.info('Did output VCF, insertion: %s' % args.ins_bed)
 
     # delete unnecessary files
-    if args.keep is False:
-        if os.path.exists(filenames.depth_ins) is True:
-            os.remove(filenames.depth_ins)
     if os.path.exists(filenames.tmp_bam) is True:
         os.remove(filenames.tmp_bam)
 
@@ -413,8 +415,8 @@ if do_abs is True:
 
     # delete unnecessary files
     if args.keep is False:
-        if os.path.exists(filenames.depth_abs) is True:
-            os.remove(filenames.depth_abs)
+        if os.path.exists(filenames.depth) is True:
+            os.remove(filenames.depth)
     if os.path.exists(filenames.tmp_bam) is True:
         os.remove(filenames.tmp_bam)
 

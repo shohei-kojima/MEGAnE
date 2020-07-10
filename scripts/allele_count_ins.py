@@ -33,89 +33,61 @@ nums={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 def limit(args, params, filenames):
     log.logger.debug('started')
     try:
-        if args.search_geno is False:
-            if args.ins_bed is not None and args.abs_bed is not None:
-                insbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai)
-                if not args.abs_3t_bed is None:
-                    tmp=[]
-                    with open(args.abs_bed) as infile:
-                        for line in infile:
-                            tmp.append(line)
-                    with open(args.abs_3t_bed) as infile:
-                        for line in infile:
-                            tmp.append(line)
-                    absbed=BedTool(''.join(tmp), from_string=True).slop(b=params.abs_slop_len, g=args.fai)
-                else:
-                    absbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai)
-                slopbed=[]
-                for line in insbed:
-                    ls=str(line).strip().split('\t')
-                    slopbed.append('\t'.join(ls[:3]))
-                for line in absbed:
-                    ls=str(line).strip().split('\t')
-                    slopbed.append('\t'.join(ls[:3]))
-                slopbed=BedTool('\n'.join(slopbed), from_string=True)
-                slopbed=slopbed.sort().merge()
-            elif args.ins_bed is not None:
-                slopbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
-            elif args.abs_bed is not None:
-                slopbed=BedTool(args.abs_bed).slop(b=params.abs_slop_len, g=args.fai).sort().merge()
-        else:  # search and genotyping
+        def generate_slopbed(args, params, filenames, ins_slop_len, abs_slop_len):
             do_ins=False if args.only_abs is True else True
             do_abs=False if args.only_ins is True else True
             slopbed=[]
             if do_ins is True:
-                if args.gaussian_executed is True:
-                    tmp=[]
-                    with open(filenames.bp_final_g) as infile:
-                        log.logger.debug('%s loading.' % filenames.bp_final_g)
-                        for line in infile:
-                            tmp.append(line)
-                    with open(filenames.bp_final_p) as infile:
-                        log.logger.debug('%s loading.' % filenames.bp_final_p)
-                        for line in infile:
-                            tmp.append(line)
-                    insbed=BedTool(''.join(tmp), from_string=True).slop(b=params.ins_slop_len, g=args.fai)
-                elif os.path.exists(filenames.bp_final_f) is True:
-                    log.logger.debug('%s loading.' % filenames.bp_final_f)
-                    insbed=BedTool(filenames.bp_final_f).slop(b=params.ins_slop_len, g=args.fai)
-                elif os.path.exists(filenames.bp_final_u) is True:
-                    log.logger.debug('%s loading.' % filenames.bp_final_u)
-                    insbed=BedTool(filenames.bp_final_u).slop(b=params.ins_slop_len, g=args.fai)
-                else:
+                ins_bed_found=False
+                tmp=[]
+                for bp_final in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u]:
+                    if os.path.exists(bp_final) is True:
+                        ins_bed_found=True
+                        with open(bp_final) as infile:
+                            log.logger.debug('%s loading.' % bp_final)
+                            for line in infile:
+                                tmp.append(line)
+                if ins_bed_found is False:
                     log.logger.error('Available ins_bed not found.')
                     exit(1)
+                insbed=BedTool(''.join(tmp), from_string=True).slop(b=ins_slop_len, g=args.fai)
                 for line in insbed:
                     ls=str(line).strip().split('\t')
                     slopbed.append('\t'.join(ls[:3]))
             if do_abs is True:
+                abs_bed_found=False
                 tmp=[]
-                with open(args.abs_bed) as infile:
-                    log.logger.debug('%s loading.' % args.abs_bed)
-                    for line in infile:
-                        tmp.append(line)
-                with open(args.abs_3t_bed) as infile:
-                    log.logger.debug('%s loading.' % args.abs_bed)
-                    for line in infile:
-                        tmp.append(line)
-                absbed=BedTool(''.join(tmp), from_string=True).slop(b=params.abs_slop_len, g=args.fai)
+                for abs_bed_f in [args.abs_bed, args.abs_3t_bed]:
+                    if os.path.exists(abs_bed_f) is True:
+                        abs_bed_found=True
+                        with open(abs_bed_f) as infile:
+                            log.logger.debug('%s loading.' % abs_bed_f)
+                            for line in infile:
+                                tmp.append(line)
+                absbed=BedTool(''.join(tmp), from_string=True).slop(b=abs_slop_len, g=args.fai)
+                if abs_bed_found is False:
+                    log.logger.error('Available abs_bed not found.')
+                    exit(1)
                 for line in absbed:
                     ls=str(line).strip().split('\t')
                     slopbed.append('\t'.join(ls[:3]))
             slopbed=BedTool('\n'.join(slopbed), from_string=True)
             slopbed=slopbed.sort().merge()
-        # slopbed; sort at the order of cram file
-        tmp={}
-        for chr in args.main_chrs:
-            tmp[chr]=[]
-        for line in slopbed:
-            line=str(line)
-            ls=line.split()
-            tmp[ls[0]].append(line)
-        slopbed=[]
-        for chr in tmp:
-            slopbed.extend(tmp[chr])
-        slopbed=BedTool(''.join(slopbed), from_string=True)
+            # slopbed; sort at the order of cram file
+            tmp={}
+            for chr in args.main_chrs:
+                tmp[chr]=[]
+            for line in slopbed:
+                line=str(line)
+                ls=line.split()
+                tmp[ls[0]].append(line)
+            slopbed=[]
+            for chr in tmp:
+                slopbed.extend(tmp[chr])
+            slopbed=BedTool(''.join(slopbed), from_string=True)
+            return slopbed
+        
+        slopbed=generate_slopbed(args, params, filenames, params.ins_slop_len, params.abs_slop_len)
         if args.b is not None:
             if os.path.exists(args.b + '.bai') is False:
                 pysam.index(args.b)
@@ -130,6 +102,20 @@ def limit(args, params, filenames):
         if not out.returncode == 0:
             log.logger.error('Error occurred during samtools running.')
             exit(1)
+        
+        # convert to depth
+        slopbed=generate_slopbed(args, params, filenames, params.tsd_flank_len + 1, params.abs_flank_len + 1)
+        if args.b is not None:
+            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, slopbed.fn, filenames.depth)
+        else:
+            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, slopbed.fn, filenames.depth)
+        log.logger.debug('samtools depth command = `'+ cmd +'`')
+        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+        if not out.returncode == 0:
+            log.logger.error('Error occurred during samtools depth running.')
+            exit(1)
+
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
@@ -139,25 +125,28 @@ def limit(args, params, filenames):
 def evaluate_tsd_depth(args, params, filenames):
     log.logger.debug('started')
     try:
-        # convert to depth
-        insbed=BedTool(args.ins_bed).slop(b=params.tsd_flank_len + 1, g=args.fai).sort().merge()
-        if args.b is not None:
-            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, insbed.fn, filenames.depth_ins)
-        else:
-            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, insbed.fn, filenames.depth_ins)
-        log.logger.debug('samtools depth command = `'+ cmd +'`')
-        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-        if not out.returncode == 0:
-            log.logger.error('Error occurred during samtools depth running.')
-            exit(1)
         # load depth
-        dep={}
-        with open(filenames.depth_ins) as infile:
+        def generate_d_for_depth(filenames, slop_len):
+            d={}
+            for bp_final in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u]:
+                if os.path.exists(bp_final) is True:
+                    with open(bp_final) as infile:
+                        for line in infile:
+                            ls=line.split()
+                            if not ls[0] in d:
+                                d[ls[0]]={}
+                            start= int(ls[1]) - slop_len
+                            end  = int(ls[2]) + slop_len
+                            if start < 1:
+                                start=1
+                            for pos in range(start, end):
+                                d[ls[0]][pos]=0
+            return d
+        
+        dep=generate_d_for_depth(filenames, params.tsd_flank_len + 1)
+        with open(filenames.depth) as infile:
             for line in infile:
                 ls=line.split()
-                if not ls[0] in dep:
-                    dep[ls[0]]={}
                 dep[ls[0]][int(ls[1]) - 1]=int(ls[2])
         
         # calc depth at breakpoints
@@ -571,13 +560,13 @@ def evaluate_spanning_read(args, params, filenames):
                     if spanning_outlier <= span_judge_true[ls[10]]:
                         cn_est_spanning[ls[10]]=['outlier', span_judge_true[ls[10]]]
                     elif spanning_high_threshold <= span_judge_true[ls[10]] < spanning_outlier:
-                        cn_est_spanning[ls[10]]=['bi_high', span_judge_true[ls[10]]]
+                        cn_est_spanning[ls[10]]=['mono_high', span_judge_true[ls[10]]]
                     elif spanning_zero_threshold <= span_judge_true[ls[10]] < spanning_high_threshold:
-                        cn_est_spanning[ls[10]]=['bi_low', span_judge_true[ls[10]]]
-                    else:
                         cn_est_spanning[ls[10]]=['mono_low', span_judge_true[ls[10]]]
+                    else:
+                        cn_est_spanning[ls[10]]=['bi_low', span_judge_true[ls[10]]]
                 else:
-                    cn_est_spanning[ls[10]]=['mono_high', 0]
+                    cn_est_spanning[ls[10]]=['bi_high', 0]
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

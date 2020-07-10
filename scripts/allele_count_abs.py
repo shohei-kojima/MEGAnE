@@ -266,36 +266,34 @@ def evaluate_spanning_read(args, params, filenames):
 def evaluate_bp_depth(args, params, filenames):
     log.logger.debug('started')
     try:
-        # convert to depth
-        if not args.abs_3t_bed is None:
-            tmp=[]
-            with open(args.abs_bed) as infile:
-                for line in infile:
-                    tmp.append(line)
-            with open(args.abs_3t_bed) as infile:
-                for line in infile:
-                    tmp.append(line)
-            absbed=BedTool(''.join(tmp), from_string=True).slop(b=params.abs_flank_len + 1, g=args.fai).sort().merge()
-        else:
-            absbed=BedTool(args.abs_bed).slop(b=params.abs_flank_len + 1, g=args.fai).sort().merge()
-        if args.b is not None:
-            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, absbed.fn, filenames.depth_abs)
-        else:
-            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, absbed.fn, filenames.depth_abs)
-        log.logger.debug('samtools depth command = `'+ cmd +'`')
-        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-        if not out.returncode == 0:
-            log.logger.error('Error occurred during samtools depth running.')
-            exit(1)
-        
         # load depth
-        dep={}
-        with open(filenames.depth_abs) as infile:
+        def generate_d_for_depth(filenames, slop_len):
+            d={}
+            for abs_bed_f in [args.abs_bed, args.abs_3t_bed]:
+                if os.path.exists(abs_bed_f) is True:
+                    with open(abs_bed_f) as infile:
+                        for line in infile:
+                            ls=line.split()
+                            if not ls[0] in d:
+                                d[ls[0]]={}
+                            start= int(ls[1]) - slop_len
+                            end  = int(ls[1]) + slop_len
+                            if start < 1:
+                                start=1
+                            for pos in range(start, end):
+                                d[ls[0]][pos]=0
+                            start= int(ls[2]) - slop_len
+                            end  = int(ls[2]) + slop_len
+                            if start < 1:
+                                start=1
+                            for pos in range(start, end):
+                                d[ls[0]][pos]=0
+            return d
+        
+        dep=generate_d_for_depth(filenames, params.abs_flank_len + 1)
+        with open(filenames.depth) as infile:
             for line in infile:
                 ls=line.split()
-                if not ls[0] in dep:
-                    dep[ls[0]]={}
                 dep[ls[0]][int(ls[1]) - 1]=int(ls[2])
         
         # calc depth at breakpoints
