@@ -681,8 +681,8 @@ def merge(args, params, filenames, data):
                     tmp.append('S')
                 if data.cn_est_tsd_depth[id][0] == 'outlier':
                     tmp.append('D')
-                if data.cn_est_disc[id][0] == 'outlier':
-                    tmp.append('R')
+#                if data.cn_est_disc[id][0] == 'outlier':
+#                    tmp.append('R')
                 if len(tmp) == 0:
                     tmp='PASS'
                 else:

@@ -47,6 +47,7 @@ def output_ins_bed_vcf(args, params, filenames, data):
         header.append('##FILTER=<ID=NU,Description="Not unique">\n')
         header.append('##FILTER=<ID=S,Description="Shorter than 50-bp">\n')
         header.append('##FILTER=<ID=G,Description="Outliers during genotyping">\n')
+        header.append('##FILTER=<ID=R,Description="No discordant read stat available">\n')
         header.append('##FILTER=<ID=Y,Description="Variants on chrY. This is only available when female">\n')
         header.append('##INFO=<ID=SVTYPE,Number=1,Type=String,Description="Type of structural variant">\n')
         header.append('##INFO=<ID=MEPRED,Number=1,Type=String,Description="ME prediction status">\n')
