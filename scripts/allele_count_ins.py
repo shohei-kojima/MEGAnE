@@ -147,7 +147,10 @@ def evaluate_tsd_depth(args, params, filenames):
         with open(filenames.depth) as infile:
             for line in infile:
                 ls=line.split()
-                dep[ls[0]][int(ls[1]) - 1]=int(ls[2])
+                if ls[0] in dep:
+                    pos= int(ls[1]) - 1
+                    if pos in dep[ls[0]]:
+                        dep[ls[0]][pos]=int(ls[2])
         
         # calc depth at breakpoints
         def remove_1nt(lis):
