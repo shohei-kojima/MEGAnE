@@ -240,7 +240,7 @@ if args.only_geno is False:
         import pool_results
         log.logger.info('Filtering started.')
         pool_results.merge_breakpoints(filenames)
-        pool_results.add_hybrid(params, filenames)
+        pool_results.add_hybrid(args, params, filenames)
         import filter_candidates
         filter_candidates.filter(args, params, filenames)
         args.gaussian_executed=filter_candidates.gaussian_executed
@@ -302,6 +302,7 @@ if args.only_geno is False:
     for f in glob.glob(filenames.repdb +'*'):
         os.remove(f)
     log.logger.info('pME search finished!')
+    print()
 
 else:
     log.logger.info('pME search skipped.')

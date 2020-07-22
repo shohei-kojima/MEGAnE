@@ -9,6 +9,7 @@ See file LICENSE for details.
 import os,gzip
 import math
 from statistics import mean
+import pybedtools
 from pybedtools import BedTool
 import log,traceback
 
@@ -17,6 +18,8 @@ def grouped_mei_to_bed(args, params, filenames):
     log.logger.debug('started')
     
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         def predict_shared_te(R_list, L_list, r_strand, l_strand):
             cands=[]
             R_tes,L_tes=set(),set()
@@ -416,8 +419,7 @@ def grouped_mei_to_bed(args, params, filenames):
             convert_to_bed(params, filenames, filenames.bp_merged_groupf, filenames.bp_final_f)
         if args.threshold is not None:
             convert_to_bed(params, filenames, filenames.bp_merged_groupu, filenames.bp_final_u)
-#        if os.path.exists(filenames.tmp_for_3transd) is True:
-#            os.remove(filenames.tmp_for_3transd)
+        pybedtools.cleanup()
             
     except:
         log.logger.error('\n'+ traceback.format_exc())
@@ -428,6 +430,8 @@ def retrieve_3transd_reads(args, params, filenames):
     log.logger.debug('started')
     
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         def convert_line(params, ls):
             if 'MEI_left' in ls[9]:
                 end=ls[4].split(',')[0].replace('MEI_left:ref_pos=', '')
@@ -566,6 +570,7 @@ def retrieve_3transd_reads(args, params, filenames):
                 os.fdatasync(outfile.fileno())
         else:
             log.logger.debug('No candidate for 3transduction.')
+        pybedtools.cleanup()
 
     except:
         log.logger.error('\n'+ traceback.format_exc())

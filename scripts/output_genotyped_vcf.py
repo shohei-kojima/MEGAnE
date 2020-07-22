@@ -9,6 +9,7 @@ See file LICENSE for details.
 
 import os,datetime
 from utils import parse_fasta
+import pybedtools
 from pybedtools import BedTool
 import log,traceback
 
@@ -16,6 +17,8 @@ import log,traceback
 def output_ins_bed_vcf(args, params, filenames, data):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         # load orig bed
         orig={}
         bed=[]
@@ -119,6 +122,7 @@ def output_ins_bed_vcf(args, params, filenames, data):
             outfile.write(''.join(out_vcf))
             outfile.flush()
             os.fdatasync(outfile.fileno())
+        pybedtools.cleanup()
         
     except:
         log.logger.error('\n'+ traceback.format_exc())
@@ -128,6 +132,8 @@ def output_ins_bed_vcf(args, params, filenames, data):
 def output_abs_bed_vcf(args, params, filenames, data):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         # load orig bed
         orig={}
         bed=[]
@@ -217,6 +223,7 @@ def output_abs_bed_vcf(args, params, filenames, data):
             outfile.write(''.join(out_vcf))
             outfile.flush()
             os.fdatasync(outfile.fileno())
+        pybedtools.cleanup()
         
     except:
         log.logger.error('\n'+ traceback.format_exc())

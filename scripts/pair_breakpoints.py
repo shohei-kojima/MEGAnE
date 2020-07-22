@@ -9,6 +9,7 @@ See file LICENSE for details.
 
 import os
 import utils
+import pybedtools
 from pybedtools import BedTool
 import log,traceback
 
@@ -311,6 +312,8 @@ def add_TE_subclass(args, filenames, infpath, outfpath):
 def remove_cand_inside_TE(args, params, filenames):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         # remove breakpoints in simple repeats
         simple=load_ref_simple_rep_as_bed(filenames)
         breakpoints=set()
@@ -378,6 +381,7 @@ def remove_cand_inside_TE(args, params, filenames):
                         outfile.write(line)
             outfile.flush()
             os.fdatasync(outfile.fileno())
+        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

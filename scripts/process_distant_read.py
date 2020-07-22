@@ -15,7 +15,9 @@ def process_reads(args, params, filenames):
     log.logger.debug('started')
     try:
         import utils
+        import pybedtools
         from pybedtools import BedTool
+        pybedtools.set_tempdir(args.pybedtools_tmp)
         
         def process_bed(bed):
             ids={}
@@ -125,6 +127,7 @@ def process_reads(args, params, filenames):
                             outfile.write('\t'.join([chr, start, end, te, ls[0], strand]) +'\n')
             outfile.flush()
             os.fdatasync(outfile.fileno())
+        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

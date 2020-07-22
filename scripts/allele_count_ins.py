@@ -8,6 +8,7 @@ See file LICENSE for details.
 
 import os,gzip,subprocess,math,datetime
 import pysam
+import pybedtools
 from pybedtools import BedTool
 from scipy import stats
 from scipy.optimize import curve_fit
@@ -33,6 +34,8 @@ nums={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 def limit(args, params, filenames):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         def generate_slopbed(args, params, filenames, ins_slop_len, abs_slop_len):
             do_ins=False if args.only_abs is True else True
             do_abs=False if args.only_ins is True else True
@@ -115,7 +118,7 @@ def limit(args, params, filenames):
         if not out.returncode == 0:
             log.logger.error('Error occurred during samtools depth running.')
             exit(1)
-
+        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
@@ -403,6 +406,8 @@ def evaluate_tsd_depth(args, params, filenames):
 def evaluate_spanning_read(args, params, filenames):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         def calc_ref_len(cigar):
             length=0
             tmp=''
@@ -570,6 +575,7 @@ def evaluate_spanning_read(args, params, filenames):
                         cn_est_spanning[ls[10]]=['bi_low', span_judge_true[ls[10]]]
                 else:
                     cn_est_spanning[ls[10]]=['bi_high', 0]
+        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

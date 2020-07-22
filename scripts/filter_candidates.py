@@ -9,6 +9,7 @@ See file LICENSE for details.
 
 import os,math
 from utils import parse_fasta
+import pybedtools
 from pybedtools import BedTool
 import numpy as np
 from scipy.optimize import curve_fit
@@ -16,6 +17,7 @@ from scipy.stats import norm
 import matplotlib
 import matplotlib.pyplot as plt
 import log,traceback
+
 
 matplotlib.rcParams['lines.linewidth']=0.5
 matplotlib.rcParams['axes.linewidth']=0.5
@@ -27,6 +29,8 @@ matplotlib.rcParams['font.size']=5
 def filter(args, params, filenames):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         if args.b is not None:
             input_sample=os.path.basename(args.b)
         elif args.c is not None:
@@ -325,7 +329,7 @@ def filter(args, params, filenames):
             main_filter(total_read_thresholds[0], filenames.bp_merged_filt_f)
         if args.threshold is not None:
             main_filter(args.threshold, filenames.bp_merged_filt_u)
-                
+        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

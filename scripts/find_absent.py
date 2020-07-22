@@ -8,6 +8,7 @@ See file LICENSE for details.
 
 
 import os 
+import pybedtools
 from pybedtools import BedTool
 from collections import Counter
 from statistics import mean
@@ -18,6 +19,8 @@ import log,traceback
 def find_abs(args, params, filenames):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         min_chimeric_num= round(args.cov * params.abs_min_chimeric_num_coeff)
         if min_chimeric_num < 2:
             min_chimeric_num=2
@@ -138,6 +141,7 @@ def find_abs(args, params, filenames):
         os.fdatasync(outfile_transd.fileno())
         outfile_abs.close()
         outfile_transd.close()
+        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

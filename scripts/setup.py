@@ -15,6 +15,11 @@ import log,traceback
 def setup(args, base):
     log.logger.debug('started')
     try:
+        sys.setrecursionlimit(10000)
+        
+        # tmp dir for pybedtools
+        args.pybedtools_tmp=args.outdir
+        
         # load main chrs
         global main_chrs
         if args.mainchr is not None:

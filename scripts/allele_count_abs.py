@@ -8,6 +8,7 @@ See file LICENSE for details.
 
 
 import os,gzip,subprocess
+import pybedtools
 from pybedtools import BedTool
 import pysam
 import numpy as np
@@ -33,6 +34,8 @@ nums={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 def evaluate_spanning_read(args, params, filenames):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         def calc_ref_len(cigar):
             length=0
             tmp=''
@@ -258,6 +261,7 @@ def evaluate_spanning_read(args, params, filenames):
                     else:
                         cn_est_spanning[id]=['mono_high', 0, 0]
                     n += 1
+        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
@@ -501,6 +505,8 @@ def evaluate_bp_depth(args, params, filenames):
 def find_abs(args, params, filenames):  # deprecated
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         min_chimeric_num=params.min_chimeric_num
         mes,_=load_me_classification(filenames.reshaped_rep)
         
@@ -618,6 +624,7 @@ def find_abs(args, params, filenames):  # deprecated
         os.fdatasync(outfile_transd.fileno())
         outfile_abs.close()
         outfile_transd.close()
+        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

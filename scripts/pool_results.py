@@ -8,6 +8,7 @@ See file LICENSE for details.
 
 
 import os
+import pybedtools
 from pybedtools import BedTool
 import log,traceback
 
@@ -165,9 +166,11 @@ def merge_breakpoints(filenames):
         os.fdatasync(outfile.fileno())
 
 
-def add_hybrid(params, filenames):
+def add_hybrid(args, params, filenames):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
+        
         bed_up,bed_down='',''
         with open(filenames.bp_merged) as infile:
             for line in infile:
@@ -268,6 +271,7 @@ def add_hybrid(params, filenames):
                     outfile.write(outline)
             outfile.flush()
             os.fdatasync(outfile.fileno())
+        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
