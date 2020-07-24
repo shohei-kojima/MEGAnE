@@ -140,8 +140,8 @@ def evaluate_tsd_depth(args, params, filenames):
                                 d[ls[0]]={}
                             start= int(ls[1]) - slop_len
                             end  = int(ls[2]) + slop_len
-                            if start < 1:
-                                start=1
+                            if start < 0:
+                                start=0
                             for pos in range(start, end):
                                 d[ls[0]][pos]=0
             return d
@@ -201,14 +201,24 @@ def evaluate_tsd_depth(args, params, filenames):
 #        misc.plot_tsd_dep(left_tsds, middles, right_tsds)
 #        exit()
         ############### until here
+        # load fai
+        fai={}
+        with open(args.fai) as infile:
+            for line in infile:
+                ls=line.split()
+                fai[ls[0]]=int(ls[1])
+        
+        # calc. ratio
         back_to_tsd_ratios={}
         only_tsd,only_del=[],[]
         with open(args.ins_bed) as infile:
             for line in infile:
                 ls=line.strip().split('\t')
-                if ls[0] in dep:
-                    left_pos=int(ls[4].split(',')[0].split('=')[1])
-                    right_pos=int(ls[5].split(',')[0].split('=')[1])
+                left_pos=int(ls[4].split(',')[0].split('=')[1])
+                right_pos=int(ls[5].split(',')[0].split('=')[1])
+                min_pos=min(left_pos, right_pos)
+                max_pos=max(left_pos, right_pos)
+                if ls[0] in dep and min_pos >= params.tsd_flank_len and (max_pos + params.tsd_flank_len) <= fai[ls[0]]:
                     if right_pos < left_pos:
                         # tsd
                         tsd_depth=[]

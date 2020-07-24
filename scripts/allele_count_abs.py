@@ -288,8 +288,8 @@ def evaluate_bp_depth(args, params, filenames):
                                 d[ls[0]][pos]=0
                             start= int(ls[2]) - slop_len
                             end  = int(ls[2]) + slop_len
-                            if start < 1:
-                                start=1
+                            if start < 0:
+                                start=0
                             for pos in range(start, end):
                                 d[ls[0]][pos]=0
             return d
@@ -320,6 +320,13 @@ def evaluate_bp_depth(args, params, filenames):
             corrected_dep= sum(one_nt_removed) / len(one_nt_removed)
             return corrected_dep
         
+        # load fai
+        fai={}
+        with open(args.fai) as infile:
+            for line in infile:
+                ls=line.split()
+                fai[ls[0]]=int(ls[1])
+        
         global cn_est_depth
         cn_est_depth={}
         min_ratios=[]
@@ -329,9 +336,9 @@ def evaluate_bp_depth(args, params, filenames):
                 id='ID=%d' % n
                 n += 1
                 ls=line.strip().split('\t')
-                if ls[0] in dep:
-                    left_pos=int(ls[1])
-                    right_pos=int(ls[2])
+                left_pos=int(ls[1])
+                right_pos=int(ls[2])
+                if ls[0] in dep and left_pos >= params.tsd_flank_len and (right_pos + params.tsd_flank_len) <= fai[ls[0]]:
                     # left
                     left_flank=[]
                     for pos in range(left_pos - params.abs_flank_len, left_pos):
