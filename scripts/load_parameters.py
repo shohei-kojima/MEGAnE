@@ -228,7 +228,9 @@ class load_geno:
             self.mono_peak_notfound=0.7
             self.abs_depth_outlier=0.8
             self.spanning_threshold_coeff_for_merge_abs=0.01
-
+            
+            self.bam_sort_maxmem='2G'
+            
             params_for_debug=[]
             for k,v in self.__dict__.items():
                 params_for_debug.append('%s=%s' % (k, str(v)))

@@ -43,6 +43,7 @@ parser.add_argument('-pA_ME', metavar='str', type=str, help='Optional. Specify f
 parser.add_argument('-only_ins', help='Optional. Specify if you only analyze non-reference MEI insertions.', action='store_true')
 parser.add_argument('-only_abs', help='Optional. Specify if you only analyze absence of reference MEI.', action='store_true')
 parser.add_argument('-only_geno', help='Optional. Specify if you only genotype using previously analyzed data.', action='store_true')
+parser.add_argument('-unsorted', help='Optional. Specify if an input BAM/CRAM is not position sorted.', action='store_true')
 parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
@@ -321,6 +322,8 @@ if do_abs is True:
 
 filenames.limited_b       =os.path.join(args.outdir, 'only_necessary.bam')
 filenames.limited_c       =os.path.join(args.outdir, 'only_necessary.cram')
+filenames.limited_tb      =os.path.join(args.outdir, 'only_necessary_tmp.bam')
+filenames.limited_tc      =os.path.join(args.outdir, 'only_necessary_tmp.cram')
 filenames.depth           =os.path.join(args.outdir, 'read_depth.txt')
 filenames.tmp_bam         =os.path.join(args.outdir, 'tmp.bam')
 
