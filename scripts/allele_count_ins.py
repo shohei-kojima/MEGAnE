@@ -120,17 +120,17 @@ def limit(args, params, filenames):
                 cmd='samtools sort -@ %d %s -m %s -T %s -O BAM -o %s' % (args.p, filenames.limited_tb, params.bam_sort_maxmem, args.outdir, filenames.limited_b)
             else:
                 cmd='samtools sort -@ %d %s -m %s -T %s -O CRAM -o %s' % (args.p, filenames.limited_tc, params.bam_sort_maxmem, args.outdir, filenames.limited_c)
-        log.logger.debug('samtools command = `'+ cmd +'`')
-        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-        if not out.returncode == 0:
-            log.logger.error('Error occurred during samtools running.')
-            exit(1)
-        else:
-            if args.b is not None:
-                os.remove(filenames.limited_tb)
+            log.logger.debug('samtools command = `'+ cmd +'`')
+            out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+            log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+            if not out.returncode == 0:
+                log.logger.error('Error occurred during samtools running.')
+                exit(1)
             else:
-                os.remove(filenames.limited_tc)
+                if args.b is not None:
+                    os.remove(filenames.limited_tb)
+                else:
+                    os.remove(filenames.limited_tc)            
         
         # convert to depth
         slopbed=generate_slopbed(args, params, filenames, params.tsd_flank_len + 1, params.abs_flank_len + 1)

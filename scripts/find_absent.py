@@ -135,13 +135,13 @@ def find_abs(args, params, filenames):
                 if transd is True:
                     outfile_transd.write('%s\t%d\t%d\t%s\t%s\tTSD_len=%s\n' % (chr, start, end, n, r, t))
                     abs_n += 1
+            pybedtools.cleanup()
         outfile_abs.flush()
         outfile_transd.flush()
         os.fdatasync(outfile_abs.fileno())
         os.fdatasync(outfile_transd.fileno())
         outfile_abs.close()
         outfile_transd.close()
-        pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

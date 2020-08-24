@@ -9,14 +9,9 @@ See file LICENSE for details.
 
 import os,sys,datetime,argparse,glob,logging
 
-'''
-time python main.py -overwrite -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4
-time python main.py -overwrite -b ../191216_2/NA12878.final.bam -fa /home/kooojiii/Documents/genomes/hg38/hg38.fa -fadb /home/kooojiii/Documents/genomes/hg38/hg38 -rep test_data/humrepsub.fa -repout /home/kooojiii/Documents/genomes/hg38/ucsc/masked_using_RepBase24.01_humrep_humsub/hg38.fa.out -cov 35 -p 4 -only_abs
-'''
-
 
 # version
-version='2020/07/10'
+version='2020/08/24'
 
 
 # args
@@ -43,7 +38,7 @@ parser.add_argument('-pA_ME', metavar='str', type=str, help='Optional. Specify f
 parser.add_argument('-only_ins', help='Optional. Specify if you only analyze non-reference MEI insertions.', action='store_true')
 parser.add_argument('-only_abs', help='Optional. Specify if you only analyze absence of reference MEI.', action='store_true')
 parser.add_argument('-only_geno', help='Optional. Specify if you only genotype using previously analyzed data.', action='store_true')
-parser.add_argument('-unsorted', help='Optional. Specify if an input BAM/CRAM is not position sorted.', action='store_true')
+parser.add_argument('-unsorted', help='Optional. Specify if an input BAM/CRAM is not position sorted.', action='store_false')
 parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
