@@ -24,6 +24,7 @@ def which(program):
             path = path.strip('"')
             exe_file = os.path.join(path, program)
             if is_exe(exe_file):
+                log.logger.debug('%s found: %s' % (program, exe_file))
                 return exe_file
     return None
 
@@ -46,7 +47,7 @@ def check(args, argv):
             exit(1)
         
         # check PATH
-        for i in ['blastn', 'bedtools']:
+        for i in ['blastn', 'bedtools', 'samtools']:
             if which(i) is None:
                 log.logger.error('%s not found in $PATH. Please check %s is installed and added to PATH.' % (i, i))
                 exit(1)

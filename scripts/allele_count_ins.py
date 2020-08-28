@@ -119,7 +119,7 @@ def limit(args, params, filenames):
             if args.b is not None:
                 cmd='samtools sort -@ %d %s -m %s -T %s -O BAM -o %s' % (args.p, filenames.limited_tb, params.bam_sort_maxmem, args.outdir, filenames.limited_b)
             else:
-                cmd='samtools sort -@ %d %s -m %s -T %s -O CRAM -o %s' % (args.p, filenames.limited_tc, params.bam_sort_maxmem, args.outdir, filenames.limited_c)
+                cmd='samtools sort -@ %d %s -m %s -T %s --reference %s -O CRAM -o %s' % (args.p, filenames.limited_tc, params.bam_sort_maxmem, args.outdir, args.fa, filenames.limited_c)
             log.logger.debug('samtools command = `'+ cmd +'`')
             out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
             log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
