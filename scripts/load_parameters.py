@@ -45,9 +45,9 @@ class load:
             self.chimeric_read_coeff_for_gaussian_fitting=0.01
             self.eval_threshold_for_gaussian_fitting=float('1e-25')
             if 100 <= args.readlen <= 149:
-                params.eval_threshold_for_gaussian_fitting=float('1e-15')
+                self.eval_threshold_for_gaussian_fitting=float('1e-15')
             elif args.readlen <= 99:
-                params.eval_threshold_for_gaussian_fitting=float('1e-10')
+                self.eval_threshold_for_gaussian_fitting=float('1e-10')
             self.fit_gaussian_init_a_coeff=0.5
             self.fit_gaussian_init_mu_coeff=1
             self.fit_gaussian_init_sigma_coeff=0.33
