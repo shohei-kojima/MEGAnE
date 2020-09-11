@@ -723,15 +723,22 @@ def evaluate_discordant(args, params, filenames):
 #                        dosage[pos]=2
                 # if threshold = curve bottom
                 large_mono=False
+                disc_threshold_determined=False
                 for tmp_x,mono_y,bi_y in zip(xd, estimated_curve_single_allele, estimated_curve_bi_allele):
                     if mono_y >= bi_y:
                         large_mono=True
                     if mono_y < bi_y and large_mono is True:
                         disc_threshold=tmp_x
+                        disc_threshold_determined=True
                         break
-                if popt[1] < disc_threshold < (popt[1] * 2):
-                   disc_mono_high_conf_threshold= (popt[1] + disc_threshold + disc_threshold) / 3
-                   disc_di_high_conf_threshold= ((popt[1] * 2) + disc_threshold + disc_threshold) / 3
+                if disc_threshold_determined is True:
+                    if popt[1] < disc_threshold < (popt[1] * 2):
+                        disc_mono_high_conf_threshold= (popt[1] + disc_threshold + disc_threshold) / 3
+                        disc_di_high_conf_threshold= ((popt[1] * 2) + disc_threshold + disc_threshold) / 3
+                    else:  # would be corner cases
+                        disc_threshold= popt[1] * 1.5
+                        disc_mono_high_conf_threshold= popt[1] * 1.33
+                        disc_di_high_conf_threshold= popt[1] * 1.66
                 else:  # would be corner cases
                     disc_threshold= popt[1] * 1.5
                     disc_mono_high_conf_threshold= popt[1] * 1.33
