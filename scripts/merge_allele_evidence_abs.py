@@ -11,6 +11,7 @@ import os,math
 from scipy import stats
 import seaborn as sns
 import matplotlib
+matplotlib.use('pdf')
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import log,traceback

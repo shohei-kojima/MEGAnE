@@ -14,6 +14,7 @@ import numpy as np
 from scipy.optimize import curve_fit
 from scipy.stats import norm
 import matplotlib
+matplotlib.use('pdf')
 import matplotlib.pyplot as plt
 import log,traceback
 

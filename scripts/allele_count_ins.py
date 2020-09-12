@@ -14,6 +14,7 @@ from scipy import stats
 from scipy.optimize import curve_fit
 import numpy as np
 import matplotlib
+matplotlib.use('pdf')
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import log,traceback

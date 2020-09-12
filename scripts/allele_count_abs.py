@@ -14,6 +14,7 @@ import pysam
 import numpy as np
 from scipy import stats
 import matplotlib
+matplotlib.use('pdf')
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import log,traceback
