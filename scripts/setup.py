@@ -32,21 +32,23 @@ def setup(args, base):
                 chr=line.strip()
                 if not chr == '':
                     main_chrs.append(chr)
-        global female, chrY
+        global female, male, chrX, chrY
         female={'female', 'Female', 'F', 'f'}
+        male={'male', 'Male', 'M', 'm'}
+        chrX={'chrX', 'X', '23'}
         chrY={'chrY', 'Y', '24'}
-        if not args.sex == 'male':
-            if args.sex in female:
-                new_main_chr=[]
-                for chr in main_chrs:
-                    if not chr in chrY:
-                        new_main_chr.append(chr)
-                main_chrs=[]
-                main_chrs.extend(new_main_chr)
-                log.logger.info('You specified "female" as sex, chrY is going to be excluded from analysis.')
-            else:
-                log.logger.error('Unknown value was specified with -sex. Please check again.')
-                exit(1)
+#        if not args.sex == 'male':
+#            if args.sex in female:
+#                new_main_chr=[]
+#                for chr in main_chrs:
+#                    if not chr in chrY:
+#                        new_main_chr.append(chr)
+#                main_chrs=[]
+#                main_chrs.extend(new_main_chr)
+#                log.logger.info('You specified "female" as sex, chrY is going to be excluded from analysis.')
+#            else:
+#                log.logger.error('Unknown value was specified with -sex. Please check again.')
+#                exit(1)
         
         # fai
         global fai_path
@@ -54,6 +56,11 @@ def setup(args, base):
             import pysam
             pysam.faidx(args.fa)
             log.logger.info('Fasta index not found. Generated %s.fai.' % args.fa)
+        else:
+            diff= os.stat(args.fa + '.fai').st_mtime - os.stat(args.fa).st_mtime
+            if not diff > 0:
+                log.logger.error('Fasta index %s.fai was older than fasta. Please generate fasta index again.' % args.fa)
+                exit(1)
         fai_path=args.fa + '.fai'
         
         # load parameter settings
@@ -107,6 +114,11 @@ def setup_geno_only_load_params(args, base):
         param_path=join(base, 'lib/parameter_settings_geno.txt')
         import load_parameters
         params=load_parameters.load_geno(args, param_path)
+        global female, male, chrX, chrY
+        female={'female', 'Female', 'F', 'f'}
+        male={'male', 'Male', 'M', 'm'}
+        chrX={'chrX', 'X', '23'}
+        chrY={'chrY', 'Y', '24'}
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
@@ -133,21 +145,23 @@ def setup_geno(args, base):
                 chr=line.strip()
                 if not chr == '':
                     main_chrs.append(chr)
-        global female, chrY
+        global female, male, chrX, chrY
         female={'female', 'Female', 'F', 'f'}
+        male={'male', 'Male', 'M', 'm'}
+        chrX={'chrX', 'X', '23'}
         chrY={'chrY', 'Y', '24'}
-        if not args.sex == 'male':
-            if args.sex in female:
-                new_main_chr=[]
-                for chr in main_chrs:
-                    if not chr in chrY:
-                        new_main_chr.append(chr)
-                main_chrs=[]
-                main_chrs.extend(new_main_chr)
-                log.logger.info('You specified "female" as sex, chrY is going to be excluded from analysis.')
-            else:
-                log.logger.error('Unknown value was specified with -sex. Please check again.')
-                exit(1)
+#        if not args.sex == 'male':
+#            if args.sex in female:
+#                new_main_chr=[]
+#                for chr in main_chrs:
+#                    if not chr in chrY:
+#                        new_main_chr.append(chr)
+#                main_chrs=[]
+#                main_chrs.extend(new_main_chr)
+#                log.logger.info('You specified "female" as sex, chrY is going to be excluded from analysis.')
+#            else:
+#                log.logger.error('Unknown value was specified with -sex. Please check again.')
+#                exit(1)
         
         # fai
         global fai_path

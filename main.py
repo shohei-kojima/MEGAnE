@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,logging
 
 
 # version
-version='2020/08/24'
+version='2020/09/15'
 
 
 # args
@@ -29,7 +29,7 @@ parser.add_argument('-sample_name', metavar='int', type=int, help='Optional. Spe
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
 parser.add_argument('-monoallelic', help='Optional. Specify if you use monoalellic sample, such as mouse strains or HAP1 cells.', action='store_true')
-parser.add_argument('-sex', metavar='str', type=str, help='Optional. Specify "female" if input is female sample. Available only when human and mouse sample. Default: male', default='male')
+parser.add_argument('-sex', metavar='str', type=str, help='Optional. Specify "female" if input is female sample. Available only when human and mouse sample. Default: unknown', default='unknown')
 parser.add_argument('-verylowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 10x).', action='store_true')
 parser.add_argument('-lowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 15x).', action='store_true')
 parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/prog/lib/parameter_settings.txt')
@@ -41,6 +41,7 @@ parser.add_argument('-only_geno', help='Optional. Specify if you only genotype u
 parser.add_argument('-unsorted', help='Optional. Specify if an input BAM/CRAM is not position sorted.', action='store_true')
 parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
+parser.add_argument('-no_pdf', help='Optional. Specify if you do not want to output pdf summary files.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
 parser.add_argument('-v', '--version', help='Print version.', action='store_true')
 args=parser.parse_args()
@@ -81,8 +82,10 @@ args.main_chrs_set=set(args.main_chrs)
 args.rep_headers_to_be_removed=setup.rep_headers_to_be_removed
 args.rep_with_pA=setup.rep_with_pA
 args.fai=setup.fai_path
+params.chrX=setup.chrX
 params.chrY=setup.chrY
 params.female=setup.female
+params.male=setup.male
 do_ins=False if args.only_abs is True else True
 do_abs=False if args.only_ins is True else True
 
@@ -307,8 +310,10 @@ else:
 # 8. start genotyping
 setup.setup_geno_only_load_params(args, init.base)
 params=setup.params
+params.chrX=setup.chrX
 params.chrY=setup.chrY
 params.female=setup.female
+params.male=setup.male
 
 
 if do_abs is True:

@@ -167,7 +167,8 @@ def plot_merged(args, params, filenames, data):
         ax.set_ylim(-5, data.spanning_thresholds[2])
         
         plt.suptitle('Genotyping result for absent MEs')
-        plt.savefig(filenames.merged_pdf_abs)
+        if args.no_pdf is False:
+            plt.savefig(filenames.merged_pdf_abs)
         plt.close()
     except:
         log.logger.error('\n'+ traceback.format_exc())

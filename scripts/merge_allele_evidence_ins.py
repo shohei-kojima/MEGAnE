@@ -298,7 +298,8 @@ def plot_orig(args, params, filenames, data):
                 ax.set_xlim(-0.25, data.del_thresholds[3])
                 ax.set_ylim(-5, data.spanning_thresholds[2])
         plt.suptitle('This is a figure for debugging')
-        plt.savefig(filenames.debug_pdf1)
+        if args.no_pdf is False:
+            plt.savefig(filenames.debug_pdf1)
         plt.close()
     except:
         log.logger.error('\n'+ traceback.format_exc())
@@ -662,7 +663,8 @@ def plot_merged(args, params, filenames, data):
                 ax.set_xlim(-0.25, data.del_thresholds[3])
                 ax.set_ylim(-5, data.spanning_thresholds[2])
         plt.suptitle('Genotyping result for insertions')
-        plt.savefig(filenames.merged_pdf)
+        if args.no_pdf is False:
+            plt.savefig(filenames.merged_pdf)
         plt.close()
     except:
         log.logger.error('\n'+ traceback.format_exc())
@@ -1041,7 +1043,8 @@ def plot_gt(args, params, filenames, data):
         ax.set_xlim(0, data.disc_thresholds[3])
         ax.set_ylim(-5, data.spanning_thresholds[2])
         plt.suptitle('Genotyping result for insertions')
-        plt.savefig(filenames.merged_pdf.replace('.pdf', '_gt.pdf'))
+        if args.no_pdf is False:
+            plt.savefig(filenames.merged_pdf.replace('.pdf', '_gt.pdf'))
         plt.close()
     except:
         log.logger.error('\n'+ traceback.format_exc())
@@ -1398,7 +1401,8 @@ def plot_custom(args, params, filenames, data):
             ax.set_xlim(-0.25, data.del_thresholds[3])
             ax.set_ylim(-5, data.spanning_thresholds[2])
         plt.suptitle('Genotyping result for insertions')
-        plt.savefig(filenames.merged_pdf, transparent=True)
+        if args.no_pdf is False:
+            plt.savefig(filenames.merged_pdf, transparent=True)
         plt.close()
     except:
         log.logger.error('\n'+ traceback.format_exc())

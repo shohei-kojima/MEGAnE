@@ -199,23 +199,24 @@ def filter(args, params, filenames):
             elif args.monoallelic is True:
                 estimated_curve=gaussian_func(xd, popt[0], popt[1], popt[2])
             # plot
-            fig=plt.figure(figsize=(3,3))
-            ax=fig.add_subplot(111)
-            ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='Actual data')
-            if args.monoallelic is False:
-                ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
-                ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
-            ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
-            ax.axvline(x=round(reject1perc[0]), linewidth=1, alpha=0.5, color='olive', linestyle='dashed', label='Gaussian_cutoff')
-            ax.axvline(x=round(cutoff), linewidth=1, alpha=0.5, color='darkgreen', linestyle='dashed', label='Percentile_cutoff')
-            ax.set_xlim(0, popt[1] * 4)
-            ax.set_xlabel('Number of support reads per MEI')
-            ax.set_ylabel('Number of MEI')
-            ax.legend()
             total_read_thresholds=[reject1perc[0], cutoff]  # parameter setting
-            plt.suptitle('sample=%s,\nn=%d, r_squared=%f,\ngaussian_cutoff=%f, percentile_cutoff=%d' % (input_sample, len(for_gaussian_fitting), r_squared, total_read_thresholds[0], int(total_read_thresholds[1])))  # popt[1] = mean, popt[2] = sigma
-            plt.savefig(filenames.gaussian_plot)
-            plt.close()
+            if args.no_pdf is False:
+                fig=plt.figure(figsize=(3,3))
+                ax=fig.add_subplot(111)
+                ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.5, label='Actual data')
+                if args.monoallelic is False:
+                    ax.plot(xd, estimated_curve_single_allele, color='grey', alpha=0.5)
+                    ax.plot(xd, estimated_curve_bi_allele, color='grey', alpha=0.5)
+                ax.plot(xd, estimated_curve, label='Gaussian curve fitting', color='red', alpha=0.5)
+                ax.axvline(x=round(reject1perc[0]), linewidth=1, alpha=0.5, color='olive', linestyle='dashed', label='Gaussian_cutoff')
+                ax.axvline(x=round(cutoff), linewidth=1, alpha=0.5, color='darkgreen', linestyle='dashed', label='Percentile_cutoff')
+                ax.set_xlim(0, popt[1] * 4)
+                ax.set_xlabel('Number of support reads per MEI')
+                ax.set_ylabel('Number of MEI')
+                ax.legend()
+                plt.suptitle('sample=%s,\nn=%d, r_squared=%f,\ngaussian_cutoff=%f, percentile_cutoff=%d' % (input_sample, len(for_gaussian_fitting), r_squared, total_read_thresholds[0], int(total_read_thresholds[1])))  # popt[1] = mean, popt[2] = sigma
+                plt.savefig(filenames.gaussian_plot)
+                plt.close()
             zero_hybrid_total_read_threshold= round(popt[1] * ((sum(for_gaussian_fitting) - sum(hybrid_num)) / sum(for_gaussian_fitting)))  # parameter setting
             log.logger.debug('gaussian_fitting_n=%d,r_squared=%f,gaussian_cutoff=%f,percentile_cutoff=%f,zero_hybrid_total_read_threshold=%f' %(len(for_gaussian_fitting), r_squared, total_read_thresholds[0], total_read_thresholds[1], zero_hybrid_total_read_threshold))
         else:

@@ -773,7 +773,8 @@ def evaluate_discordant(args, params, filenames):
                 ax.set_ylabel('Number of MEI')
                 ax.legend()
                 plt.suptitle('sample=%s;%s,\nn=%d, r_squared=%f,' % (input_sample, input_bed, len(for_gaussian_fitting), r_squared))  # popt[1] = mean, popt[2] = sigma
-                plt.savefig(filenames.disc_read_pdf)
+                if args.no_pdf is False:
+                    plt.savefig(filenames.disc_read_pdf)
                 plt.close()
                 log.logger.debug('gaussian_fitting_n=%d,r_squared=%f' %(len(for_gaussian_fitting), r_squared))
                 # count allele count

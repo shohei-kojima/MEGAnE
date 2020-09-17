@@ -71,6 +71,7 @@ def output_ins_bed_vcf(args, params, filenames, data):
             fa[h.split('::')[0]]=tmp[h].upper()
         # output
         remove_Y=True if args.sex in params.female else False
+        single_XY=True if args.sex in params.male else False
         out_vcf=[]
         out_bed=[]
         for id in orig:
@@ -90,6 +91,10 @@ def output_ins_bed_vcf(args, params, filenames, data):
                 filt.append(data.merged_res[id][1])
             if remove_Y is True and ls[0] in params.chrY:
                 filt.append('Y')
+            if single_XY is True and ls[0] in params.chrX:
+                data.merged_res[id][0]=1
+            elif single_XY is True and ls[0] in params.chrY:
+                data.merged_res[id][0]=1
             if len(filt) == 0:
                 filt='PASS'
             else:
@@ -191,6 +196,7 @@ def output_abs_bed_vcf(args, params, filenames, data):
             fa[h.split('::')[0]]=tmp[h].upper()
         # output
         remove_Y=True if args.sex in params.female else False
+        single_XY=True if args.sex in params.male else False
         out_vcf=[]
         out_bed=[]
         for id in orig:
@@ -204,6 +210,10 @@ def output_abs_bed_vcf(args, params, filenames, data):
                     data.merged_res[id][1]='Y'
                 else:
                     data.merged_res[id][1]=data.merged_res[id][1] +';Y'
+            if single_XY is True and ls[0] in params.chrX:
+                data.merged_res[id][0]=1
+            elif single_XY is True and ls[0] in params.chrY:
+                data.merged_res[id][0]=1
             tmp=[]
             tmp.extend(ls)
             tmp.append('%s;%s' % tuple(data.merged_res[id]))
