@@ -541,7 +541,7 @@ def evaluate_spanning_read(args, params, filenames, data):
             with open(args.ins_bed) as infile:
                 for line in infile:
                     ls=line.split()
-                    if not data.cn_est_tsd_depth[ls[-1]] == 'outlier':
+                    if not data.cn_est_tsd_depth[ls[-1]][0] == 'outlier':
                         tmp.append(line)
             insbed=BedTool(''.join(tmp), from_string=True).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
         if os.path.exists(filenames.limited_b +'.bai') is True:
@@ -568,7 +568,7 @@ def evaluate_spanning_read(args, params, filenames, data):
                 ls=line.strip().split('\t')
                 keep=True
                 if args.only_geno_precall is True:
-                    if data.cn_est_tsd_depth[ls[-1]] == 'outlier':
+                    if data.cn_est_tsd_depth[ls[-1]][0] == 'outlier':
                         keep=False
                 if keep is True:
                     if not ls[0] in bps:
