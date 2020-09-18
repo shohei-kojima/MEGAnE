@@ -86,17 +86,18 @@ def detect_discordant(args, params, filenames):
                 abs_bed_found=False
                 tmpl,tmpr=[],[]
                 id=0
-                for abs_bed_f in [args.abs_bed]:
-                    if os.path.exists(abs_bed_f) is True:
-                        abs_bed_found=True
-                        with open(abs_bed_f) as infile:
-                            log.logger.debug('%s loading.' % abs_bed_f)
-                            for line in infile:
-                                ls=line.split()
-                                tmpl.append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[1], 'aID=%d' % id))
-                                tmpr.append('%s\t%s\t%s\t%s\n' % (ls[0], ls[2], ls[2], 'aID=%d' % id))
-                                count_abs += 1
-                                id += 1
+                for abs_bed_f in [args.abs_bed, args.abs_3t_bed]:
+                    if not abs_bed_f is None:
+                        if os.path.exists(abs_bed_f) is True:
+                            abs_bed_found=True
+                            with open(abs_bed_f) as infile:
+                                log.logger.debug('%s loading.' % abs_bed_f)
+                                for line in infile:
+                                    ls=line.split()
+                                    tmpl.append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[1], 'aID=%d' % id))
+                                    tmpr.append('%s\t%s\t%s\t%s\n' % (ls[0], ls[2], ls[2], 'aID=%d' % id))
+                                    count_abs += 1
+                                    id += 1
                 absbedl=BedTool(''.join(tmpl), from_string=True).slop(l=abs_slop_len, r=0, g=args.fai)
                 absbedr=BedTool(''.join(tmpr), from_string=True).slop(l=0, r=abs_slop_len, g=args.fai)
                 if abs_bed_found is False:
