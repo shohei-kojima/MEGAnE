@@ -72,8 +72,8 @@ def plot_merged(args, params, filenames, data):
         ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
         ax.set_xlabel('# spanning read, right breakpoint')
         ax.set_ylabel('# spanning read, left breakpoint')
-        ax.set_xlim(-5, data.spanning_thresholds[2])
-        ax.set_ylim(-5, data.spanning_thresholds[2])
+        ax.set_xlim(-5, args.cov * params.spanning_outlier_coeff_abs)
+        ax.set_ylim(-5, args.cov * params.spanning_outlier_coeff_abs)
         
         # relative depth to flanking
         x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
@@ -164,7 +164,7 @@ def plot_merged(args, params, filenames, data):
         ax.set_xlabel('Relative depth to flanking, min(left, right)')
         ax.set_ylabel('# spanning read, left + right')
         ax.set_xlim(-0.2, 1.5)
-        ax.set_ylim(-5, data.spanning_thresholds[2])
+        ax.set_ylim(-5, args.cov * params.spanning_outlier_coeff_abs)
         
         plt.suptitle('Genotyping result for absent MEs')
         if args.no_pdf is False:
@@ -201,6 +201,46 @@ def merge(args, params, filenames, data):
             spanning_num= data.cn_est_spanning[id][1] + data.cn_est_spanning[id][2]
             if spanning_num >= spanning_threshold_for_merge:
                 allele_count='1'
+            elif data.cn_est_depth[id][3] < data.abs_thresholds[0]:
+                allele_count='2'
+            else:
+                allele_count='1'
+            merged_res[id]=[allele_count, outlier_judge]
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
+def merge_wo_discordant(args, params, filenames, data):
+    log.logger.debug('started')
+    try:
+        global merged_res
+        merged_res={}
+            
+        def judge_outlier(id, data):
+            tmp=[]
+            if 'ID=3T' in id:
+                tmp.append('3')
+            if data.cn_est_depth[id][0] == 'outlier':
+                tmp.append('D')
+            if data.cn_est_spanning[id][0] == 'outlier':
+                tmp.append('S')
+            if not 'a%s' % id in data.disc_ids:
+                tmp.append('R')
+            if len(tmp) == 0:
+                tmp='PASS'
+            else:
+                tmp=';'.join(tmp)
+            return tmp
+            
+        outlier_threshold= args.cov * params.spanning_outlier_coeff_for_precall_abs
+        spanning_threshold_for_merge= math.ceil(args.cov * params.spanning_threshold_coeff_for_merge) * 2
+        for id in data.cn_est_spanning:
+            outlier_judge=judge_outlier(id, data)
+            if data.cn_est_spanning[id][1] >= outlier_threshold:
+                allele_count='0'
+            elif data.cn_est_spanning[id][2] >= outlier_threshold:
+                allele_count='0'
             elif data.cn_est_depth[id][3] < data.abs_thresholds[0]:
                 allele_count='2'
             else:

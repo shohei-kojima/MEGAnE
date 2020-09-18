@@ -44,6 +44,7 @@ parser.add_argument('-keep', help='Optional. Specify if you do not want to delet
 parser.add_argument('-no_pdf', help='Optional. Specify if you do not want to output pdf summary files.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
 parser.add_argument('-v', '--version', help='Print version.', action='store_true')
+parser.add_argument('-only_geno_precall', action='store_true', help=argparse.SUPPRESS)
 args=parser.parse_args()
 args.version=version
 
@@ -55,6 +56,8 @@ init.init(args, version)
 
 # logging
 import log
+if args.only_geno_precall is True:
+    args.only_geno=True
 if args.only_geno is False:
     args.logfilename='for_debug.log'
 else:
@@ -145,10 +148,12 @@ filenames.bp_final_g      =os.path.join(args.outdir, 'MEI_final_gaussian.bed')
 filenames.bp_final_p      =os.path.join(args.outdir, 'MEI_final_percentile.bed')
 filenames.bp_final_f      =os.path.join(args.outdir, 'MEI_final_failed.bed')
 filenames.bp_final_u      =os.path.join(args.outdir, 'MEI_final_user.bed')
+filenames.bp_final_d      =os.path.join(args.outdir, 'MEI_final_dummy.bed')
 filenames.transd_master   =os.path.join(args.outdir, '3transduction_check_master.txt')
 
 filenames.abs_res         =os.path.join(args.outdir, 'absent_MEs.bed')
 filenames.transd_res      =os.path.join(args.outdir, 'absent_MEs_transduction.bed')
+filenames.abs_dummmy      =os.path.join(args.outdir, 'absent_MEs_dummy.bed')
 
 
 if args.only_geno is False:
@@ -317,7 +322,10 @@ params.male=setup.male
 
 
 if do_abs is True:
-    args.abs_bed=filenames.abs_res
+    if os.path.exists(filenames.abs_dummmy) is True:
+        args.abs_bed=filenames.abs_dummmy
+    else:
+        args.abs_bed=filenames.abs_res
     args.abs_3t_bed=filenames.transd_res
 
 filenames.limited_b       =os.path.join(args.outdir, 'only_necessary.bam')
@@ -338,8 +346,12 @@ if do_abs is True:
 import output_genotyped_vcf
 import allele_count_ins
 log.logger.info('Limit BAM/CRAM started.')
-allele_count_ins.limit(args, params, filenames)
+#allele_count_ins.limit(args, params, filenames)
 data=utils.empclass()
+if args.only_geno_precall is True:
+    import precall_search_discordant
+    precall_search_discordant.detect_discordant(args, params, filenames)
+    data.disc_ids=precall_search_discordant.disc_ids
 
 
 # 10. genotype insertions
@@ -363,18 +375,26 @@ def genotype_ins(args, params, filenames, data):
     allele_count_ins.evaluate_spanning_read(args, params, filenames)
     data.cn_est_spanning=allele_count_ins.cn_est_spanning
     data.spanning_thresholds=allele_count_ins.spanning_thresholds
-
-    allele_count_ins.evaluate_discordant(args, params, filenames)
-    data.cn_est_disc=allele_count_ins.cn_est_disc
-    data.disc_thresholds=allele_count_ins.disc_thresholds  # could be False
-
+    
+    if args.only_geno_precall is False:
+        allele_count_ins.evaluate_discordant(args, params, filenames)
+        data.cn_est_disc=allele_count_ins.cn_est_disc
+        data.disc_thresholds=allele_count_ins.disc_thresholds  # could be False
+    else:
+        log.logger.debug('-only_geno_precall specified, skip discordant reads evaluation.' % args.ins_bed)
+    
     # merge evidences; insertion
     import merge_allele_evidence_ins
     log.logger.info('Evidence merge started, insertion: %s' % args.ins_bed)
-    merge_allele_evidence_ins.plot_orig(args, params, filenames, data)
-    merge_allele_evidence_ins.merge(args, params, filenames, data)
-    data.merged_res=merge_allele_evidence_ins.merged_res
-    merge_allele_evidence_ins.plot_merged(args, params, filenames, data)
+#    merge_allele_evidence_ins.plot_orig(args, params, filenames, data)
+    if args.only_geno_precall is False:
+        merge_allele_evidence_ins.merge(args, params, filenames, data)
+        data.merged_res=merge_allele_evidence_ins.merged_res
+        merge_allele_evidence_ins.plot_merged(args, params, filenames, data)
+    else:
+        merge_allele_evidence_ins.merge_wo_discordant(args, params, filenames, data)
+        data.merged_res=merge_allele_evidence_ins.merged_res
+        merge_allele_evidence_ins.plot_merged_wo_disc(args, params, filenames, data)
     data.mei_filter=merge_allele_evidence_ins.mei_filter
     #merge_allele_evidence_ins.plot_gt(args, params, filenames, data)   # always commentout unless debug
 
@@ -386,7 +406,7 @@ def genotype_ins(args, params, filenames, data):
     if os.path.exists(filenames.tmp_bam) is True:
         os.remove(filenames.tmp_bam)
 
-for f in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u]:
+for f in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u, filenames.bp_final_d]:
     if os.path.exists(f) is True:
         args.ins_bed=f
         genotype_ins(args, params, filenames, data)
@@ -397,7 +417,9 @@ if do_abs is True:
     import allele_count_abs
     log.logger.info('Evidence search started, absent MEs.')
     data=utils.empclass()
-
+    if args.only_geno_precall is True:
+        data.disc_ids=precall_search_discordant.disc_ids
+    
     allele_count_abs.evaluate_spanning_read(args, params, filenames)
     data.cn_est_spanning=allele_count_abs.cn_est_spanning
     data.spanning_thresholds=allele_count_abs.spanning_thresholds
@@ -409,7 +431,10 @@ if do_abs is True:
     # merge evidences; absent
     import merge_allele_evidence_abs
     log.logger.info('Evidence merge started, absent MEs.')
-    merge_allele_evidence_abs.merge(args, params, filenames, data)
+    if args.only_geno_precall is False:
+        merge_allele_evidence_abs.merge(args, params, filenames, data)
+    else:
+        merge_allele_evidence_abs.merge_wo_discordant(args, params, filenames, data)
     data.merged_res=merge_allele_evidence_abs.merged_res
     merge_allele_evidence_abs.plot_merged(args, params, filenames, data)
 

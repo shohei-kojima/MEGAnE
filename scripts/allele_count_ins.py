@@ -44,7 +44,7 @@ def limit(args, params, filenames):
             if do_ins is True:
                 ins_bed_found=False
                 tmp=[]
-                for bp_final in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u]:
+                for bp_final in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u, filenames.bp_final_d]:
                     if os.path.exists(bp_final) is True:
                         ins_bed_found=True
                         with open(bp_final) as infile:
@@ -158,7 +158,7 @@ def evaluate_tsd_depth(args, params, filenames):
         # load depth
         def generate_d_for_depth(filenames, slop_len):
             d={}
-            for bp_final in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u]:
+            for bp_final in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u, filenames.bp_final_d]:
                 if os.path.exists(bp_final) is True:
                     with open(bp_final) as infile:
                         for line in infile:
@@ -305,9 +305,15 @@ def evaluate_tsd_depth(args, params, filenames):
                     back_to_tsd_ratio=-1
                 if back_to_tsd_ratio >= 0:
                     if structure == 'TSD' and 'confidence:high' in line:
-                        only_tsd.append(back_to_tsd_ratio)
+                        if args.only_geno_precall is False:
+                            only_tsd.append(back_to_tsd_ratio)
+                        elif back_to_tsd_ratio > params.tsd_outlier_low_for_precall:
+                            only_tsd.append(back_to_tsd_ratio)
                     elif structure == 'Del' and 'confidence:high' in line:
-                        only_del.append(back_to_tsd_ratio)
+                        if args.only_geno_precall is False:
+                            only_del.append(back_to_tsd_ratio)
+                        elif back_to_tsd_ratio < params.del_outlier_low_for_precall:
+                            only_del.append(back_to_tsd_ratio)
                 back_to_tsd_ratios[ls[10]]=[back_to_tsd_ratio, structure]
         tsd_kernel=stats.gaussian_kde(only_tsd)
         tsd_x=np.linspace(0, 3, 600)
@@ -356,6 +362,8 @@ def evaluate_tsd_depth(args, params, filenames):
             tsd_mono_high_conf_threshold= ((highest[0] - 1) * 1.333) + 1
             tsd_bi_high_conf_threshold=   ((highest[0] - 1) * 1.666) + 1
             tsd_outlier_low_threshold= 1 + (highest[0] * params.tsd_outlier_low_coeff)
+        if args.only_geno_precall is True:
+            tsd_outlier_low_threshold=params.tsd_outlier_low_for_precall
         log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,tsd_threshold=%f,tsd_mono_high_conf_threshold=%f,tsd_bi_high_conf_threshold=%f' % (peaks, bottoms, tsd_threshold, tsd_mono_high_conf_threshold, tsd_bi_high_conf_threshold))
         # find threshold, DEL
         if len(only_del) >= 2:
@@ -432,6 +440,9 @@ def evaluate_tsd_depth(args, params, filenames):
                         allele='outlier'
                 else:
                     allele='NA'
+                if args.only_geno_precall is True:
+                    if ratio >= params.del_outlier_low_for_precall:
+                        allele='outlier'
             else:
                 allele='NA'
             cn_est_tsd_depth[id]=[allele, ratio, struc]
@@ -595,6 +606,8 @@ def evaluate_spanning_read(args, params, filenames):
         global cn_est_spanning
         cn_est_spanning={}
         spanning_outlier= args.cov * params.spanning_outlier_coeff
+        if args.only_geno_precall is True:
+            spanning_outlier= args.cov * params.spanning_outlier_coeff_for_precall
         log.logger.debug('spanning_zero_threshold=%f,spanning_high_threshold=%f,spanning_outlier=%f' % (spanning_zero_threshold, spanning_high_threshold, spanning_outlier))
         global spanning_thresholds
         spanning_thresholds=[spanning_zero_threshold, spanning_high_threshold, spanning_outlier]

@@ -198,23 +198,28 @@ class load_geno:
             # default; genotyping
             self.ins_slop_len=300
             self.abs_slop_len=300
+            self.ins_slop_len_for_disc_detection=10
+            self.abs_slop_len_for_disc_detection=10
             self.min_tsd_len_to_remove_1nt=4
             self.tsd_flank_len=4
             self.del_mono_high_threshold_coeff=0.666
             self.del_bi_high_threshold_coeff=1.333
             self.tsd_outlier_low_coeff=0.25
+            self.tsd_outlier_low_for_precall=1.2
             self.tsd_outlier=3
             self.del_outlier=2
+            self.del_outlier_low_for_precall=0.8
             self.min_len_overhang_for_spanning=31
             self.min_overhang_match_for_spanning=31
             self.max_overhang_mismatch_ratio_for_spanning=0.1
             self.spanning_high_threshold_coeff=0.666
             self.spanning_zero_threshold_coeff=0.333
-            self.spanning_outlier_coeff= 1.5
+            self.spanning_outlier_coeff=1.5
+            self.spanning_outlier_coeff_for_precall=0.66
             self.fit_gaussian_init_a_coeff=0.5
             self.fit_gaussian_init_mu_coeff=1
             self.fit_gaussian_init_sigma_coeff=0.33
-            self.discordant_outlier_coeff= 3.5
+            self.discordant_outlier_coeff=3.5
             self.spanning_threshold_coeff_for_merge=0.01
             
             self.abs_slop_len=300
@@ -223,10 +228,12 @@ class load_geno:
             self.max_overhang_mismatch_ratio_for_spanning_abs=0.1
             self.spanning_high_threshold_coeff_abs=0.666
             self.spanning_zero_threshold_coeff_abs=0.333
-            self.spanning_outlier_coeff_abs= 1.5
+            self.spanning_outlier_coeff_abs=1.5
+            self.spanning_outlier_coeff_for_precall_abs=0.5
             self.abs_flank_len=5
             self.mono_peak_notfound=0.7
             self.abs_depth_outlier=0.8
+            self.abs_depth_outlier_precall=0.75
             self.spanning_threshold_coeff_for_merge_abs=0.01
             
             self.bam_sort_maxmem='2G'

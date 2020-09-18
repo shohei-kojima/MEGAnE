@@ -223,6 +223,8 @@ def evaluate_spanning_read(args, params, filenames):
         global cn_est_spanning
         cn_est_spanning={}
         spanning_outlier= args.cov * params.spanning_outlier_coeff_abs
+        if args.only_geno_precall is True:
+            spanning_outlier= args.cov * params.spanning_outlier_coeff_for_precall_abs
         log.logger.debug('spanning_zero_threshold=%f,spanning_high_threshold=%f,spanning_outlier=%f' % (spanning_zero_threshold, spanning_high_threshold, spanning_outlier))
         global spanning_thresholds
         spanning_thresholds=[spanning_zero_threshold, spanning_high_threshold, spanning_outlier]
@@ -232,14 +234,26 @@ def evaluate_spanning_read(args, params, filenames):
                 id='ID=%d' % n
                 ls=line.strip().split('\t')
                 if id in span_judge_true:
-                    if spanning_outlier <= sum(span_judge_true[id]):
-                        cn_est_spanning[id]=['outlier', span_judge_true[id][0], span_judge_true[id][1]]
-                    elif spanning_high_threshold <= sum(span_judge_true[id]) < spanning_outlier:
-                        cn_est_spanning[id]=['bi_high', span_judge_true[id][0], span_judge_true[id][1]]
-                    elif spanning_zero_threshold <= sum(span_judge_true[id]) < spanning_high_threshold:
-                        cn_est_spanning[id]=['bi_low', span_judge_true[id][0], span_judge_true[id][1]]
+                    if args.only_geno_precall is False:
+                        if spanning_outlier <= sum(span_judge_true[id]):
+                            cn_est_spanning[id]=['outlier', span_judge_true[id][0], span_judge_true[id][1]]
+                        elif spanning_high_threshold <= sum(span_judge_true[id]) < spanning_outlier:
+                            cn_est_spanning[id]=['bi_high', span_judge_true[id][0], span_judge_true[id][1]]
+                        elif spanning_zero_threshold <= sum(span_judge_true[id]) < spanning_high_threshold:
+                            cn_est_spanning[id]=['bi_low', span_judge_true[id][0], span_judge_true[id][1]]
+                        else:
+                            cn_est_spanning[id]=['mono_low', span_judge_true[id][0], span_judge_true[id][1]]
                     else:
-                        cn_est_spanning[id]=['mono_low', span_judge_true[id][0], span_judge_true[id][1]]
+                        if spanning_outlier <= span_judge_true[id][0]:
+                            cn_est_spanning[id]=['outlier', span_judge_true[id][0], span_judge_true[id][1]]
+                        elif spanning_outlier <= span_judge_true[id][1]:
+                            cn_est_spanning[id]=['outlier', span_judge_true[id][0], span_judge_true[id][1]]
+                        elif spanning_high_threshold <= sum(span_judge_true[id]) < spanning_outlier:
+                            cn_est_spanning[id]=['bi_high', span_judge_true[id][0], span_judge_true[id][1]]
+                        elif spanning_zero_threshold <= sum(span_judge_true[id]) < spanning_high_threshold:
+                            cn_est_spanning[id]=['bi_low', span_judge_true[id][0], span_judge_true[id][1]]
+                        else:
+                            cn_est_spanning[id]=['mono_low', span_judge_true[id][0], span_judge_true[id][1]]
                 else:
                     cn_est_spanning[id]=['mono_high', 0, 0]
                 n += 1
@@ -383,7 +397,11 @@ def evaluate_bp_depth(args, params, filenames):
                     left_ratio=-1
                     right_ratio=-1
                     status='outlier'
-                if min_ratio > params.abs_depth_outlier:
+                if args.only_geno_precall is False:
+                    abs_depth_outlier=params.abs_depth_outlier
+                else:
+                    abs_depth_outlier=params.abs_depth_outlier_precall
+                if min_ratio > abs_depth_outlier:
                     status='outlier'
                 cn_est_depth[id]=[status, left_ratio, right_ratio, min_ratio]
         # 3' transduction
@@ -437,7 +455,11 @@ def evaluate_bp_depth(args, params, filenames):
                         left_ratio=-1
                         right_ratio=-1
                         status='outlier'
-                    if min_ratio > params.abs_depth_outlier:
+                    if args.only_geno_precall is False:
+                        abs_depth_outlier=params.abs_depth_outlier
+                    else:
+                        abs_depth_outlier=params.abs_depth_outlier_precall
+                    if min_ratio > abs_depth_outlier:
                         status='outlier'
                     cn_est_depth[id]=[status, left_ratio, right_ratio, min_ratio]
         abs_kernel=stats.gaussian_kde(min_ratios)
@@ -484,7 +506,7 @@ def evaluate_bp_depth(args, params, filenames):
             abs_mono_high_conf_threshold= mono_peak / 3
         log.logger.debug('abs_kernel,peaks=%s,bottoms=%s,highest=%s,abs_mono_high_conf_threshold=%f' % (peaks, bottoms, highest, abs_mono_high_conf_threshold))
         global abs_thresholds
-        abs_thresholds=[abs_mono_high_conf_threshold, params.abs_depth_outlier]
+        abs_thresholds=[abs_mono_high_conf_threshold, abs_depth_outlier]
         # plot; this is for debug
 #        plt.figure(figsize=(3, 2))  # (x, y)
 #        gs=gridspec.GridSpec(1, 1)  # (y, x)
