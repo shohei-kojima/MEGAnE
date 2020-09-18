@@ -381,7 +381,7 @@ def genotype_ins(args, params, filenames, data):
         data.cn_est_disc=allele_count_ins.cn_est_disc
         data.disc_thresholds=allele_count_ins.disc_thresholds  # could be False
     else:
-        log.logger.debug('-only_geno_precall specified, skip discordant reads evaluation.' % args.ins_bed)
+        log.logger.debug('-only_geno_precall specified, skip discordant reads evaluation.')
     
     # merge evidences; insertion
     import merge_allele_evidence_ins
