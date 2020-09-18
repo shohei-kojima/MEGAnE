@@ -86,7 +86,7 @@ def detect_discordant(args, params, filenames):
                 abs_bed_found=False
                 tmpl,tmpr=[],[]
                 id=0
-                for abs_bed_f in [args.abs_bed, args.abs_3t_bed]:
+                for abs_bed_f in [args.abs_bed]:
                     if os.path.exists(abs_bed_f) is True:
                         abs_bed_found=True
                         with open(abs_bed_f) as infile:
