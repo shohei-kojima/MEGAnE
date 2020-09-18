@@ -289,24 +289,25 @@ def evaluate_bp_depth(args, params, filenames):
         def generate_d_for_depth(filenames, slop_len):
             d={}
             for abs_bed_f in [args.abs_bed, args.abs_3t_bed]:
-                if os.path.exists(abs_bed_f) is True:
-                    with open(abs_bed_f) as infile:
-                        for line in infile:
-                            ls=line.split()
-                            if not ls[0] in d:
-                                d[ls[0]]={}
-                            start= int(ls[1]) - slop_len
-                            end  = int(ls[1]) + slop_len
-                            if start < 1:
-                                start=1
-                            for pos in range(start, end):
-                                d[ls[0]][pos]=0
-                            start= int(ls[2]) - slop_len
-                            end  = int(ls[2]) + slop_len
-                            if start < 0:
-                                start=0
-                            for pos in range(start, end):
-                                d[ls[0]][pos]=0
+                if not abs_bed_f is None:
+                    if os.path.exists(abs_bed_f) is True:
+                        with open(abs_bed_f) as infile:
+                            for line in infile:
+                                ls=line.split()
+                                if not ls[0] in d:
+                                    d[ls[0]]={}
+                                start= int(ls[1]) - slop_len
+                                end  = int(ls[1]) + slop_len
+                                if start < 1:
+                                    start=1
+                                for pos in range(start, end):
+                                    d[ls[0]][pos]=0
+                                start= int(ls[2]) - slop_len
+                                end  = int(ls[2]) + slop_len
+                                if start < 0:
+                                    start=0
+                                for pos in range(start, end):
+                                    d[ls[0]][pos]=0
             return d
         
         dep=generate_d_for_depth(filenames, params.abs_flank_len + 1)
