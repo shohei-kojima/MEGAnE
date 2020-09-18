@@ -110,10 +110,11 @@ def output_ins_bed_vcf(args, params, filenames, data):
             tmp.append('%d;%s;%s' % tuple(data.merged_res[id]))
             tmp.append(';'.join([ str(i) for i in data.cn_est_tsd_depth[id] ]))
             tmp.append(';'.join([ str(i) for i in data.cn_est_spanning[id] ]))
-            if not data.disc_thresholds is False:
-                tmp.append(';'.join([ str(i) for i in data.cn_est_disc[id] ]))
-            else:
-                tmp.append('NA')
+            if args.only_geno_precall is False:
+                if not data.disc_thresholds is False:
+                    tmp.append(';'.join([ str(i) for i in data.cn_est_disc[id] ]))
+                else:
+                    tmp.append('NA')
             tmp.append(id)
             out_bed.append('\t'.join(tmp) +'\n')
             if filt == 'PASS' and not data.merged_res[id][0] == 0:
