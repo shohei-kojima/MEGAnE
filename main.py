@@ -326,7 +326,10 @@ if do_abs is True:
         args.abs_bed=filenames.abs_dummmy
     else:
         args.abs_bed=filenames.abs_res
-    args.abs_3t_bed=filenames.transd_res
+    if os.path.exists(filenames.transd_res) is True:
+        args.abs_3t_bed=filenames.transd_res
+    else:
+        args.abs_3t_bed=None
 
 filenames.limited_b       =os.path.join(args.outdir, 'only_necessary.bam')
 filenames.limited_c       =os.path.join(args.outdir, 'only_necessary.cram')
@@ -372,7 +375,7 @@ def genotype_ins(args, params, filenames, data):
     data.tsd_thresholds=allele_count_ins.tsd_thresholds
     data.del_thresholds=allele_count_ins.del_thresholds
 
-    allele_count_ins.evaluate_spanning_read(args, params, filenames)
+    allele_count_ins.evaluate_spanning_read(args, params, filenames, data)
     data.cn_est_spanning=allele_count_ins.cn_est_spanning
     data.spanning_thresholds=allele_count_ins.spanning_thresholds
     

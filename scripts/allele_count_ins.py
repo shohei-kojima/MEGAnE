@@ -451,7 +451,7 @@ def evaluate_tsd_depth(args, params, filenames):
         exit(1)
 
 
-def evaluate_spanning_read(args, params, filenames):
+def evaluate_spanning_read(args, params, filenames, data):
     log.logger.debug('started')
     try:
         pybedtools.set_tempdir(args.pybedtools_tmp)
@@ -534,7 +534,16 @@ def evaluate_spanning_read(args, params, filenames):
             return match
         
         # load
-        insbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
+        if args.only_geno_precall is False:
+            insbed=BedTool(args.ins_bed).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
+        else:
+            tmp=[]
+            with open(args.ins_bed) as infile:
+                for line in infile:
+                    ls=line.split()
+                    if not data.cn_est_tsd_depth[ls[-1]] == 'outlier':
+                        tmp.append(line)
+            insbed=BedTool(''.join(tmp), from_string=True).slop(b=params.ins_slop_len, g=args.fai).sort().merge()
         if os.path.exists(filenames.limited_b +'.bai') is True:
             os.remove(filenames.limited_b +'.bai')
         elif os.path.exists(filenames.limited_c +'.crai') is True:
@@ -553,12 +562,19 @@ def evaluate_spanning_read(args, params, filenames):
             exit(1)
         # load breakpoints
         bps={}
+        ids=set()
         with open(args.ins_bed) as infile:
             for line in infile:
                 ls=line.strip().split('\t')
-                if not ls[0] in bps:
-                    bps[ls[0]]=[]
-                bps[ls[0]].append([int(ls[1]), int(ls[2]), ls[10]])
+                keep=True
+                if args.only_geno_precall is True:
+                    if data.cn_est_tsd_depth[ls[-1]] == 'outlier':
+                        keep=False
+                if keep is True:
+                    if not ls[0] in bps:
+                        bps[ls[0]]=[]
+                    bps[ls[0]].append([int(ls[1]), int(ls[2]), ls[10]])
+                    ids.add(ls[10])
         # load reads
         infile=pysam.AlignmentFile(filenames.tmp_bam, 'rb')
         span_judge_true={}
@@ -614,17 +630,20 @@ def evaluate_spanning_read(args, params, filenames):
         with open(args.ins_bed) as infile:
             for line in infile:
                 ls=line.strip().split('\t')
-                if ls[10] in span_judge_true:
-                    if spanning_outlier <= span_judge_true[ls[10]]:
-                        cn_est_spanning[ls[10]]=['outlier', span_judge_true[ls[10]]]
-                    elif spanning_high_threshold <= span_judge_true[ls[10]] < spanning_outlier:
-                        cn_est_spanning[ls[10]]=['mono_high', span_judge_true[ls[10]]]
-                    elif spanning_zero_threshold <= span_judge_true[ls[10]] < spanning_high_threshold:
-                        cn_est_spanning[ls[10]]=['mono_low', span_judge_true[ls[10]]]
+                if ls[10] in ids:
+                    if ls[10] in span_judge_true:
+                        if spanning_outlier <= span_judge_true[ls[10]]:
+                            cn_est_spanning[ls[10]]=['outlier', span_judge_true[ls[10]]]
+                        elif spanning_high_threshold <= span_judge_true[ls[10]] < spanning_outlier:
+                            cn_est_spanning[ls[10]]=['mono_high', span_judge_true[ls[10]]]
+                        elif spanning_zero_threshold <= span_judge_true[ls[10]] < spanning_high_threshold:
+                            cn_est_spanning[ls[10]]=['mono_low', span_judge_true[ls[10]]]
+                        else:
+                            cn_est_spanning[ls[10]]=['bi_low', span_judge_true[ls[10]]]
                     else:
-                        cn_est_spanning[ls[10]]=['bi_low', span_judge_true[ls[10]]]
+                        cn_est_spanning[ls[10]]=['bi_high', 0]
                 else:
-                    cn_est_spanning[ls[10]]=['bi_high', 0]
+                    cn_est_spanning[ls[10]]=['outlier', -1]
         pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
