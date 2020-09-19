@@ -86,6 +86,7 @@ def detect_discordant(args, params, filenames):
                 abs_bed_found=False
                 tmpl,tmpr=[],[]
                 id=0
+                aids=set()
                 for abs_bed_f in [args.abs_bed, args.abs_3t_bed]:
                     if not abs_bed_f is None:
                         if os.path.exists(abs_bed_f) is True:
@@ -94,8 +95,9 @@ def detect_discordant(args, params, filenames):
                                 log.logger.debug('%s loading.' % abs_bed_f)
                                 for line in infile:
                                     ls=line.split()
-                                    tmpl.append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[1], 'aID=%d' % id))
-                                    tmpr.append('%s\t%s\t%s\t%s\n' % (ls[0], ls[2], ls[2], 'aID=%d' % id))
+                                    tmpl.append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[1], 'laID=%d' % id))
+                                    tmpr.append('%s\t%s\t%s\t%s\n' % (ls[0], ls[2], ls[2], 'raID=%d' % id))
+                                    aids.add('aID=%d' % id)
                                     count_abs += 1
                                     id += 1
                 absbedl=BedTool(''.join(tmpl), from_string=True).slop(l=abs_slop_len, r=0, g=args.fai)
@@ -108,23 +110,31 @@ def detect_discordant(args, params, filenames):
                 for line in absbedr:
                     slopbed.append(str(line).strip())
             slopbed=BedTool('\n'.join(slopbed), from_string=True)
-            return slopbed,count_ins,count_abs
+            return slopbed,count_ins,count_abs,aids
         
-        slopbed,count_ins,count_abs=generate_slopbed(args, params, filenames, params.ins_slop_len_for_disc_detection, params.abs_slop_len_for_disc_detection)
+        slopbed,count_ins,count_abs,aids=generate_slopbed(args, params, filenames, params.ins_slop_len_for_disc_detection, params.abs_slop_len_for_disc_detection)
         log.logger.info('total ins=%d,abs=%d bed lines found.' % (count_ins, count_abs))
         
         intersect=slopbed.intersect(disc_bed, wa=True)
-        global disc_ids
-        disc_ids=set()
+        disc_ids_d={}
         for line in intersect:
             ls=str(line).split()
-            disc_ids.add(ls[3])
+            if not ls[3] in disc_ids_d:
+                disc_ids_d[ls[3]]=0
+            disc_ids_d[ls[3]] += 1
         count_ins,count_abs=0,0
-        for id in disc_ids:
-            if 'aID=' in id:
-                count_abs += 1
-            else:
-                count_ins += 1
+        global disc_ids
+        disc_ids=set()
+        for id in aids:
+            if 'l%s' % id in disc_ids_d and 'r%s' % id in disc_ids_d:
+                if disc_ids_d['l%s' % id] >= params.abs_disc_ids_threshold and disc_ids_d['r%s' % id] >= params.abs_disc_ids_threshold:
+                    disc_ids.add(id)
+                    count_abs += 1
+        for id in disc_ids_d:
+            if disc_ids_d[id] >= params.ins_disc_ids_threshold:
+                if not 'aID=' in id:
+                    disc_ids.add(id)
+                    count_ins += 1
         log.logger.info('total ins=%d,abs=%d bed lines with discordant read(s) found.' % (count_ins, count_abs))
         
         pybedtools.cleanup()

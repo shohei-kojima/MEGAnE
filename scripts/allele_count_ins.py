@@ -108,50 +108,50 @@ def limit(args, params, filenames, data):
             slopbed=BedTool(''.join(slopbed), from_string=True)
             return slopbed
         
-        if args.only_geno_precall is False:
-            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
-        else:
-            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, False)
-        if args.unsorted is False:
-            if args.b is not None:
-                if os.path.exists(args.b + '.bai') is False:
-                    pysam.index(args.b)
-                cmd='samtools view -@ %d %s -bh -M -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_b)
-            else:
-                if os.path.exists(args.c + '.crai') is False:
-                    pysam.index(args.c)
-                cmd='samtools view -@ %d %s -T %s -Ch -M -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_c)
-        else:
-            if args.b is not None:
-                if os.path.exists(args.b + '.bai') is False:
-                    pysam.index(args.b)
-                cmd='samtools view -@ %d %s -bh -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_tb)
-            else:
-                if os.path.exists(args.c + '.crai') is False:
-                    pysam.index(args.c)
-                cmd='samtools view -@ %d %s -T %s -Ch -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_tc)
-        log.logger.debug('samtools command = `'+ cmd +'`')
-        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-        if not out.returncode == 0:
-            log.logger.error('Error occurred during samtools running.')
-            exit(1)
-        if args.unsorted is True:
-            if args.b is not None:
-                cmd='samtools sort -@ %d %s -m %s -T %s -O BAM -o %s' % (args.p, filenames.limited_tb, params.bam_sort_maxmem, args.outdir, filenames.limited_b)
-            else:
-                cmd='samtools sort -@ %d %s -m %s -T %s --reference %s -O CRAM -o %s' % (args.p, filenames.limited_tc, params.bam_sort_maxmem, args.outdir, args.fa, filenames.limited_c)
-            log.logger.debug('samtools command = `'+ cmd +'`')
-            out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-            log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-            if not out.returncode == 0:
-                log.logger.error('Error occurred during samtools running.')
-                exit(1)
-            else:
-                if args.b is not None:
-                    os.remove(filenames.limited_tb)
-                else:
-                    os.remove(filenames.limited_tc)
+#        if args.only_geno_precall is False:
+#            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
+#        else:
+#            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, False)
+#        if args.unsorted is False:
+#            if args.b is not None:
+#                if os.path.exists(args.b + '.bai') is False:
+#                    pysam.index(args.b)
+#                cmd='samtools view -@ %d %s -bh -M -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_b)
+#            else:
+#                if os.path.exists(args.c + '.crai') is False:
+#                    pysam.index(args.c)
+#                cmd='samtools view -@ %d %s -T %s -Ch -M -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_c)
+#        else:
+#            if args.b is not None:
+#                if os.path.exists(args.b + '.bai') is False:
+#                    pysam.index(args.b)
+#                cmd='samtools view -@ %d %s -bh -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_tb)
+#            else:
+#                if os.path.exists(args.c + '.crai') is False:
+#                    pysam.index(args.c)
+#                cmd='samtools view -@ %d %s -T %s -Ch -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_tc)
+#        log.logger.debug('samtools command = `'+ cmd +'`')
+#        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+#        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+#        if not out.returncode == 0:
+#            log.logger.error('Error occurred during samtools running.')
+#            exit(1)
+#        if args.unsorted is True:
+#            if args.b is not None:
+#                cmd='samtools sort -@ %d %s -m %s -T %s -O BAM -o %s' % (args.p, filenames.limited_tb, params.bam_sort_maxmem, args.outdir, filenames.limited_b)
+#            else:
+#                cmd='samtools sort -@ %d %s -m %s -T %s --reference %s -O CRAM -o %s' % (args.p, filenames.limited_tc, params.bam_sort_maxmem, args.outdir, args.fa, filenames.limited_c)
+#            log.logger.debug('samtools command = `'+ cmd +'`')
+#            out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+#            log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+#            if not out.returncode == 0:
+#                log.logger.error('Error occurred during samtools running.')
+#                exit(1)
+#            else:
+#                if args.b is not None:
+#                    os.remove(filenames.limited_tb)
+#                else:
+#                    os.remove(filenames.limited_tc)
         
         # disc read search
         if args.only_geno_precall is True:
@@ -161,20 +161,20 @@ def limit(args, params, filenames, data):
             data.disc_ids=precall_search_discordant.disc_ids
         
         # convert to depth
-        if args.only_geno_precall is False:
-            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
-        else:
-            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, True)
-        if args.b is not None:
-            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, slopbed.fn, filenames.depth)
-        else:
-            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, slopbed.fn, filenames.depth)
-        log.logger.debug('samtools depth command = `'+ cmd +'`')
-        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-        if not out.returncode == 0:
-            log.logger.error('Error occurred during samtools depth running.')
-            exit(1)
+#        if args.only_geno_precall is False:
+#            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
+#        else:
+#            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, True)
+#        if args.b is not None:
+#            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, slopbed.fn, filenames.depth)
+#        else:
+#            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, slopbed.fn, filenames.depth)
+#        log.logger.debug('samtools depth command = `'+ cmd +'`')
+#        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+#        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+#        if not out.returncode == 0:
+#            log.logger.error('Error occurred during samtools depth running.')
+#            exit(1)
         pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
@@ -309,19 +309,32 @@ def evaluate_tsd_depth(args, params, filenames):
                         tsd_depth=[]
                         for pos in range(right_pos, left_pos):
                             tsd_depth.append(dep[ls[0]][pos])
-                        if len(tsd_depth) >= params.min_tsd_len_to_remove_1nt:
-                            tsd_depth=remove_outlier_nt(tsd_depth)
-                        else:
+                        if args.only_geno_precall is True:
+                            if (left_pos - right_pos) > params.tsd_only_highest_len_precall:
+                                tsd_depth=sorted(tsd_depth)[-params.tsd_only_highest_len_precall:]
                             tsd_depth= sum(tsd_depth) / len(tsd_depth)
+                        else:
+                            if len(tsd_depth) >= params.min_tsd_len_to_remove_1nt:
+                                tsd_depth=remove_1nt(tsd_depth)
+                            else:
+                                tsd_depth= sum(tsd_depth) / len(tsd_depth)
                         # left flank
                         left_depth=[]
-                        for pos in range(right_pos - tsd_flank_len, right_pos):
-                            left_depth.append(dep[ls[0]][pos])
+                        if args.only_geno_precall is True:
+                            for pos in range(right_pos - tsd_flank_len, right_pos - params.ins_remove_adj):
+                                left_depth.append(dep[ls[0]][pos])
+                        else:
+                            for pos in range(right_pos - tsd_flank_len, right_pos):
+                                left_depth.append(dep[ls[0]][pos])
                         left_depth=remove_outlier_nt(left_depth)
                         # right flank
                         right_depth=[]
-                        for pos in range(left_pos, left_pos + tsd_flank_len):
-                            right_depth.append(dep[ls[0]][pos])
+                        if args.only_geno_precall is True:
+                            for pos in range(left_pos + params.ins_remove_adj, left_pos + tsd_flank_len):
+                                right_depth.append(dep[ls[0]][pos])
+                        else:
+                            for pos in range(left_pos, left_pos + tsd_flank_len):
+                                right_depth.append(dep[ls[0]][pos])
                         right_depth=remove_outlier_nt(right_depth)
                         structure='TSD'
                     else:
@@ -331,7 +344,7 @@ def evaluate_tsd_depth(args, params, filenames):
                             for pos in range(left_pos, right_pos):
                                 tsd_depth.append(dep[ls[0]][pos])
                             if len(tsd_depth) >= params.min_tsd_len_to_remove_1nt:
-                                tsd_depth=remove_outlier_nt(tsd_depth)
+                                tsd_depth=remove_1nt(tsd_depth)
                             else:
                                 tsd_depth= sum(tsd_depth) / len(tsd_depth)
                             structure='Del'
