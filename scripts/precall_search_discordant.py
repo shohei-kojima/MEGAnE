@@ -130,8 +130,9 @@ def detect_discordant(args, params, filenames):
                 if disc_ids_d['l%s' % id] >= params.abs_disc_ids_threshold and disc_ids_d['r%s' % id] >= params.abs_disc_ids_threshold:
                     disc_ids.add(id)
                     count_abs += 1
+        ins_disc_ids_threshold= args.cov * params.ins_disc_ids_threshold_coeff
         for id in disc_ids_d:
-            if disc_ids_d[id] >= params.ins_disc_ids_threshold:
+            if disc_ids_d[id] >= ins_disc_ids_threshold:
                 if not 'aID=' in id:
                     disc_ids.add(id)
                     count_ins += 1
