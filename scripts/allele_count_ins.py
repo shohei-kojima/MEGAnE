@@ -108,50 +108,50 @@ def limit(args, params, filenames, data):
             slopbed=BedTool(''.join(slopbed), from_string=True)
             return slopbed
         
-        if args.only_geno_precall is False:
-            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
-        else:
-            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, False)
-        if args.unsorted is False:
-            if args.b is not None:
-                if os.path.exists(args.b + '.bai') is False:
-                    pysam.index(args.b)
-                cmd='samtools view -@ %d %s -bh -M -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_b)
-            else:
-                if os.path.exists(args.c + '.crai') is False:
-                    pysam.index(args.c)
-                cmd='samtools view -@ %d %s -T %s -Ch -M -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_c)
-        else:
-            if args.b is not None:
-                if os.path.exists(args.b + '.bai') is False:
-                    pysam.index(args.b)
-                cmd='samtools view -@ %d %s -bh -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_tb)
-            else:
-                if os.path.exists(args.c + '.crai') is False:
-                    pysam.index(args.c)
-                cmd='samtools view -@ %d %s -T %s -Ch -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_tc)
-        log.logger.debug('samtools command = `'+ cmd +'`')
-        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-        if not out.returncode == 0:
-            log.logger.error('Error occurred during samtools running.')
-            exit(1)
-        if args.unsorted is True:
-            if args.b is not None:
-                cmd='samtools sort -@ %d %s -m %s -T %s -O BAM -o %s' % (args.p, filenames.limited_tb, params.bam_sort_maxmem, args.outdir, filenames.limited_b)
-            else:
-                cmd='samtools sort -@ %d %s -m %s -T %s --reference %s -O CRAM -o %s' % (args.p, filenames.limited_tc, params.bam_sort_maxmem, args.outdir, args.fa, filenames.limited_c)
-            log.logger.debug('samtools command = `'+ cmd +'`')
-            out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-            log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-            if not out.returncode == 0:
-                log.logger.error('Error occurred during samtools running.')
-                exit(1)
-            else:
-                if args.b is not None:
-                    os.remove(filenames.limited_tb)
-                else:
-                    os.remove(filenames.limited_tc)
+#        if args.only_geno_precall is False:
+#            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
+#        else:
+#            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, False)
+#        if args.unsorted is False:
+#            if args.b is not None:
+#                if os.path.exists(args.b + '.bai') is False:
+#                    pysam.index(args.b)
+#                cmd='samtools view -@ %d %s -bh -M -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_b)
+#            else:
+#                if os.path.exists(args.c + '.crai') is False:
+#                    pysam.index(args.c)
+#                cmd='samtools view -@ %d %s -T %s -Ch -M -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_c)
+#        else:
+#            if args.b is not None:
+#                if os.path.exists(args.b + '.bai') is False:
+#                    pysam.index(args.b)
+#                cmd='samtools view -@ %d %s -bh -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_tb)
+#            else:
+#                if os.path.exists(args.c + '.crai') is False:
+#                    pysam.index(args.c)
+#                cmd='samtools view -@ %d %s -T %s -Ch -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_tc)
+#        log.logger.debug('samtools command = `'+ cmd +'`')
+#        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+#        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+#        if not out.returncode == 0:
+#            log.logger.error('Error occurred during samtools running.')
+#            exit(1)
+#        if args.unsorted is True:
+#            if args.b is not None:
+#                cmd='samtools sort -@ %d %s -m %s -T %s -O BAM -o %s' % (args.p, filenames.limited_tb, params.bam_sort_maxmem, args.outdir, filenames.limited_b)
+#            else:
+#                cmd='samtools sort -@ %d %s -m %s -T %s --reference %s -O CRAM -o %s' % (args.p, filenames.limited_tc, params.bam_sort_maxmem, args.outdir, args.fa, filenames.limited_c)
+#            log.logger.debug('samtools command = `'+ cmd +'`')
+#            out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+#            log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+#            if not out.returncode == 0:
+#                log.logger.error('Error occurred during samtools running.')
+#                exit(1)
+#            else:
+#                if args.b is not None:
+#                    os.remove(filenames.limited_tb)
+#                else:
+#                    os.remove(filenames.limited_tc)
         
         # disc read search
         if args.only_geno_precall is True:

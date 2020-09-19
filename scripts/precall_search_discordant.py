@@ -109,9 +109,9 @@ def detect_discordant(args, params, filenames):
                 for line in absbedr:
                     slopbed.append(str(line).strip())
             slopbed=BedTool('\n'.join(slopbed), from_string=True)
-            return slopbed,count_ins,count_abs,aids
+            return slopbed,count_ins,count_abs,iids,aids
         
-        slopbed,count_ins,count_abs,aids=generate_slopbed(args, params, filenames, params.ins_slop_len_for_disc_detection, params.ins_discard_flank_len, params.abs_slop_len_for_disc_detection)
+        slopbed,count_ins,count_abs,iids,aids=generate_slopbed(args, params, filenames, params.ins_slop_len_for_disc_detection, params.ins_discard_flank_len, params.abs_slop_len_for_disc_detection)
         log.logger.info('total ins=%d,abs=%d bed lines found.' % (count_ins, count_abs))
         
         intersect=slopbed.intersect(disc_bed, wa=True)
