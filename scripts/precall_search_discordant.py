@@ -116,10 +116,12 @@ def detect_discordant(args, params, filenames):
         
         intersect=slopbed.intersect(disc_bed, wa=True)
         disc_ids_d={}
-        for id in aids:
-            disc_ids_d[id]=0
         for id in iids:
-            disc_ids_d[id]=0
+            disc_ids_d['l%s' % id]=0
+            disc_ids_d['r%s' % id]=0
+        for id in aids:
+            disc_ids_d['l%s' % id]=0
+            disc_ids_d['r%s' % id]=0
         for line in intersect:
             ls=str(line).split()
             disc_ids_d[ls[3]] += 1
