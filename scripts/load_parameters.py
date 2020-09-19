@@ -201,6 +201,7 @@ class load_geno:
             self.ins_slop_len=300
             self.abs_slop_len=300
             self.ins_slop_len_for_disc_detection=10
+            self.ins_discard_flank_len=5
             self.abs_slop_len_for_disc_detection=10
             self.min_tsd_len_to_remove_1nt=4
             self.tsd_only_highest_len_precall=10
