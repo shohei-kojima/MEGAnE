@@ -161,20 +161,20 @@ def limit(args, params, filenames, data):
             data.disc_ids=precall_search_discordant.disc_ids
         
         # convert to depth
-        if args.only_geno_precall is False:
-            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
-        else:
-            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, True)
-        if args.b is not None:
-            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, slopbed.fn, filenames.depth)
-        else:
-            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, slopbed.fn, filenames.depth)
-        log.logger.debug('samtools depth command = `'+ cmd +'`')
-        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
-        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
-        if not out.returncode == 0:
-            log.logger.error('Error occurred during samtools depth running.')
-            exit(1)
+#        if args.only_geno_precall is False:
+#            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
+#        else:
+#            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, True)
+#        if args.b is not None:
+#            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, slopbed.fn, filenames.depth)
+#        else:
+#            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, slopbed.fn, filenames.depth)
+#        log.logger.debug('samtools depth command = `'+ cmd +'`')
+#        out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+#        log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+#        if not out.returncode == 0:
+#            log.logger.error('Error occurred during samtools depth running.')
+#            exit(1)
         pybedtools.cleanup()
     except:
         log.logger.error('\n'+ traceback.format_exc())
