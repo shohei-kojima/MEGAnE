@@ -196,7 +196,7 @@ class load_geno:
         log.logger.debug('started')
         try:
             # default; genotyping
-            self.ins_disc_ids_threshold_coeff=0.05
+            self.ins_disc_ids_threshold_coeff=0.1
             self.abs_disc_ids_threshold=1
             self.ins_slop_len=300
             self.abs_slop_len=300
