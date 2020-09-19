@@ -59,29 +59,28 @@ def detect_discordant(args, params, filenames):
                         disc_bed.append('%s\t%d\t%d\n' % (ls[2], start, end))
         disc_bed=BedTool(''.join(disc_bed), from_string=True)
         
-        def generate_slopbed(args, params, filenames, ins_slop_len, abs_slop_len):
+        def generate_slopbed(args, params, filenames, ins_slop_len, ins_discard_flank_len, abs_slop_len):
             do_ins=False if args.only_abs is True else True
             do_abs=False if args.only_ins is True else True
             slopbed=[]
             count_ins,count_abs=0,0
             if do_ins is True:
                 ins_bed_found=False
-                tmp=[]
+                iids=set()
                 for bp_final in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u, filenames.bp_final_d]:
                     if os.path.exists(bp_final) is True:
                         ins_bed_found=True
                         with open(bp_final) as infile:
                             log.logger.debug('%s loading.' % bp_final)
                             for line in infile:
-                                tmp.append(line)
+                                ls=line.split()
+                                slopbed.append('%s\t%s\t%s\t%s\n' % (ls[0], int(ls[1]) - ins_slop_len, int(ls[1]) - ins_discard_flank_len, 'l%s' % ls[10]))
+                                slopbed.append('%s\t%s\t%s\t%s\n' % (ls[0], int(ls[2]) + ins_discard_flank_len, int(ls[2]) + ins_slop_len, 'r%s' % ls[10]))
+                                iids.add(ls[10])
+                                count_ins += 1
                 if ins_bed_found is False:
                     log.logger.error('Available ins_bed not found.')
                     exit(1)
-                insbed=BedTool(''.join(tmp), from_string=True).slop(b=ins_slop_len, g=args.fai)
-                for line in insbed:
-                    ls=str(line).strip().split('\t')
-                    slopbed.append('\t'.join([ls[0], ls[1], ls[2], ls[10]]))
-                    count_ins += 1
             if do_abs is True:
                 abs_bed_found=False
                 tmpl,tmpr=[],[]
@@ -117,25 +116,37 @@ def detect_discordant(args, params, filenames):
         
         intersect=slopbed.intersect(disc_bed, wa=True)
         disc_ids_d={}
+        for id in aids:
+            disc_ids_d[id]=0
+        for id in iids:
+            disc_ids_d[id]=0
         for line in intersect:
             ls=str(line).split()
-            if not ls[3] in disc_ids_d:
-                disc_ids_d[ls[3]]=0
             disc_ids_d[ls[3]] += 1
         count_ins,count_abs=0,0
         global disc_ids
-        disc_ids=set()
+        disc_ids={}
         for id in aids:
-            if 'l%s' % id in disc_ids_d and 'r%s' % id in disc_ids_d:
-                if disc_ids_d['l%s' % id] >= params.abs_disc_ids_threshold and disc_ids_d['r%s' % id] >= params.abs_disc_ids_threshold:
-                    disc_ids.add(id)
-                    count_abs += 1
+            if disc_ids_d['l%s' % id] >= params.abs_disc_ids_threshold and disc_ids_d['r%s' % id] >= params.abs_disc_ids_threshold:
+                disc_ids[id]='both'
+                count_abs += 1
+            elif disc_ids_d['l%s' % id] >= params.abs_disc_ids_threshold:
+                disc_ids[id]='half'
+                count_abs += 1
+            elif disc_ids_d['r%s' % id] >= params.abs_disc_ids_threshold:
+                disc_ids[id]='half'
+                count_abs += 1
         ins_disc_ids_threshold= args.cov * params.ins_disc_ids_threshold_coeff
-        for id in disc_ids_d:
-            if disc_ids_d[id] >= ins_disc_ids_threshold:
-                if not 'aID=' in id:
-                    disc_ids.add(id)
-                    count_ins += 1
+        for id in iids:
+            if disc_ids_d['l%s' % id] >= ins_disc_ids_threshold and disc_ids_d['r%s' % id] >= ins_disc_ids_threshold:
+                disc_ids[id]='both'
+                count_ins += 1
+            elif disc_ids_d['l%s' % id] >= ins_disc_ids_threshold:
+                disc_ids[id]='half'
+                count_ins += 1
+            elif disc_ids_d['r%s' % id] >= ins_disc_ids_threshold:
+                disc_ids[id]='half'
+                count_ins += 1
         log.logger.info('total ins=%d,abs=%d bed lines with discordant read(s) found.' % (count_ins, count_abs))
         
         pybedtools.cleanup()

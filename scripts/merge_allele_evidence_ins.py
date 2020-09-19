@@ -922,7 +922,10 @@ def merge_wo_discordant(args, params, filenames, data):
                 tmp.append('S')
             if data.cn_est_tsd_depth[id][0] == 'outlier':
                 tmp.append('D')
-            if not id in data.disc_ids:
+            if id in data.disc_ids:
+                if data.disc_ids[id] == 'half':
+                    tmp.append('H')
+            else:
                 tmp.append('R')
             if len(tmp) == 0:
                 tmp='PASS'
