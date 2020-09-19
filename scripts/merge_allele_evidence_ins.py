@@ -693,18 +693,20 @@ def plot_merged_wo_disc(args, params, filenames, data):
         x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
         for id in data.cn_est_tsd_depth:
             if data.cn_est_tsd_depth[id][2] == 'TSD':
-                x.append(data.cn_est_tsd_depth[id][1])
-                y.append(data.cn_est_spanning[id][1])
                 if mei_filter[id] is True:
                     if data.merged_res[id][0] == 1:
                         x_mono.append(data.cn_est_tsd_depth[id][1])
                         y_mono.append(data.cn_est_spanning[id][1])
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_spanning[id][1])
                     elif data.merged_res[id][0] == 2:
                         x_bi.append(data.cn_est_tsd_depth[id][1])
                         y_bi.append(data.cn_est_spanning[id][1])
-                else:
-                    x_failed.append(data.cn_est_tsd_depth[id][1])
-                    y_failed.append(data.cn_est_spanning[id][1])
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_spanning[id][1])
+                    else:
+                        x_failed.append(data.cn_est_tsd_depth[id][1])
+                        y_failed.append(data.cn_est_spanning[id][1])
         
         # 1
         ax=plt.subplot(gs[0,0])  # tsd, x=tsd
@@ -741,18 +743,20 @@ def plot_merged_wo_disc(args, params, filenames, data):
         x,y, x_mono,y_mono, x_bi,y_bi, x_failed,y_failed=[],[], [],[], [],[], [],[]
         for id in data.cn_est_tsd_depth:
             if data.cn_est_tsd_depth[id][2] == 'Del':
-                x.append(data.cn_est_tsd_depth[id][1])
-                y.append(data.cn_est_spanning[id][1])
                 if mei_filter[id] is True:
                     if data.merged_res[id][0] == 1:
                         x_mono.append(data.cn_est_tsd_depth[id][1])
                         y_mono.append(data.cn_est_spanning[id][1])
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_spanning[id][1])
                     elif data.merged_res[id][0] == 2:
                         x_bi.append(data.cn_est_tsd_depth[id][1])
                         y_bi.append(data.cn_est_spanning[id][1])
-                else:
-                    x_failed.append(data.cn_est_tsd_depth[id][1])
-                    y_failed.append(data.cn_est_spanning[id][1])
+                        x.append(data.cn_est_tsd_depth[id][1])
+                        y.append(data.cn_est_spanning[id][1])
+                    else:
+                        x_failed.append(data.cn_est_tsd_depth[id][1])
+                        y_failed.append(data.cn_est_spanning[id][1])
         
         ax=plt.subplot(gs[0,3])  # del, x=tsd
         sns_x=[ i for i in x if i < data.del_thresholds[3] ]

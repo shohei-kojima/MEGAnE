@@ -202,6 +202,8 @@ class load_geno:
             self.abs_slop_len_for_disc_detection=10
             self.min_tsd_len_to_remove_1nt=4
             self.tsd_flank_len=4
+            self.tsd_flank_len_for_precall=4
+            self.ins_remove_multi_nt=1
             self.del_mono_high_threshold_coeff=0.666
             self.del_bi_high_threshold_coeff=1.333
             self.tsd_outlier_low_coeff=0.25
@@ -231,6 +233,8 @@ class load_geno:
             self.spanning_outlier_coeff_abs=1.5
             self.spanning_outlier_coeff_for_precall_abs=0.5
             self.abs_flank_len=5
+            self.abs_flank_len_for_precall=15
+            self.abs_remove_multi_nt=3
             self.mono_peak_notfound=0.7
             self.abs_depth_outlier=0.8
             self.abs_depth_outlier_precall=0.75

@@ -285,6 +285,11 @@ def evaluate_spanning_read(args, params, filenames):
 def evaluate_bp_depth(args, params, filenames):
     log.logger.debug('started')
     try:
+        if args.only_geno_precall is True:
+            abs_flank_len=params.abs_flank_len_for_precall
+        else:
+            abs_flank_len=params.abs_flank_len
+        
         # load depth
         def generate_d_for_depth(filenames, slop_len):
             d={}
@@ -310,7 +315,7 @@ def evaluate_bp_depth(args, params, filenames):
                                     d[ls[0]][pos]=0
             return d
         
-        dep=generate_d_for_depth(filenames, params.abs_flank_len + 1)
+        dep=generate_d_for_depth(filenames, abs_flank_len + 1)
         with open(filenames.depth) as infile:
             for line in infile:
                 ls=line.split()
@@ -336,6 +341,30 @@ def evaluate_bp_depth(args, params, filenames):
             corrected_dep= sum(one_nt_removed) / len(one_nt_removed)
             return corrected_dep
         
+        def remove_multi_nt(lis):
+            ave= sum(lis) / len(lis)
+            diff_to_ave=[]
+            for dep in lis:
+                diff_to_ave.append(abs(ave - dep))
+            diff_to_ave=sorted(diff_to_ave)
+            max_diffs=set(diff_to_ave[-params.abs_remove_multi_nt:])
+            three_nt_removed=[]
+            removed=0
+            for dep,diff in zip(lis, diff_to_ave):
+                if removed < params.abs_remove_multi_nt and diff in max_diffs:
+                    removed += 1
+                else:
+                    three_nt_removed.append(dep)
+            corrected_dep= sum(three_nt_removed) / len(three_nt_removed)
+            return corrected_dep
+        
+        if args.only_geno_precall is True:
+            def remove_outlier_nt(lis):
+                return remove_multi_nt(lis)
+        else:
+            def remove_outlier_nt(lis):
+                return remove_1nt(lis)
+        
         # load fai
         fai={}
         with open(args.fai) as infile:
@@ -357,22 +386,22 @@ def evaluate_bp_depth(args, params, filenames):
                 if ls[0] in dep and left_pos >= params.tsd_flank_len and (right_pos + params.tsd_flank_len) <= fai[ls[0]]:
                     # left
                     left_flank=[]
-                    for pos in range(left_pos - params.abs_flank_len, left_pos):
+                    for pos in range(left_pos - abs_flank_len, left_pos):
                         left_flank.append(dep[ls[0]][pos])
-                    left_flank=remove_1nt(left_flank)
+                    left_flank=remove_outlier_nt(left_flank)
                     left_del=[]
-                    for pos in range(left_pos, left_pos + params.abs_flank_len):
+                    for pos in range(left_pos, left_pos + abs_flank_len):
                         left_del.append(dep[ls[0]][pos])
-                    left_del=remove_1nt(left_del)
+                    left_del=remove_outlier_nt(left_del)
                     # right
                     right_flank=[]
-                    for pos in range(right_pos, right_pos + params.abs_flank_len):
+                    for pos in range(right_pos, right_pos + abs_flank_len):
                         right_flank.append(dep[ls[0]][pos])
-                    right_flank=remove_1nt(right_flank)
+                    right_flank=remove_outlier_nt(right_flank)
                     right_del=[]
-                    for pos in range(right_pos - params.abs_flank_len, right_pos):
+                    for pos in range(right_pos - abs_flank_len, right_pos):
                         right_del.append(dep[ls[0]][pos])
-                    right_del=remove_1nt(right_del)
+                    right_del=remove_outlier_nt(right_del)
                     # judge
                     status='ok'
                     if left_flank > 0 and right_flank > 0:
@@ -418,22 +447,22 @@ def evaluate_bp_depth(args, params, filenames):
                         right_pos=int(ls[2])
                         # left
                         left_flank=[]
-                        for pos in range(left_pos - params.abs_flank_len, left_pos):
+                        for pos in range(left_pos - abs_flank_len, left_pos):
                             left_flank.append(dep[ls[0]][pos])
-                        left_flank=remove_1nt(left_flank)
+                        left_flank=remove_outlier_nt(left_flank)
                         left_del=[]
-                        for pos in range(left_pos, left_pos + params.abs_flank_len):
+                        for pos in range(left_pos, left_pos + abs_flank_len):
                             left_del.append(dep[ls[0]][pos])
-                        left_del=remove_1nt(left_del)
+                        left_del=remove_outlier_nt(left_del)
                         # right
                         right_flank=[]
-                        for pos in range(right_pos, right_pos + params.abs_flank_len):
+                        for pos in range(right_pos, right_pos + abs_flank_len):
                             right_flank.append(dep[ls[0]][pos])
-                        right_flank=remove_1nt(right_flank)
+                        right_flank=remove_outlier_nt(right_flank)
                         right_del=[]
-                        for pos in range(right_pos - params.abs_flank_len, right_pos):
+                        for pos in range(right_pos - abs_flank_len, right_pos):
                             right_del.append(dep[ls[0]][pos])
-                        right_del=remove_1nt(right_del)
+                        right_del=remove_outlier_nt(right_del)
                         # judge
                         status='ok'
                         if left_flank > 0 and right_flank > 0:

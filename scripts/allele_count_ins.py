@@ -32,12 +32,15 @@ cigar_read_retain={'M', 'I', '=', 'X'}
 nums={'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 
 
-def limit(args, params, filenames):
+def limit(args, params, filenames, data):
     log.logger.debug('started')
     try:
         pybedtools.set_tempdir(args.pybedtools_tmp)
-        
-        def generate_slopbed(args, params, filenames, ins_slop_len, abs_slop_len):
+        tsd_flank_len=params.tsd_flank_len
+        if args.only_geno_precall is True:
+            tsd_flank_len=params.tsd_flank_len_for_precall
+
+        def generate_slopbed(args, params, filenames, data, ins_slop_len, abs_slop_len, select):
             do_ins=False if args.only_abs is True else True
             do_abs=False if args.only_ins is True else True
             slopbed=[]
@@ -49,8 +52,14 @@ def limit(args, params, filenames):
                         ins_bed_found=True
                         with open(bp_final) as infile:
                             log.logger.debug('%s loading.' % bp_final)
-                            for line in infile:
-                                tmp.append(line)
+                            if select is False:
+                                for line in infile:
+                                    tmp.append(line)
+                            else:
+                                for line in infile:
+                                    ls=line.split()
+                                    if ls[-1] in data.disc_ids:
+                                        tmp.append(line)
                 if ins_bed_found is False:
                     log.logger.error('Available ins_bed not found.')
                     exit(1)
@@ -61,13 +70,21 @@ def limit(args, params, filenames):
             if do_abs is True:
                 abs_bed_found=False
                 tmp=[]
+                id=0
                 for abs_bed_f in [args.abs_bed, args.abs_3t_bed]:
-                    if os.path.exists(abs_bed_f) is True:
-                        abs_bed_found=True
-                        with open(abs_bed_f) as infile:
-                            log.logger.debug('%s loading.' % abs_bed_f)
-                            for line in infile:
-                                tmp.append(line)
+                    if not abs_bed_f is None:
+                        if os.path.exists(abs_bed_f) is True:
+                            abs_bed_found=True
+                            with open(abs_bed_f) as infile:
+                                log.logger.debug('%s loading.' % abs_bed_f)
+                                if select is False:
+                                    for line in infile:
+                                        tmp.append(line)
+                                else:
+                                    for line in infile:
+                                        if 'aID=%d' % id in data.disc_ids:
+                                            tmp.append(line)
+                                        id += 1
                 absbed=BedTool(''.join(tmp), from_string=True).slop(b=abs_slop_len, g=args.fai)
                 if abs_bed_found is False:
                     log.logger.error('Available abs_bed not found.')
@@ -91,7 +108,10 @@ def limit(args, params, filenames):
             slopbed=BedTool(''.join(slopbed), from_string=True)
             return slopbed
         
-        slopbed=generate_slopbed(args, params, filenames, params.ins_slop_len, params.abs_slop_len)
+        if args.only_geno_precall is False:
+            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
+        else:
+            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, False)
         if args.unsorted is False:
             if args.b is not None:
                 if os.path.exists(args.b + '.bai') is False:
@@ -131,10 +151,20 @@ def limit(args, params, filenames):
                 if args.b is not None:
                     os.remove(filenames.limited_tb)
                 else:
-                    os.remove(filenames.limited_tc)            
+                    os.remove(filenames.limited_tc)
+        
+        # disc read search
+        if args.only_geno_precall is True:
+            import precall_search_discordant
+            log.logger.info('Discordant read search started; only for precall inputs.')
+            precall_search_discordant.detect_discordant(args, params, filenames)
+            data.disc_ids=precall_search_discordant.disc_ids
         
         # convert to depth
-        slopbed=generate_slopbed(args, params, filenames, params.tsd_flank_len + 1, params.abs_flank_len + 1)
+        if args.only_geno_precall is False:
+            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
+        else:
+            slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, True)
         if args.b is not None:
             cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, slopbed.fn, filenames.depth)
         else:
@@ -155,6 +185,10 @@ def limit(args, params, filenames):
 def evaluate_tsd_depth(args, params, filenames):
     log.logger.debug('started')
     try:
+        tsd_flank_len=params.tsd_flank_len
+        if args.only_geno_precall is True:
+            tsd_flank_len=params.tsd_flank_len_for_precall
+        
         # load depth
         def generate_d_for_depth(filenames, slop_len):
             d={}
@@ -173,7 +207,7 @@ def evaluate_tsd_depth(args, params, filenames):
                                 d[ls[0]][pos]=0
             return d
         
-        dep=generate_d_for_depth(filenames, params.tsd_flank_len + 1)
+        dep=generate_d_for_depth(filenames, tsd_flank_len + 1)
         with open(filenames.depth) as infile:
             for line in infile:
                 ls=line.split()
@@ -198,7 +232,31 @@ def evaluate_tsd_depth(args, params, filenames):
                     one_nt_removed.append(dep)
             corrected_dep= sum(one_nt_removed) / len(one_nt_removed)
             return corrected_dep
-            
+        
+        def remove_multi_nt(lis):
+            ave= sum(lis) / len(lis)
+            diff_to_ave=[]
+            for dep in lis:
+                diff_to_ave.append(abs(ave - dep))
+            diff_to_ave=sorted(diff_to_ave)
+            max_diffs=set(diff_to_ave[-params.ins_remove_multi_nt:])
+            three_nt_removed=[]
+            removed=0
+            for dep,diff in zip(lis, diff_to_ave):
+                if removed < params.ins_remove_multi_nt and diff in max_diffs:
+                    removed += 1
+                else:
+                    three_nt_removed.append(dep)
+            corrected_dep= sum(three_nt_removed) / len(three_nt_removed)
+            return corrected_dep
+        
+        if args.only_geno_precall is True:
+            def remove_outlier_nt(lis):
+                return remove_multi_nt(lis)
+        else:
+            def remove_outlier_nt(lis):
+                return remove_1nt(lis)
+        
         ############### from here; for plot_tsd_dep in misc.py; not related to the main analysis
 #        left_tsds,middles,right_tsds=[],[],[]
 #        with open(args.ins_bed) as infile:
@@ -245,26 +303,26 @@ def evaluate_tsd_depth(args, params, filenames):
                 right_pos=int(ls[5].split(',')[0].split('=')[1])
                 min_pos=min(left_pos, right_pos)
                 max_pos=max(left_pos, right_pos)
-                if ls[0] in dep and min_pos >= params.tsd_flank_len and (max_pos + params.tsd_flank_len) <= fai[ls[0]]:
+                if ls[0] in dep and min_pos >= tsd_flank_len and (max_pos + tsd_flank_len) <= fai[ls[0]]:
                     if right_pos < left_pos:
                         # tsd
                         tsd_depth=[]
                         for pos in range(right_pos, left_pos):
                             tsd_depth.append(dep[ls[0]][pos])
                         if len(tsd_depth) >= params.min_tsd_len_to_remove_1nt:
-                            tsd_depth=remove_1nt(tsd_depth)
+                            tsd_depth=remove_outlier_nt(tsd_depth)
                         else:
                             tsd_depth= sum(tsd_depth) / len(tsd_depth)
                         # left flank
                         left_depth=[]
-                        for pos in range(right_pos - params.tsd_flank_len, right_pos):
+                        for pos in range(right_pos - tsd_flank_len, right_pos):
                             left_depth.append(dep[ls[0]][pos])
-                        left_depth=remove_1nt(left_depth)
+                        left_depth=remove_outlier_nt(left_depth)
                         # right flank
                         right_depth=[]
-                        for pos in range(left_pos, left_pos + params.tsd_flank_len):
+                        for pos in range(left_pos, left_pos + tsd_flank_len):
                             right_depth.append(dep[ls[0]][pos])
-                        right_depth=remove_1nt(right_depth)
+                        right_depth=remove_outlier_nt(right_depth)
                         structure='TSD'
                     else:
                         if left_pos < right_pos:
@@ -273,7 +331,7 @@ def evaluate_tsd_depth(args, params, filenames):
                             for pos in range(left_pos, right_pos):
                                 tsd_depth.append(dep[ls[0]][pos])
                             if len(tsd_depth) >= params.min_tsd_len_to_remove_1nt:
-                                tsd_depth=remove_1nt(tsd_depth)
+                                tsd_depth=remove_outlier_nt(tsd_depth)
                             else:
                                 tsd_depth= sum(tsd_depth) / len(tsd_depth)
                             structure='Del'
@@ -285,14 +343,14 @@ def evaluate_tsd_depth(args, params, filenames):
                             structure='no_TSD_no_Del'
                         # left flank
                         left_depth=[]
-                        for pos in range(left_pos - params.tsd_flank_len, left_pos):
+                        for pos in range(left_pos - tsd_flank_len, left_pos):
                             left_depth.append(dep[ls[0]][pos])
-                        left_depth=remove_1nt(left_depth)
+                        left_depth=remove_outlier_nt(left_depth)
                         # right flank
                         right_depth=[]
-                        for pos in range(right_pos, right_pos + params.tsd_flank_len):
+                        for pos in range(right_pos, right_pos + tsd_flank_len):
                             right_depth.append(dep[ls[0]][pos])
-                        right_depth=remove_1nt(right_depth)
+                        right_depth=remove_outlier_nt(right_depth)
                 else:
                     left_depth,right_depth=0,0
                     left_num=int(ls[4].split(',')[1].split('=')[1])

@@ -349,12 +349,8 @@ if do_abs is True:
 import output_genotyped_vcf
 import allele_count_ins
 log.logger.info('Limit BAM/CRAM started.')
-#allele_count_ins.limit(args, params, filenames)
 data=utils.empclass()
-if args.only_geno_precall is True:
-    import precall_search_discordant
-    precall_search_discordant.detect_discordant(args, params, filenames)
-    data.disc_ids=precall_search_discordant.disc_ids
+allele_count_ins.limit(args, params, filenames, data)
 
 
 # 10. genotype insertions
@@ -419,9 +415,12 @@ for f in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, file
 if do_abs is True:
     import allele_count_abs
     log.logger.info('Evidence search started, absent MEs.')
-    data=utils.empclass()
     if args.only_geno_precall is True:
-        data.disc_ids=precall_search_discordant.disc_ids
+        tmp_disc_ids=data.disc_ids
+        data=utils.empclass()
+        data.disc_ids=tmp_disc_ids
+    else:
+        data=utils.empclass()
     
     allele_count_abs.evaluate_spanning_read(args, params, filenames)
     data.cn_est_spanning=allele_count_abs.cn_est_spanning
