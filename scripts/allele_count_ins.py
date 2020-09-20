@@ -435,6 +435,7 @@ def evaluate_tsd_depth(args, params, filenames):
             tsd_outlier_low_threshold= 1 + (highest[0] * params.tsd_outlier_low_coeff)
         if args.only_geno_precall is True:
             tsd_outlier_low_threshold=params.tsd_outlier_low_for_precall
+            tsd_threshold= tsd_threshold + params.tsd_threshold_correction
         log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,tsd_threshold=%f,tsd_mono_high_conf_threshold=%f,tsd_bi_high_conf_threshold=%f' % (peaks, bottoms, tsd_threshold, tsd_mono_high_conf_threshold, tsd_bi_high_conf_threshold))
         # find threshold, DEL
         if len(only_del) >= 2:

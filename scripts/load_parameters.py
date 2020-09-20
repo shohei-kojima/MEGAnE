@@ -213,6 +213,7 @@ class load_geno:
             self.del_bi_high_threshold_coeff=1.333
             self.tsd_outlier_low_coeff=0.25
             self.tsd_outlier_low_for_precall=1.2
+            self.tsd_threshold_correction=-0.07
             self.tsd_outlier=3
             self.del_outlier=2
             self.del_outlier_low_for_precall=0.8
