@@ -47,12 +47,7 @@ def detect_discordant(args, params, filenames):
             if int(ls[1]) < 2048:  # remove supplementary alignment
                 b=bin(int(ls[1]))
                 if b[-1] == '1':   # paired-end
-                    keep=False
-                    if b[-2] == '0':   # not proper pair
-                        keep=True
-                    elif 'S' in ls[5] or 'H' in ls[5]:
-                        keep=True
-                    if keep is True:
+                    if 'S' in ls[5] or 'H' in ls[5]:
                         ref_len=calc_ref_len(ls[5])
                         start= int(ls[3]) - 1   # 0-based
                         end= start + ref_len
