@@ -21,6 +21,9 @@ def setup(args, base):
         if args.pybedtools_tmp is None:
             args.pybedtools_tmp=args.outdir
         else:
+            if os.path.exists(args.pybedtools_tmp) is False:
+                log.logger.info('%s does not exist. Please check if %s exists.' % (args.pybedtools_tmp, args.pybedtools_tmp))
+                exit(1)
             nowtime=str(time.time()).replace('.', '_')
             randval=random.randint(0, 1000000000)
             nowtime='%s_%s' % (nowtime, str(randval))
