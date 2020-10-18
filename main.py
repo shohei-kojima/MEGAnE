@@ -7,7 +7,7 @@ See file LICENSE for details.
 '''
 
 
-import os,sys,datetime,argparse,glob,logging
+import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
@@ -39,6 +39,7 @@ parser.add_argument('-only_ins', help='Optional. Specify if you only analyze non
 parser.add_argument('-only_abs', help='Optional. Specify if you only analyze absence of reference MEI.', action='store_true')
 parser.add_argument('-only_geno', help='Optional. Specify if you only genotype using previously analyzed data.', action='store_true')
 parser.add_argument('-unsorted', help='Optional. Specify if an input BAM/CRAM is not position sorted.', action='store_true')
+parser.add_argument('-pybedtools_tmp', metavar='str', type=str, help='Optional. Specify directory for temporary bedtools files, e.g. /dev/shm')
 parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
 parser.add_argument('-no_pdf', help='Optional. Specify if you do not want to output pdf summary files.', action='store_true')
@@ -453,6 +454,10 @@ if do_abs is True:
 
 # genotyping finish
 log.logger.info('Genotyping finished!')
+
+# cleanup
+if not args.pybedtools_tmp == args.outdir:
+    shutil.rmtree(args.pybedtools_tmp)
 
 # all finish!
 log.logger.info('All analysis finished!')

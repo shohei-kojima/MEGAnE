@@ -7,7 +7,7 @@ See file LICENSE for details.
 '''
 
 
-import os,sys,datetime,multiprocessing
+import os,sys,datetime,multiprocessing,time,random
 from os.path import abspath,dirname,realpath,join
 import log,traceback
 
@@ -18,7 +18,18 @@ def setup(args, base):
         sys.setrecursionlimit(10000)
         
         # tmp dir for pybedtools
-        args.pybedtools_tmp=args.outdir
+        if args.pybedtools_tmp is None:
+            args.pybedtools_tmp=args.outdir
+        else:
+            nowtime=str(time.time()).replace('.', '_')
+            randval=random.randint(0, 1000000000)
+            nowtime='%s_%s' % (nowtime, str(randval))
+            args.pybedtools_tmp=os.path.join(args.pybedtools_tmp, nowtime)
+            if os.path.exists(args.pybedtools_tmp) is True:
+                log.logger.info('Exited due to a quite minor and corner reason. Please run again.')
+                exit(1)
+            else:
+                os.mkdir(args.pybedtools_tmp)
         
         # load main chrs
         global main_chrs
