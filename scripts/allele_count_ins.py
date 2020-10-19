@@ -115,20 +115,28 @@ def limit(args, params, filenames, data):
         if args.unsorted is False:
             if args.b is not None:
                 if os.path.exists(args.b + '.bai') is False:
-                    pysam.index(args.b)
+                    base,_=os.path.splitext(args.b)
+                    if os.path.exists(base + '.bai') is False:
+                        pysam.index(args.b)
                 cmd='samtools view -@ %d %s -bh -M -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_b)
             else:
                 if os.path.exists(args.c + '.crai') is False:
-                    pysam.index(args.c)
+                    base,_=os.path.splitext(args.c)
+                    if os.path.exists(base + '.crai') is False:
+                        pysam.index(args.c)
                 cmd='samtools view -@ %d %s -T %s -Ch -M -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_c)
         else:
             if args.b is not None:
                 if os.path.exists(args.b + '.bai') is False:
-                    pysam.index(args.b)
+                    base,_=os.path.splitext(args.b)
+                    if os.path.exists(base + '.bai') is False:
+                        pysam.index(args.b)
                 cmd='samtools view -@ %d %s -bh -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_tb)
             else:
                 if os.path.exists(args.c + '.crai') is False:
-                    pysam.index(args.c)
+                    base,_=os.path.splitext(args.c)
+                    if os.path.exists(base + '.crai') is False:
+                        pysam.index(args.c)
                 cmd='samtools view -@ %d %s -T %s -Ch -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_tc)
         log.logger.debug('samtools command = `'+ cmd +'`')
         out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
