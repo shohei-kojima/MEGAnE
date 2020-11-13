@@ -115,6 +115,9 @@ def setup(args, base):
                 line=line.strip().replace(' ', '_')
                 if not line == '':
                     rep_with_pA.add(line)
+    except SystemExit:
+        log.logger.debug('\n'+ traceback.format_exc())
+        exit(1)
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
@@ -191,6 +194,9 @@ def setup_geno(args, base):
         import load_parameters
         params=load_parameters.load_geno(args, param_path)
                 
+    except SystemExit:
+        log.logger.debug('\n'+ traceback.format_exc())
+        exit(1)
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

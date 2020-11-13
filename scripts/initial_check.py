@@ -51,14 +51,50 @@ def check(args, argv):
             if which(i) is None:
                 log.logger.error('%s not found in $PATH. Please check %s is installed and added to PATH.' % (i, i))
                 exit(1)
-
+        
+        # check file path
+        for f_check,f_name in zip([args.fa, args.rep, args.repout, args.mainchr], ['Reference genome (-fa flag)', 'RepBase library (-rep flag)', 'RepeatMasker output file (-repout flag)', 'chr name file (-mainchr flag)']):
+            if f_check is None:
+                log.logger.error('%s was not specified.' % f_name)
+                exit(1)
+            elif os.path.exists(f_check) is False:
+                log.logger.error('%s was not found.' % f_check)
+                exit(1)
+            else:
+                log.logger.debug('%s found.' % f_check)
+        
+        import pysam
+        if args.c is not None:
+            if os.path.exists(args.c) is False:
+                log.logger.error('%s was not found.' % args.c)
+                exit(1)
+            infile=pysam.AlignmentFile(args.c, 'rc', reference_filename=args.fa)
+            for line in infile:
+                line=line.tostring()
+                break
+            log.logger.debug('%s was able to open.' % args.c)
+        elif args.b is not None:
+            if os.path.exists(args.b) is False:
+                log.logger.error('%s was not found.' % args.b)
+                exit(1)
+            infile=pysam.AlignmentFile(args.b, 'rb')
+            for line in infile:
+                line=line.tostring()
+                break
+            log.logger.debug('%s was able to open.' % args.b)
+        else:
+            log.logger.error('Please specify BAM or CRAM file with -b or -c flag.')
+            exit(1)
+        
         # check prerequisite modules
         from Bio.Seq import Seq
         import gzip
         from pybedtools import BedTool
         import matplotlib
-        import pysam
         from Bio.Blast.Applications import NcbiblastnCommandline
+    except SystemExit:
+        log.logger.debug('\n'+ traceback.format_exc())
+        exit(1)
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
