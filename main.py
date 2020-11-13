@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='2020/09/15'
+version='2020/11/13'
 
 
 # args
