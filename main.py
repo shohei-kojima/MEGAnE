@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='2020/11/13'
+version='2020/12/05'
 
 
 # args
@@ -46,6 +46,7 @@ parser.add_argument('-no_pdf', help='Optional. Specify if you do not want to out
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
 parser.add_argument('-v', '--version', help='Print version.', action='store_true')
 parser.add_argument('-only_geno_precall', action='store_true', help=argparse.SUPPRESS)
+parser.add_argument('-skip_unmapped', action='store_true', help=argparse.SUPPRESS)
 args=parser.parse_args()
 args.version=version
 
@@ -205,16 +206,21 @@ if args.only_geno is False:
 
         # 2. process unmapped reads
         log.logger.info('Unmapped read processing started.')
-        blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
-        parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
-        utils.gzip_or_del(args, params, filenames.blast2_res)
-        blastn.blastn(args, params, filenames.unmapped_hit_fa, args.fadb, filenames.blast3_res)
-        parse_blastn_result.find_chimeric_unmapped(args, params, filenames.blast3_res, filenames.unmapped_MEI)
-        # del files
+        if args.skip_unmapped is True:
+            log.logger.debug('Skips unmapped read processing.')
+            with open(filenames.unmapped_MEI, 'w') as outfile:
+                pass  # dummy file
+        else:
+            blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
+            parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
+            utils.gzip_or_del(args, params, filenames.blast2_res)
+            blastn.blastn(args, params, filenames.unmapped_hit_fa, args.fadb, filenames.blast3_res)
+            parse_blastn_result.find_chimeric_unmapped(args, params, filenames.blast3_res, filenames.unmapped_MEI)
+            # del files
+            utils.gzip_or_del(args, params, filenames.blast3_res)
+            utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
         utils.gzip_or_del(args, params, filenames.unmapped_fa)
-        utils.gzip_or_del(args, params, filenames.blast3_res)
-        utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
-
+        
         # 3. process hybrid reads
         import process_distant_read
         log.logger.info('Hybrid read processing started.')

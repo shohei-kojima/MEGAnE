@@ -160,7 +160,28 @@ def limit(args, params, filenames, data):
                     os.remove(filenames.limited_tb)
                 else:
                     os.remove(filenames.limited_tc)
-        
+        # calmd
+        if args.b is not None:
+            infile=pysam.AlignmentFile(filenames.limited_b, 'rb')
+        else:
+            infile=pysam.AlignmentFile(filenames.limited_c, 'rc', reference_filename=args.fa)
+        for line in infile:
+            line=line.tostring()
+            break
+        if not 'MD:Z' in line:
+            if args.b is not None:
+                os.rename(filenames.limited_b, filenames.limited_tb)
+                cmd='samtools calmd -@ %d -b %s %s > %s' % (args.p, filenames.limited_tb, args.fa, filenames.limited_b)
+                log.logger.debug('MD tag was not found. samtools command = `'+ cmd +'`')
+                out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
+                log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))
+                if not out.returncode == 0:
+                    log.logger.error('Error occurred during samtools running.')
+                    exit(1)
+                os.remove(filenames.limited_tb)
+            else:
+                log.logger.error('Enable to generate MD tag from input CRAM file. Please check the file format.')
+
         # disc read search
         if args.only_geno_precall is True:
             import precall_search_discordant
