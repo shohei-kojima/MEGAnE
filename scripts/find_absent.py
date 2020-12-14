@@ -12,7 +12,7 @@ import pybedtools
 from pybedtools import BedTool
 from collections import Counter
 from statistics import mean
-from utils import load_me_classification, parse_fasta
+from utils import load_me_classification, parse_fasta_transd
 import log,traceback
 
 
@@ -59,11 +59,14 @@ def find_abs(args, params, filenames):
             if not id in d:
                 d[id]=[]
             d[id].append([int(ls[1]), int(ls[2]), ls[3], ls[8], ls[4], ls[9]])
+        pybedtools.cleanup()
 
         outfile_abs=open(filenames.abs_res, 'w')
         outfile_transd=open(filenames.transd_res, 'w')
         global abs_n
         abs_n=0
+        transd_l_f,transd_l_r=[],[]
+        bed_for_transd_f,bed_for_transd_r=[],[]
         for id in d:
             chr,start,end=id.split('\t')
             start,end=int(start),int(end)
@@ -74,18 +77,14 @@ def find_abs(args, params, filenames):
             te_start=min(ss)
             te_end  =min(es)
             if (te_start <= params.breakpoint_annotation_gap) and (te_end <= params.breakpoint_annotation_gap):
-                te=[]
-                for s,e,n,_,_,_ in d[id]:
-                    te.append([chr, s, e])
-                te=sorted(te, key=lambda x:(x[1], x[2]))
-                te=[ '\t'.join([ str(i) for i in l ]) for l in te ]
-                te=BedTool('\n'.join(te), from_string=True).merge()
-                abs_bed=BedTool('%s\t%d\t%d\n' % (chr, start, end), from_string=True)
-                intersect=te.intersect(abs_bed)
                 count=0
-                for line in intersect:
-                    ls=str(line).split()
-                    count += int(ls[2]) - int(ls[1])
+                pos_set=set()
+                for s,e,_,_,_,_ in d[id]:
+                    for pos in range(s, e):
+                        pos_set.add(pos)
+                for pos in pos_set:
+                    if start <= pos < end:
+                        count += 1
                 te_ratio= count / (end - start)
                 if te_ratio >= params.abs_len_to_te_ratio:
                     te_names=[]
@@ -105,7 +104,6 @@ def find_abs(args, params, filenames):
                         outfile_abs.write('%s\t%d\t%d\t%s\t%s\tTSD_len=%s\n' % (chr, start, end, ';'.join(te_names), r, t))
                         abs_n += 1
             elif (te_start <= params.breakpoint_annotation_gap) or (te_end <= params.breakpoint_annotation_gap):
-                transd=False
                 if te_start <= params.breakpoint_annotation_gap:
                     for s,e,n,r,strand,t in d[id]:
                         if (abs(start - s) == te_start) and (strand == '+') and (e < end):
@@ -113,12 +111,8 @@ def find_abs(args, params, filenames):
                             if te_name in mes:
                                 te_clas=mes[te_name]
                                 if te_clas in args.rep_with_pA:
-                                    tail=BedTool('%s\t%d\t%d\n' % (chr, end - params.transduction_pA_len, end), from_string=True)
-                                    tail=tail.sequence(fi=args.fa)
-                                    fa=parse_fasta(tail.seqfn)
-                                    seq=list(fa.values())[0]
-                                    if seq.count('A') >= (params.transduction_pA_len * params.transduction_pA_ratio):
-                                        transd=True
+                                    transd_l_f.append([chr, start, end, n, r, t])
+                                    bed_for_transd_f.append('%s\t%d\t%d\n' % (chr, end - params.transduction_pA_len, end))
                 elif te_end <= params.breakpoint_annotation_gap:
                     for s,e,n,r,strand,t in d[id]:
                         if (abs(end - e) == te_end) and (strand == '-') and (start < s):
@@ -126,16 +120,27 @@ def find_abs(args, params, filenames):
                             if te_name in mes:
                                 te_clas=mes[te_name]
                                 if te_clas in args.rep_with_pA:
-                                    tail=BedTool('%s\t%d\t%d\n' % (chr, start, start + params.transduction_pA_len), from_string=True)
-                                    tail=tail.sequence(fi=args.fa)
-                                    fa=parse_fasta(tail.seqfn)
-                                    seq=list(fa.values())[0]
-                                    if seq.count('T') >= (params.transduction_pA_len * params.transduction_pA_ratio):
-                                        transd=True
-                if transd is True:
-                    outfile_transd.write('%s\t%d\t%d\t%s\t%s\tTSD_len=%s\n' % (chr, start, end, n, r, t))
-                    abs_n += 1
-            pybedtools.cleanup()
+                                    transd_l_r.append([chr, start, end, n, r, t])
+                                    bed_for_transd_r.append('%s\t%d\t%d\n' % (chr, start, start + params.transduction_pA_len))
+        # transd_f
+        transd_threshold=params.transduction_pA_len * params.transduction_pA_ratio
+        tail=BedTool(''.join(bed_for_transd_f), from_string=True)
+        tail=tail.sequence(fi=args.fa)
+        fa=parse_fasta_transd(tail.seqfn)
+        for l,seq in zip(transd_l_f, fa):
+            if seq.count('A') >= transd_threshold:
+                chr,start,end,n,r,t=l
+                outfile_transd.write('%s\t%d\t%d\t%s\t%s\tTSD_len=%s\n' % (chr, start, end, n, r, t))
+        pybedtools.cleanup()
+        # transd_r
+        tail=BedTool(''.join(bed_for_transd_r), from_string=True)
+        tail=tail.sequence(fi=args.fa)
+        fa=parse_fasta_transd(tail.seqfn)
+        for l,seq in zip(transd_l_r, fa):
+            if seq.count('T') >= transd_threshold:
+                chr,start,end,n,r,t=l
+                outfile_transd.write('%s\t%d\t%d\t%s\t%s\tTSD_len=%s\n' % (chr, start, end, n, r, t))
+        pybedtools.cleanup()
         outfile_abs.flush()
         outfile_transd.flush()
         os.fdatasync(outfile_abs.fileno())

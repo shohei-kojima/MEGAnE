@@ -61,6 +61,22 @@ def parse_fasta(path_to_file):
     return tmp
 
 
+def parse_fasta_transd(path_to_file):
+    tmp=[]
+    seq=''
+    with open(path_to_file) as infile:
+        for line in infile:
+            if '>' in line and seq:
+                tmp.append(seq)
+                seq=''
+            elif '>' in line and not seq:
+                pass
+            else:
+                seq += line.strip()
+        tmp.append(seq)
+    return tmp
+
+
 def load_me_classification(path_to_file):
     mes,all_clas={},set()
     with open(path_to_file) as infile:
@@ -91,4 +107,19 @@ def gzip_d(gzfile):
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
+
+
+def output_finish_comment(do_ins, do_abs, filenames):
+    if do_ins is True and do_abs is True:
+        if os.path.exists(filenames.bp_final_g) is True and os.path.exists(filenames.bp_final_p) is True:
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using our tool!\n\n  When you next generate joint VCF, please use:  MEI_final_gaussian_genotyped.vcf & absent_MEs_genotyped.vcf\n  When you analyze only this sample, please use: MEI_final_percentile_genotyped.vcf & absent_MEs_genotyped.vcf\n\033[0m\n')
+        elif os.path.exists(filenames.bp_final_f) is True:
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using our tool!\n\n  We failed to call and genotype pMEIs. Please check again whether the input BAM/CRAM contains abundant pMEI.\n\033[0m\n')
+    elif do_ins is True:
+        if os.path.exists(filenames.bp_final_g) is True and os.path.exists(filenames.bp_final_p) is True:
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using our tool!\n\n  When you next generate joint VCF, please use:  MEI_final_gaussian_genotyped.vcf\n  When you analyze only this sample, please use: MEI_final_percentile_genotyped.vcf\n\033[0m\n')
+        elif os.path.exists(filenames.bp_final_f) is True:
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using our tool!\n\n  We failed to call and genotype pMEIs. Please check again whether the input BAM/CRAM contains abundant pMEI.\n\033[0m\n')
+    elif do_abs is True:
+        log.logger.info('\n\n\033[34mAll analysis finished!\n\n  Please use following file for your analysis:  absent_MEs_genotyped.vcf\n\033[0m\n')
 

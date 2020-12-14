@@ -13,7 +13,7 @@ import os,sys
 def init(args, version):
     # version check
     if args.version is True:
-        print('MEI pipeline\nVersion = %s' % version)
+        print('MEI pipeline\nVersion = %s' % version, file=sys.stderr)
         exit(0)
     
     # pythonpath
@@ -24,7 +24,7 @@ def init(args, version):
     # make output dir
     if args.overwrite is False:
         if os.path.exists(args.outdir) is True:
-            print('Error: %s already exists. Please specify another directory name.' % args.outdir)
+            print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
             exit(1)
         else:
             os.mkdir(args.outdir)
@@ -36,7 +36,7 @@ def init(args, version):
 def init_geno(args, version):
     # version check
     if args.version is True:
-        print('MEI genotyping pipeline\nVersion = %s' % version)
+        print('MEI genotyping pipeline\nVersion = %s' % version, file=sys.stderr)
         exit(0)
 
     # pythonpath
@@ -47,7 +47,7 @@ def init_geno(args, version):
     # make output dir
     if args.overwrite is False:
         if os.path.exists(args.outdir) is True:
-            print('Error: %s already exists. Please specify another directory name.' % args.outdir)
+            print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
             exit(1)
         else:
             os.mkdir(args.outdir)

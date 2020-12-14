@@ -210,7 +210,7 @@ def evaluate_spanning_read(args, params, filenames):
                             else:
                                 strand=''
                             out_spanning.append('%s\t%s%s\t%s\t%d\t%d\t%d\t%d\n' % (id, ls[0], strand, judge_span, e - start, left_match, end - e, right_match))
-        with gzip.open(filenames.out_spanning, 'wt') as outfile:
+        with gzip.open(filenames.abs_spanning, 'wt') as outfile:
             outfile.write(''.join(out_spanning))
             outfile.flush()
             os.fdatasync(outfile.fileno())

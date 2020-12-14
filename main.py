@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='2020/12/05'
+version='2020/12/14'
 
 
 # args
@@ -28,7 +28,7 @@ parser.add_argument('-threshold', metavar='int', type=int, help='Optional. Speci
 parser.add_argument('-sample_name', metavar='str', type=str, help='Optional. Specify sample name which will be labeled in the VCF output. If not specified, BAM/CRAM filename will be output.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
-parser.add_argument('-monoallelic', help='Optional. Specify if you use monoalellic sample, such as mouse strains or HAP1 cells.', action='store_true')
+parser.add_argument('-monoallelic', help='Optional. Specify if you use monoalellic sample, such as inbread mouse strains or HAP1 cells.', action='store_true')
 parser.add_argument('-sex', metavar='str', type=str, help='Optional. Specify "female" if input is female sample. Available only when human and mouse sample. Default: unknown', default='unknown')
 parser.add_argument('-verylowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 10x).', action='store_true')
 parser.add_argument('-lowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 15x).', action='store_true')
@@ -352,6 +352,30 @@ if do_abs is True:
     filenames.abs_out_vcf     =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
 
 
+# monoallelic, output VCF
+if args.monoallelic is True:
+    import output_genotyped_vcf_mono
+    for f in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, filenames.bp_final_u, filenames.bp_final_d]:
+        if os.path.exists(f) is True:
+            args.ins_bed=f
+            log.logger.info('Will skip genotyping, insertion: %s' % args.ins_bed)
+            base=os.path.splitext(os.path.basename(args.ins_bed))[0]
+            filenames.ins_out_bed   =os.path.join(args.outdir, '%s_genotyped.bed' % base)
+            filenames.ins_out_vcf   =os.path.join(args.outdir, '%s_genotyped.vcf' % base)
+            output_genotyped_vcf_mono.output_ins_bed_vcf(args, params, filenames)
+            log.logger.info('Did output VCF, insertion: %s' % args.ins_bed)
+    if do_abs is True:
+        log.logger.info('Will skip genotyping, absent MEs.')
+        output_genotyped_vcf_mono.output_abs_bed_vcf(args, params, filenames)
+        log.logger.info('Did output VCF, absent MEs.')
+    # cleanup
+    if not args.pybedtools_tmp == args.outdir:
+        shutil.rmtree(args.pybedtools_tmp)
+    # all finish!
+    utils.output_finish_comment(do_ins, do_abs, filenames)
+    exit(0)
+
+
 #  9. limit BAM/CRAM
 import output_genotyped_vcf
 import allele_count_ins
@@ -420,6 +444,9 @@ for f in [filenames.bp_final_g, filenames.bp_final_p, filenames.bp_final_f, file
 
 # 11. genotype absent MEs
 if do_abs is True:
+    # filenames
+    filenames.abs_spanning  =os.path.join(args.outdir, 'abs_spanning_read_summary.txt.gz')
+    
     import allele_count_abs
     log.logger.info('Evidence search started, absent MEs.')
     if args.only_geno_precall is True:
@@ -466,4 +493,4 @@ if not args.pybedtools_tmp == args.outdir:
     shutil.rmtree(args.pybedtools_tmp)
 
 # all finish!
-log.logger.info('All analysis finished!')
+utils.output_finish_comment(do_ins, do_abs, filenames)
