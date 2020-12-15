@@ -98,3 +98,60 @@ def check(args, argv):
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
+
+
+def check_merge_vcf(args, argv):
+    log.logger.debug('started')
+    try:
+        log.logger.debug('command line:\n'+ ' '.join(argv))
+        # check python version
+        version=sys.version_info
+        if (version[0] >= 3) and (version[1] >= 7):
+            log.logger.debug('Python version=%d.%d.%d' % (version[0], version[1], version[2]))
+        else:
+            log.logger.error('Please use Python 3.7 or later. Your Python is version %d.%d.' % (version[0], version[1]))
+            exit(1)
+        
+        # check cpu num
+        cpu_num=multiprocessing.cpu_count()
+        if args.p > cpu_num:
+            log.logger.error('Too many thread number. Please specify the number less than your cpu cores. You specified = %d, cpu cores = %d.' % (args.p, cpu_num))
+            exit(1)
+        
+        # check PATH
+        for i in ['blastn', 'bedtools']:
+            if which(i) is None:
+                log.logger.error('%s not found in $PATH. Please check %s is installed and added to PATH.' % (i, i))
+                exit(1)
+        
+        # check file path
+        for f_check,f_name in zip([args.fa, args.rep, args.f], ['Reference genome (-fa flag)', 'RepBase library (-rep flag)', 'List of vcf files (-f flag)']):
+            if f_check is None:
+                log.logger.error('%s was not specified.' % f_name)
+                exit(1)
+            elif os.path.exists(f_check) is False:
+                log.logger.error('%s was not found.' % f_check)
+                exit(1)
+            else:
+                log.logger.debug('%s found.' % f_check)
+        
+        if args.merge_mei is True and args.merge_absent_me is True:
+            log.logger.error('Please specify either -merge_mei or -merge_absent_me.')
+            exit(1)
+        elif args.merge_mei is False and args.merge_absent_me is False:
+            log.logger.error('Please specify either -merge_mei or -merge_absent_me.')
+            exit(1)
+        
+        if args.cohort_name is None:
+            dt_now=datetime.datetime.now()
+            args.cohort_name='%d-%d-%d-%d%d%d' % (dt_now.year, dt_now.month, dt_now.day, dt_now.hour, dt_now.minute, dt_now.second)
+        
+        # check prerequisite modules
+        from pybedtools import BedTool
+        from Bio.Blast.Applications import NcbiblastnCommandline
+    except SystemExit:
+        log.logger.debug('\n'+ traceback.format_exc())
+        exit(1)
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)

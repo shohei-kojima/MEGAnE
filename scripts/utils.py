@@ -77,6 +77,23 @@ def parse_fasta_transd(path_to_file):
     return tmp
 
 
+def parse_fasta_for_merge_vcf(path_to_file):
+    tmp={}
+    seq=[]
+    with open(path_to_file) as infile:
+        for line in infile:
+            if '>' in line and seq:
+                tmp[header]=''.join(seq)
+                header=line.strip()
+                seq=[]
+            elif '>' in line and not seq:
+                header=line.strip()
+            else:
+                seq.append(line.strip())
+        tmp[header]=''.join(seq)
+    return tmp
+
+
 def load_me_classification(path_to_file):
     mes,all_clas={},set()
     with open(path_to_file) as infile:
@@ -122,4 +139,11 @@ def output_finish_comment(do_ins, do_abs, filenames):
             log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using our tool!\n\n  We failed to call and genotype pMEIs. Please check again whether the input BAM/CRAM contains abundant pMEI.\n\033[0m\n')
     elif do_abs is True:
         log.logger.info('\n\n\033[34mAll analysis finished!\n\n  Please use following file for your analysis:  absent_MEs_genotyped.vcf\n\033[0m\n')
+
+
+def output_finish_comment_merge_vcf(args, filenames):
+    if args.merge_mei is True:
+        log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using our tool!\n\n  Please use following file for your analysis:  %s\n\033[0m\n' % filenames.merged_vcf_ins)
+    elif args.merge_absent_me is True:
+        log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using our tool!\n\n  Please use following file for your analysis:  %s\n\033[0m\n' % filenames.merged_vcf_abs)
 

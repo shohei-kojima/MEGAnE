@@ -33,7 +33,7 @@ parser.add_argument('-sex', metavar='str', type=str, help='Optional. Specify "fe
 parser.add_argument('-verylowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 10x).', action='store_true')
 parser.add_argument('-lowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 15x).', action='store_true')
 parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/prog/lib/parameter_settings.txt')
-parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing the names of non-ME repeat class. Default: /path/to/prog/lib/non_ME_rep_headers.txt')
+parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing the names of non-ME repeat class. Default: /path/to/prog/lib/human_non_ME_rep_headers.txt')
 parser.add_argument('-pA_ME', metavar='str', type=str, help='Optional. Specify full path to a file containing repat class with polyA tail. Default: /path/to/prog/lib/ME_with_polyA_tail.txt')
 parser.add_argument('-only_ins', help='Optional. Specify if you only analyze non-reference MEI insertions.', action='store_true')
 parser.add_argument('-only_abs', help='Optional. Specify if you only analyze absence of reference MEI.', action='store_true')
@@ -310,8 +310,8 @@ if args.only_geno is False:
     # remove unnecessary files
     os.remove(filenames.repout_bed)
     os.remove(filenames.reshaped_rep)
-    for f in glob.glob(filenames.repdb +'*'):
-        os.remove(f)
+    for ext in ['nhr', 'nin', 'nog', 'nsd', 'nsi', 'nsq']:
+        os.remove('%s.%s' % (filenames.repdb, ext))
     log.logger.info('pME search finished!')
     print()
 

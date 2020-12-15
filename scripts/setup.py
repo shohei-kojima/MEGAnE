@@ -200,3 +200,47 @@ def setup_geno(args, base):
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
+
+
+def setup_merge_vcf(args, base):
+    log.logger.debug('started')
+    try:
+        # load main chrs
+        global female, male, chrX, chrY
+        female={'female', 'Female', 'F', 'f'}
+        male={'male', 'Male', 'M', 'm'}
+        chrX={'chrX', 'X', '23'}
+        chrY={'chrY', 'Y', '24'}
+        
+        # load rep headers to be removed
+        global rep_headers_to_be_removed
+        if args.repremove is not None:
+            param_path=args.repremove
+        else:
+            param_path=join(base, 'lib/human_non_ME_rep_headers.txt')
+        rep_headers_to_be_removed=set()
+        with open(param_path) as infile:
+            for line in infile:
+                line=line.strip().replace(' ', '_')
+                if not line == '':
+                    rep_headers_to_be_removed.add(line)
+        
+        # fai
+        global fai_path
+        if os.path.exists(args.fa + '.fai') is False:
+            import pysam
+            pysam.faidx(args.fa)
+            log.logger.info('Fasta index not found. Generated %s.fai.' % args.fa)
+        fai_path=args.fa + '.fai'
+        
+        # load parameter settings
+        global params
+        import load_parameters
+        params=load_parameters.load_merge_vcf(args)
+                
+    except SystemExit:
+        log.logger.debug('\n'+ traceback.format_exc())
+        exit(1)
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)

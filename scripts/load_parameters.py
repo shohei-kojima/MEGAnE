@@ -256,3 +256,23 @@ class load_geno:
         except:
             log.logger.error('\n'+ traceback.format_exc())
             exit(1)
+
+
+class load_merge_vcf:
+    def __init__(self, args):
+        log.logger.debug('started')
+        try:
+            # default; merge vcf
+            self.blastn_evalue=float('1e-05')
+            self.blastn_ident=80
+            self.blastn_word_size=11
+            
+            self.pass_perc_threshold=0.25
+            
+            params_for_debug=[]
+            for k,v in self.__dict__.items():
+                params_for_debug.append('%s=%s' % (k, str(v)))
+            log.logger.debug('parameters:\n'+ '\n'.join(params_for_debug))
+        except:
+            log.logger.error('\n'+ traceback.format_exc())
+            exit(1)
