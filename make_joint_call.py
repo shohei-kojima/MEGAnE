@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='2020/12/15'
+version='2021/01/06'
 
 
 # args
@@ -38,7 +38,10 @@ init.init_jointcall(args, version)
 
 # logging
 import log
-args.logfilename='for_debug_jointcall.log'
+if args.merge_mei is True:
+    args.logfilename='for_debug_jointcall_ins.log'
+else:
+    args.logfilename='for_debug_jointcall_abs.log'
 if os.path.exists(os.path.join(args.outdir, args.logfilename)) is True:
     os.remove(os.path.join(args.outdir, args.logfilename))
 log.start_log(args)

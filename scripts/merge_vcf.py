@@ -238,7 +238,7 @@ def merge_vcf_ins(args, params, filenames):
                 d[id]={}
                 d[id]['CHROM']=id.split(':')[0]
                 d[id]['POS']=poss[m][id][0]  # 0-based to 1-based; add one base before bp
-                d[id]['ID']='%s_%d' % (args.cohort_name, n)
+                d[id]['ID']='%s_ins_%d' % (args.cohort_name, n)
                 d[id]['REF']=fa['%s%s' % (m, id)]
                 d[id]['ALT']='<INS:ME>'
                 d[id]['QUAL']='.'
@@ -446,7 +446,7 @@ def merge_vcf_abs(args, params, filenames):
                 d[id]={}
                 d[id]['CHROM']=id.split(':')[0]
                 d[id]['POS']=poss[m][id][0]  # 0-based to 1-based; add one base before bp
-                d[id]['ID']='%s_%d' % (args.cohort_name, n)
+                d[id]['ID']='%s_abs_%d' % (args.cohort_name, n)
                 d[id]['REF']=fa['%s%s' % (m, id)]
                 d[id]['ALT']=fa['%s%s' % (m, id)][0]
                 d[id]['QUAL']='.'
