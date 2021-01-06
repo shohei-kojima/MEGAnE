@@ -244,10 +244,16 @@ def merge_vcf_ins(args, params, filenames):
                 d[id]['QUAL']='.'
                 d[id]['FILTER']=filt
                 d[id]['INFO']='SVTYPE=%s;MEI=%s;MEPRED=%s;0START=%s;1END=%s;SVLEN=%s;MESTRAND=%s;AC=%d' % (m, pred_class, mepred, poss[m][id][0], poss[m][id][1], melen, strand, ac)
-                d[id]['FORMAT']='CN'
+                d[id]['FORMAT']='GT'
                 for info,_ in count[m][id]:
                     sample_id,c,_,_,_,_=info.split(',')
-                    d[id][sample_id]=c
+                    if c == '0':
+                        gt='0/0'
+                    elif c == '1':
+                        gt='0/1'
+                    else:
+                        gt='1/1'
+                    d[id][sample_id]=gt
                     sample_ids.add(sample_id)
                 n += 1
         sample_ids=sorted(list(sample_ids))
@@ -452,10 +458,16 @@ def merge_vcf_abs(args, params, filenames):
                 d[id]['QUAL']='.'
                 d[id]['FILTER']=filt
                 d[id]['INFO']='SVTYPE=%s;MEI=%s;0START=%s;1END=%s;SVLEN=%s;AC=%d' % (m, pred_class, poss[m][id][0], poss[m][id][1], melen, ac)
-                d[id]['FORMAT']='CN'
+                d[id]['FORMAT']='GT'
                 for info,_ in count[m][id]:
                     sample_id,c,_,_,_=info.split(',')
-                    d[id][sample_id]=c
+                    if c == '0':
+                        gt='0/0'
+                    elif c == '1':
+                        gt='0/1'
+                    else:
+                        gt='1/1'
+                    d[id][sample_id]=gt
                     sample_ids.add(sample_id)
                 n += 1
         sample_ids=sorted(list(sample_ids))
