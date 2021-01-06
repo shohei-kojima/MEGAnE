@@ -260,7 +260,7 @@ def merge_vcf_ins(args, params, filenames):
         for id in d:
             for sample_id in sample_ids:
                 if not sample_id in d[id]:
-                    d[id][sample_id]='0'
+                    d[id][sample_id]='0/0'
         header.append('##INFO=<ID=SVTYPE,Number=.,Type=String,Description="Mobile element class">\n')
         header.append('##INFO=<ID=MEI,Number=.,Type=String,Description="Mobile element subclass">\n')
         header.append('##INFO=<ID=MEPRED,Number=.,Type=String,Description="MEI prediction status">\n')
@@ -474,7 +474,7 @@ def merge_vcf_abs(args, params, filenames):
         for id in d:
             for sample_id in sample_ids:
                 if not sample_id in d[id]:
-                    d[id][sample_id]='0'
+                    d[id][sample_id]='0/0'
         header.append('##INFO=<ID=SVTYPE,Number=.,Type=String,Description="Mobile element class">\n')
         header.append('##INFO=<ID=MEI,Number=.,Type=String,Description="Mobile element subclass">\n')
         header.append('##INFO=<ID=0START,Number=1,Type=Integer,Description="Position of left breakpoint. 0-based numbering (eg BED style).">\n')
