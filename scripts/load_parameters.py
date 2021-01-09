@@ -14,6 +14,14 @@ class load:
         log.logger.debug('started')
         try:
             # default; polymorphic ME search
+            self.read_count_for_readlen_estimation=200
+            self.chr1_start_depth_est=112500000
+            self.chr1_end_depth_est=112600000
+            self.chrX_start_depth_est=20000000
+            self.chrX_end_depth_est=20100000
+            self.chrY_start_depth_est=6900000
+            self.chrY_end_depth_est=7000000
+            self.sex_est_XY_ratio_threshold=0.3
             self.discordant_reads_clip_len=20
             self.read_pair_gap_len=2000
             self.max_TSD_len=50
@@ -73,7 +81,23 @@ class load:
             with open(f) as infile:
                 for line in infile:
                     ls=line.strip().split(' ')[0].split('=')
-                    if ls[0] == 'discordant_reads_clip_len':
+                    if ls[0] == 'read_count_for_readlen_estimation':
+                        self.read_count_for_readlen_estimation=int(ls[1])
+                    elif ls[0] == 'chr1_start_depth_est':
+                        self.chr1_start_depth_est=int(ls[1])
+                    elif ls[0] == 'chr1_end_depth_est':
+                        self.chr1_end_depth_est=int(ls[1])
+                    elif ls[0] == 'chrX_start_depth_est':
+                        self.chrX_start_depth_est=int(ls[1])
+                    elif ls[0] == 'chrX_end_depth_est':
+                        self.chrX_end_depth_est=int(ls[1])
+                    elif ls[0] == 'chrY_start_depth_est':
+                        self.chrY_start_depth_est=int(ls[1])
+                    elif ls[0] == 'chrY_end_depth_est':
+                        self.chrY_end_depth_est=int(ls[1])
+                    elif ls[0] == 'sex_est_XY_ratio_threshold':
+                        self.sex_est_XY_ratio_threshold=float(ls[1])
+                    elif ls[0] == 'discordant_reads_clip_len':
                         self.discordant_reads_clip_len=int(ls[1])
                     elif ls[0] == 'read_pair_gap_len':
                         self.read_pair_gap_len=int(ls[1])

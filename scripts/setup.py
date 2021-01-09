@@ -46,23 +46,68 @@ def setup(args, base):
                 chr=line.strip()
                 if not chr == '':
                     main_chrs.append(chr)
-        global female, male, chrX, chrY
-        female={'female', 'Female', 'F', 'f'}
-        male={'male', 'Male', 'M', 'm'}
+        
+        # check sex, cov, readlen
+        global female, male, chrX, chrY, auto
+        auto=args.auto
+        female={'female', 'Female', 'FEMALE', 'F', 'f'}
+        male={'male', 'Male', 'MALE', 'M', 'm'}
         chrX={'chrX', 'X', '23'}
         chrY={'chrY', 'Y', '24'}
-#        if not args.sex == 'male':
-#            if args.sex in female:
-#                new_main_chr=[]
-#                for chr in main_chrs:
-#                    if not chr in chrY:
-#                        new_main_chr.append(chr)
-#                main_chrs=[]
-#                main_chrs.extend(new_main_chr)
-#                log.logger.info('You specified "female" as sex, chrY is going to be excluded from analysis.')
-#            else:
-#                log.logger.error('Unknown value was specified with -sex. Please check again.')
-#                exit(1)
+        if not args.sex in auto:
+            if not args.sex in female:
+                if not args.sex in male:
+                    log.logger.error('Unknown value was specified with -sex. Please check again.')
+                    exit(1)
+        if not args.cov in auto:
+            if isinstance(args.cov, int) is True:
+                pass
+            else:
+                args.cov=args.cov.replace(',', '')
+                tmp=args.cov.replace('.', '').replace('-', '')
+                if tmp.isnumeric() is False:
+                    log.logger.error('Unknown value was specified with -cov. Please check again.')
+                    exit(1)
+                if '.' in args.cov:
+                    if args.cov.count('.') == 1:
+                        args.cov=float(args.cov)
+                        log.logger.info('-cov %f was rounded to %s' % (args.cov, round(args.cov)))
+                        args.cov=round(args.cov)
+                    else:
+                        log.logger.error('Unknown value was specified with -cov. Please check again.')
+                        exit(1)
+                else:
+                    args.cov=int(args.cov)
+            if args.cov < 1:
+                log.logger.error('Zero or negative value was specified with -cov. Please check again.')
+                exit(1)
+            elif args.cov < 5:
+                log.logger.warning('< 5 was specified with -cov. Efficiency of polymorphic ME detection may not be good.')
+        if not args.readlen in auto:
+            if isinstance(args.readlen, int) is True:
+                pass
+            else:
+                args.readlen=args.readlen.replace(',', '')
+                tmp=args.readlen.replace('.', '').replace('-', '')
+                if tmp.isnumeric() is False:
+                    log.logger.error('Unknown value was specified with -readlen. Please check again.')
+                    exit(1)
+                if '.' in args.readlen:
+                    if args.readlen.count('.') == 1:
+                        args.readlen=float(args.readlen)
+                        log.logger.info('-readlen %f was rounded to %s' % (args.readlen, round(args.readlen)))
+                        args.readlen=round(args.readlen)
+                    else:
+                        log.logger.error('Unknown value was specified with -readlen. Please check again.')
+                        exit(1)
+                else:
+                    args.readlen=int(args.readlen)
+            if args.readlen < 1:
+                log.logger.error('Zero or negative value was specified with -readlen. Please check again.')
+                exit(1)
+            elif args.readlen < 100:
+                log.logger.warning('< 100 was specified with -readlen. Efficiency of polymorphic ME detection may not be good.')
+        
         
         # fai
         global fai_path
@@ -131,11 +176,66 @@ def setup_geno_only_load_params(args, base):
         param_path=join(base, 'lib/parameter_settings_geno.txt')
         import load_parameters
         params=load_parameters.load_geno(args, param_path)
-        global female, male, chrX, chrY
-        female={'female', 'Female', 'F', 'f'}
-        male={'male', 'Male', 'M', 'm'}
+        # check sex, cov, readlen
+        global female, male, chrX, chrY, auto
+        auto=args.auto
+        female={'female', 'Female', 'FEMALE', 'F', 'f'}
+        male={'male', 'Male', 'MALE', 'M', 'm'}
         chrX={'chrX', 'X', '23'}
         chrY={'chrY', 'Y', '24'}
+        if not args.sex in auto:
+            if not args.sex in female:
+                if not args.sex in male:
+                    log.logger.error('Unknown value was specified with -sex. Please check again.')
+                    exit(1)
+        if not args.cov in auto:
+            if isinstance(args.cov, int) is True:
+                pass
+            else:
+                args.cov=args.cov.replace(',', '')
+                tmp=args.cov.replace('.', '').replace('-', '')
+                if tmp.isnumeric() is False:
+                    log.logger.error('Unknown value was specified with -cov. Please check again.')
+                    exit(1)
+                if '.' in args.cov:
+                    if args.cov.count('.') == 1:
+                        args.cov=float(args.cov)
+                        log.logger.info('-cov %f was rounded to %s' % (args.cov, round(args.cov)))
+                        args.cov=round(args.cov)
+                    else:
+                        log.logger.error('Unknown value was specified with -cov. Please check again.')
+                        exit(1)
+                else:
+                    args.cov=int(args.cov)
+            if args.cov < 1:
+                log.logger.error('Zero or negative value was specified with -cov. Please check again.')
+                exit(1)
+            elif args.cov < 5:
+                log.logger.warning('< 5 was specified with -cov. Efficiency of polymorphic ME detection may not be good.')
+        if not args.readlen in auto:
+            if isinstance(args.readlen, int) is True:
+                pass
+            else:
+                args.readlen=args.readlen.replace(',', '')
+                tmp=args.readlen.replace('.', '').replace('-', '')
+                if tmp.isnumeric() is False:
+                    log.logger.error('Unknown value was specified with -readlen. Please check again.')
+                    exit(1)
+                if '.' in args.readlen:
+                    if args.readlen.count('.') == 1:
+                        args.readlen=float(args.readlen)
+                        log.logger.info('-readlen %f was rounded to %s' % (args.readlen, round(args.readlen)))
+                        args.readlen=round(args.readlen)
+                    else:
+                        log.logger.error('Unknown value was specified with -readlen. Please check again.')
+                        exit(1)
+                else:
+                    args.readlen=int(args.readlen)
+            if args.readlen < 1:
+                log.logger.error('Zero or negative value was specified with -readlen. Please check again.')
+                exit(1)
+            elif args.readlen < 100:
+                log.logger.warning('< 100 was specified with -readlen. Efficiency of polymorphic ME detection may not be good.')
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

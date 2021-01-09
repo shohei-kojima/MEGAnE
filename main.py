@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='2020/12/14'
+version='2021/01/09'
 
 
 # args
@@ -22,14 +22,14 @@ parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify refe
 parser.add_argument('-fadb', metavar='str', type=str, help='Required. Specify blastdb of reference genome. Example: GRCh38DH.fa.db')
 parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
 parser.add_argument('-repout', metavar='str', type=str, help='Required. Specify RepeatMasker output. Must be masked using the input RepBase file. Example: GRCh38DH.fa.out')
-parser.add_argument('-cov', metavar='int', type=int, help='Optional. Specify coverage depth. Default: 30', default=30)
-parser.add_argument('-readlen', metavar='int', type=int, help='Optional. Specify read length. Default: 150', default=150)
+parser.add_argument('-cov', metavar='int or auto', type=str, help='Optional. Specify mapping depth. If "auto" was specified, it estimate autosome depth. Default: auto', default='auto')
+parser.add_argument('-readlen', metavar='int or auto', type=str, help='Optional. Specify read length. If "auto" was specified, it estimate read length. Default: auto', default='auto')
 parser.add_argument('-threshold', metavar='int', type=int, help='Optional. Specify user-defined threshold.')
 parser.add_argument('-sample_name', metavar='str', type=str, help='Optional. Specify sample name which will be labeled in the VCF output. If not specified, BAM/CRAM filename will be output.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
 parser.add_argument('-monoallelic', help='Optional. Specify if you use monoalellic sample, such as inbread mouse strains or HAP1 cells.', action='store_true')
-parser.add_argument('-sex', metavar='str', type=str, help='Optional. Specify "female" if input is female sample. Available only when human and mouse sample. Default: unknown', default='unknown')
+parser.add_argument('-sex', metavar='str', type=str, help='Optional. Available only when input has chrX and chrY (e.g. human, mouse). Specify "female" or "male" or "auto". If "auto" is specified, it automatically estimate the sex. If your input foes not have chrX and chrY, please remove this option. Default: auto', default='auto')
 parser.add_argument('-verylowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 10x).', action='store_true')
 parser.add_argument('-lowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 15x).', action='store_true')
 parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/prog/lib/parameter_settings.txt')
@@ -79,7 +79,10 @@ initial_check.check(args, sys.argv)
 
 
 # set up
-import setup
+import setup,auto_setting
+args.auto=auto_setting.init()
+if args.readlen in args.auto:
+    auto_setting.estimate_readlen(args)
 setup.setup(args, init.base)
 params=setup.params
 args.main_chrs=setup.main_chrs
@@ -93,6 +96,8 @@ params.female=setup.female
 params.male=setup.male
 do_ins=False if args.only_abs is True else True
 do_abs=False if args.only_ins is True else True
+if args.cov in args.auto or args.sex in args.auto:
+    auto_setting.estimate_depth_sex(args, params, args.auto)
 
 
 # output file names

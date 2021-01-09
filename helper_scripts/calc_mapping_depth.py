@@ -33,11 +33,11 @@ args=parser.parse_args()
 
 # initial check
 if args.i is None:
-    print('Error: You need to specify input file with "-i" option.')
+    print('Error: You need to specify input file with "-i" option.', file=sys.stderr)
     exit(1)
 else:
     if os.path.exists(args.i) is not True:
-        print('Error: Input file does not exist.')
+        print('Error: Input file does not exist.', file=sys.stderr)
         exit(1)
 
 if args.chr is None:
@@ -45,13 +45,13 @@ if args.chr is None:
     args.chr=os.path.join(base, '../lib/human_autosomes_ucsc_style.txt')
 else:
     if os.path.exists(args.chr) is not True:
-        print('Error: Chromosome file do not exists.')
+        print('Error: Chromosome file do not exists.', file=sys.stderr)
         exit(1)
     
 if args.o is not None:
     if os.path.exists(args.o) is True:
         if args.overwrite is False:
-            print('Error: Output file already exists. Please specify "-overwrite" option if you overwrite the existing file.')
+            print('Error: Output file already exists. Please specify "-overwrite" option if you overwrite the existing file.', file=sys.stderr)
             exit(1)
         else:
             print('Info: Output file already existed, but overwrote it according to "-overwrite" option.')
