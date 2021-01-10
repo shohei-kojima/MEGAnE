@@ -341,7 +341,7 @@ def resolve_overlap_between_vcf_vcf(ins, abs, cohort):
                     outfile.write(line)
             else:
                 outfile.write(line)
-        for line in insfile:
+        for line in absfile:
             if gzip_judge is True:
                 line=line.decode()
             if not line[0] == '#':

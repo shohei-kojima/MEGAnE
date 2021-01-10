@@ -64,7 +64,6 @@ def merge_vcf_ins(args, params, filenames):
         
         # count how many samples have a certain MEI
         load_header=False
-        header=[]
         bed={}
         for f in files:
             sample_id=f
@@ -269,6 +268,7 @@ def merge_vcf_ins(args, params, filenames):
         header.append('##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">\n')
         header.append('##INFO=<ID=MESTRAND,Number=.,Type=String,Description="Strandness of MEI">\n')
         header.append('##INFO=<ID=AC,Number=1,Type=Integer,Description="Allele count.">\n')
+        header.append('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
         header.append('##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Copy number genotype for imprecise events">\n')
         with open(filenames.merged_vcf_ins, 'w') as outfile:
             outfile.write(''.join(header))
@@ -481,6 +481,7 @@ def merge_vcf_abs(args, params, filenames):
         header.append('##INFO=<ID=1END,Number=1,Type=Integer,Description="Position of right breakpoint. 1-based numbering (eg BED style).">\n')
         header.append('##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">\n')
         header.append('##INFO=<ID=AC,Number=1,Type=Integer,Description="Allele count.">\n')
+        header.append('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
         header.append('##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Copy number genotype for imprecise events">\n')
         with open(filenames.merged_vcf_abs, 'w') as outfile:
             outfile.write(''.join(header))
