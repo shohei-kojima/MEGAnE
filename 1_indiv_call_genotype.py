@@ -44,7 +44,7 @@ parser.add_argument('-do_not_overwrite', help='Optional. Specify if you do NOT o
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
 parser.add_argument('-no_pdf', help='Optional. Specify if you do not want to output pdf summary files.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
-parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (__file__, version))
+parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (os.path.basename(__file__), version))
 parser.add_argument('-only_geno_precall', action='store_true', help=argparse.SUPPRESS)
 parser.add_argument('-skip_unmapped', action='store_true', help=argparse.SUPPRESS)
 args=parser.parse_args()

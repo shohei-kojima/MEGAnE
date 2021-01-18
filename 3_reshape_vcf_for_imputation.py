@@ -41,7 +41,7 @@ parser.add_argument('-a', metavar='str', type=str, help='Required. Specify a joi
 parser.add_argument('-n', metavar='str', type=str, help='Optional. Specify your cohort name, which will be used as output file names. If not specified, MEGAnE adds arbitrary name.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./vcf_for_impute_out', default='./vcf_for_impute_out')
 parser.add_argument('-do_not_overwrite', help='Optional. Specify if you do NOT overwrite previous results.', action='store_true')
-parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (__file__, version))
+parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (os.path.basename(__file__), version))
 args=parser.parse_args()
 args.version=version
 

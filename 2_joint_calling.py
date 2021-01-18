@@ -26,7 +26,7 @@ parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify 
 parser.add_argument('-cohort_name', metavar='str', type=str, help='Optional. Specify a cohort name. This will be used for the variant names as well the output file name. Default: YYYY-MM-DD-HHMMSS')
 parser.add_argument('-do_not_overwrite', help='Optional. Specify if you do NOT overwrite previous results.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
-parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (__file__, version))
+parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (os.path.basename(__file__), version))
 args=parser.parse_args()
 args.version=version
 
