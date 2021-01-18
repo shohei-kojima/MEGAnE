@@ -7,7 +7,7 @@ See file LICENSE for details.
 '''
 
 
-import os,datetime,collections
+import os,datetime,collections,gzip
 import numpy as np
 from pybedtools import BedTool
 from utils import parse_fasta_for_merge_vcf
@@ -17,6 +17,7 @@ import log,traceback
 def merge_vcf_ins(args, params, filenames):
     log.logger.debug('started')
     try:
+        chrY_set={'Y', 'chrY'}
         # load te length
         te_len={}
         tmp=[]
@@ -65,8 +66,9 @@ def merge_vcf_ins(args, params, filenames):
         # count how many samples have a certain MEI
         load_header=False
         bed={}
+        vlc={}
         for f in files:
-            sample_id=f
+            vcf_loaded=set()
             with open(f) as infile:
                 for line in infile:
                     if line[0] == '#':
@@ -76,7 +78,7 @@ def merge_vcf_ins(args, params, filenames):
                         if line[:6] == '#CHROM':
                             ls=line.split()
                             sample_id=ls[9]
-                    else:
+                    elif not line[0] == '#':
                         ls=line.split()
                         if not 'Y' in ls[6]:
                             te=ls[7].split(';')[0].replace('SVTYPE=', '')
@@ -140,9 +142,23 @@ def merge_vcf_ins(args, params, filenames):
                                 bed[te]=[]
                             if len(pred_class) > 0:
                                 bed[te].append('\t'.join([ls[0], start, end, '%s,%s,%s,%s,%s,%s' % (sample_id, ls[9], mepred, telen, ls[6], strand), ','.join(pred_class)]))
+                                vcf_loaded.add(ls[2])
                 load_header=True
+            # load very low confidence
+            dir=os.path.dirname(f)
+            f='%s/breakpoint_pairs_pooled_all.txt.gz' % dir
+            if os.path.exists(f) is False:
+                exit(1)
+            with gzip.open(f) as infile:
+                for line in infile:
+                    ls=line.decode().split()
+                    if not ls[-1] in vcf_loaded and not ls[0] in chrY_set:
+                        if not ls[7] in vlc:
+                            vlc[ls[7]]=[]
+                        vlc[ls[7]].append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[2], sample_id))
         count={}
         poss={}
+        vlc_intersects={}
         for m in bed:
             if m in all:
                 if not m in count:
@@ -153,7 +169,7 @@ def merge_vcf_ins(args, params, filenames):
                 all[m]=BedTool('\n'.join(all[m]), from_string=True).merge()
                 for line in all[m]:
                     ls=str(line).split()
-                    id='%s:%s-%s' % (ls[0], ls[1], ls[2])
+                    id='%s:%s-%s:%s' % (ls[0], ls[1], ls[2], m)
                     count[m][id]=[]
                     poss[m][id]=[[], []]
                 log.logger.info('Merging %s....' % m)
@@ -163,10 +179,20 @@ def merge_vcf_ins(args, params, filenames):
                 ss,es=[],[]
                 for line in tmp:
                     ls=str(line).split()
-                    id='%s:%s-%s' % (ls[5], ls[6], ls[7])
+                    id='%s:%s-%s:%s' % (ls[5], ls[6], ls[7], m)
                     poss[m][id][0].append(ls[6])
                     poss[m][id][1].append(ls[7])
                     count[m][id].append([ls[3], ls[4]])
+                 
+                if m in vlc:
+                    tmp=BedTool('\n'.join(vlc[m]), from_string=True)
+                    tmp=tmp.intersect(all[m], wa=True, wb=True)
+                    for line in tmp:
+                        ls=str(line).split()
+                        id='%s:%s-%s:%s' % (ls[4], ls[5], ls[6], m)
+                        if not id in vlc_intersects:
+                            vlc_intersects[id]=set()
+                        vlc_intersects[id].add(ls[3])
         # determine most common breakpoint
         for m in poss:
             for id in poss[m]:
@@ -179,7 +205,7 @@ def merge_vcf_ins(args, params, filenames):
             for id in count[m]:
                 chr=id.split(':')[0]
                 start= int(poss[m][id][0]) - 1  # add one base before bp
-                bed.append('%s\t%d\t%s\t%s%s\n' % (chr, start, poss[m][id][1], m, id))
+                bed.append('%s\t%d\t%s\t%s\n' % (chr, start, poss[m][id][1], id))
         bed=BedTool(''.join(bed), from_string=True)
         fa=bed.sequence(fi=args.fa, name=True)
         tmp=parse_fasta_for_merge_vcf(fa.seqfn)
@@ -238,7 +264,7 @@ def merge_vcf_ins(args, params, filenames):
                 d[id]['CHROM']=id.split(':')[0]
                 d[id]['POS']=poss[m][id][0]  # 0-based to 1-based; add one base before bp
                 d[id]['ID']='%s_ins_%d' % (args.cohort_name, n)
-                d[id]['REF']=fa['%s%s' % (m, id)]
+                d[id]['REF']=fa['%s' % id]
                 d[id]['ALT']='<INS:ME>'
                 d[id]['QUAL']='.'
                 d[id]['FILTER']=filt
@@ -260,6 +286,9 @@ def merge_vcf_ins(args, params, filenames):
             for sample_id in sample_ids:
                 if not sample_id in d[id]:
                     d[id][sample_id]='0/0'
+                    if id in vlc_intersects:
+                        if sample_id in vlc_intersects[id]:
+                            d[id][sample_id]='0/.'
         header.append('##INFO=<ID=SVTYPE,Number=.,Type=String,Description="Mobile element class">\n')
         header.append('##INFO=<ID=MEI,Number=.,Type=String,Description="Mobile element subclass">\n')
         header.append('##INFO=<ID=MEPRED,Number=.,Type=String,Description="MEI prediction status">\n')

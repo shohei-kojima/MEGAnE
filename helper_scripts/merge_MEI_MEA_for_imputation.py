@@ -17,9 +17,10 @@ This script can take gzip-ed VCF files.
 
 Outputs:
 This script outputs four files below:
-- input_MEI_biallelic_PASS.vcf.gz           : This contains biallelic MEIs which passed the filter.
-- input_MEA_biallelic_PASS.vcf.gz           : This contains biallelic absent MEs which passed the filter.
-- cohort_name_biallelic_PASS.vcf.gz         : This is the main output. This contains biallelic polymorphic MEs which passed the filter. This file can be used for imputation.
+- input_MEI_biallelic.vcf.gz           : This contains biallelic MEIs which passed the filter.
+- input_MEA_biallelic.vcf.gz           : This contains biallelic absent MEs which passed the filter.
+- cohort_name_biallelic.vcf.gz         : This is the main output. This contains biallelic polymorphic MEs which passed the filter. This file can be used for imputation.
+- cohort_name_biallelic.bed.gz         : This is a bed file which contains positions of MEs. SNPs overlap with the positions listed in this file should be removed from imputation (e.g. plink --exclude bed0 cohort_name_biallelic.bed.gz).
 - cohort_name_multiallelic_ME_summary.txt   : This contains summary of multi-allelic MEs.
 
 Show help message:
@@ -63,7 +64,7 @@ if not '.vcf' in abs:
 
 def resolve_overlap_in_a_vcf(f):
     outfname_base=os.path.basename(f).rsplit('.vcf', 1)[0]
-    out_nonoverlap='%s_biallelic_PASS.vcf.gz' % outfname_base
+    out_nonoverlap='%s_biallelic.vcf.gz' % outfname_base
     
     # resolve overlap
     if f[-7:] == '.vcf.gz' or f[-8:] == '.vcf.bgz':
@@ -77,15 +78,16 @@ def resolve_overlap_in_a_vcf(f):
         exit(1)
     
     d={}
+    filts={}
     for line in infile:
         if gzip_judge is True:
             line=line.decode()
         if not line[0] == '#':
             ls=line.split('\t', 10)
-            if ls[6] == 'PASS':
-                if not ls[0] in d:
-                    d[ls[0]]=collections.Counter()
-                d[ls[0]][int(ls[1])] += 1
+            if not ls[0] in d:
+                d[ls[0]]=collections.Counter()
+            d[ls[0]][int(ls[1])] += 1
+            filts[ls[2]]=ls[6]
 
     hits={}
     overlap_ins_ins=0
@@ -112,10 +114,9 @@ def resolve_overlap_in_a_vcf(f):
                 line=line.decode()
             if not line[0] == '#':
                 ls=line.split('\t', 10)
-                if ls[6] == 'PASS':
-                    if ls[0] in hits:
-                        if ls[1] in hits[ls[0]]:
-                            hits_lines[ls[0]][ls[1]].append(line)
+                if ls[0] in hits:
+                    if ls[1] in hits[ls[0]]:
+                        hits_lines[ls[0]][ls[1]].append(line)
         
         keep={}
         for chr in hits:
@@ -132,8 +133,11 @@ def resolve_overlap_in_a_vcf(f):
                         if 'AC=' in info:
                             ac=int(info.replace('AC=', ''))
                             break
-                    acs.append([ac, line, ls[2]])
+                    filt=filts[ls[2]]
+                    filt= 1 if filt == 'PASS' else 0
+                    acs.append([filt, ac, line, ls[2]])
                 acs=sorted(acs)
+                acs=[ l[1:] for l in acs ]
                 keep[chr][pos]=acs[-1][1]
                 outchar=[]
                 outchar.append('keep=%s,%d' % (acs[-1][2], acs[-1][0]))
@@ -149,16 +153,15 @@ def resolve_overlap_in_a_vcf(f):
                 line=line.decode()
             if not line[0] == '#':
                 ls=line.split('\t', 10)
-                if ls[6] == 'PASS':
-                    if ls[0] in keep:
-                        if ls[1] in keep[ls[0]]:
-                            if len(keep[ls[0]][ls[1]]) > 0:
-                                outfile.write(keep[ls[0]][ls[1]])
-                                keep[ls[0]][ls[1]]=''
-                        else:
-                            outfile.write(line)
+                if ls[0] in keep:
+                    if ls[1] in keep[ls[0]]:
+                        if len(keep[ls[0]][ls[1]]) > 0:
+                            outfile.write(keep[ls[0]][ls[1]])
+                            keep[ls[0]][ls[1]]=''
                     else:
                         outfile.write(line)
+                else:
+                    outfile.write(line)
             else:
                 outfile.write(line)
         infile.close()
@@ -174,8 +177,7 @@ def resolve_overlap_in_a_vcf(f):
                 line=line.decode()
             if not line[0] == '#':
                 ls=line.split('\t', 10)
-                if ls[6] == 'PASS':
-                    outfile.write(line)
+                outfile.write(line)
             else:
                 outfile.write(line)
         infile.close()
@@ -185,7 +187,7 @@ def resolve_overlap_in_a_vcf(f):
 
 
 def resolve_overlap_between_vcf_vcf(ins, abs, cohort):
-    out_nonoverlap='%s_biallelic_PASS.vcf.gz' % cohort
+    out_nonoverlap='%s_biallelic.vcf.gz' % cohort
     
     # resolve overlap
     f=ins
@@ -205,24 +207,25 @@ def resolve_overlap_between_vcf_vcf(ins, abs, cohort):
         gzip_judge=False
     
     d={}
+    filts={}
     for line in insfile:
         if gzip_judge is True:
             line=line.decode()
         if not line[0] == '#':
             ls=line.split('\t', 10)
-            if ls[6] == 'PASS':
-                if not ls[0] in d:
-                    d[ls[0]]=collections.Counter()
-                d[ls[0]][int(ls[1])] += 1
+            if not ls[0] in d:
+                d[ls[0]]=collections.Counter()
+            d[ls[0]][int(ls[1])] += 1
+            filts[ls[2]]=ls[6]
     for line in absfile:
         if gzip_judge is True:
             line=line.decode()
         if not line[0] == '#':
             ls=line.split('\t', 10)
-            if ls[6] == 'PASS':
-                if not ls[0] in d:
-                    d[ls[0]]=collections.Counter()
-                d[ls[0]][int(ls[1])] += 1
+            if not ls[0] in d:
+                d[ls[0]]=collections.Counter()
+            d[ls[0]][int(ls[1])] += 1
+            filts[ls[2]]=ls[6]
     
     hits={}
     overlap_ins_abs=0
@@ -250,20 +253,18 @@ def resolve_overlap_between_vcf_vcf(ins, abs, cohort):
                 line=line.decode()
             if not line[0] == '#':
                 ls=line.split('\t', 10)
-                if ls[6] == 'PASS':
-                    if ls[0] in hits:
-                        if ls[1] in hits[ls[0]]:
-                            hits_lines[ls[0]][ls[1]].append(line)
+                if ls[0] in hits:
+                    if ls[1] in hits[ls[0]]:
+                        hits_lines[ls[0]][ls[1]].append(line)
         for line in absfile:
             if gzip_judge is True:
                 line=line.decode()
             if not line[0] == '#':
                 ls=line.split('\t', 10)
-                if ls[6] == 'PASS':
-                    if ls[0] in hits:
-                        if ls[1] in hits[ls[0]]:
-                            hits_lines[ls[0]][ls[1]].append(line)
-
+                if ls[0] in hits:
+                    if ls[1] in hits[ls[0]]:
+                        hits_lines[ls[0]][ls[1]].append(line)
+        
         keep={}
         for chr in hits:
             keep[chr]={}
@@ -279,8 +280,11 @@ def resolve_overlap_between_vcf_vcf(ins, abs, cohort):
                         if 'AC=' in info:
                             ac=int(info.replace('AC=', ''))
                             break
-                    acs.append([ac, line, ls[2]])
+                    filt=filts[ls[2]]
+                    filt= 1 if filt == 'PASS' else 0
+                    acs.append([filt, ac, line, ls[2]])
                 acs=sorted(acs)
+                acs=[ l[1:] for l in acs ]
                 keep[chr][pos]=acs[-1][1]
                 outchar=[]
                 outchar.append('keep=%s,%d' % (acs[-1][2], acs[-1][0]))
@@ -297,15 +301,14 @@ def resolve_overlap_between_vcf_vcf(ins, abs, cohort):
                 line=line.decode()
             if not line[0] == '#':
                 ls=line.split('\t', 10)
-                if ls[6] == 'PASS':
-                    if ls[0] in keep:
-                        if ls[1] in keep[ls[0]]:
-                            if ls[2] in keep[ls[0]][ls[1]]:
-                                outfile.write(keep[ls[0]][ls[1]])
-                        else:
-                            outfile.write(line)
+                if ls[0] in keep:
+                    if ls[1] in keep[ls[0]]:
+                        if ls[2] in keep[ls[0]][ls[1]]:
+                            outfile.write(keep[ls[0]][ls[1]])
                     else:
                         outfile.write(line)
+                else:
+                    outfile.write(line)
             else:
                 outfile.write(line)
         for line in absfile:
@@ -313,15 +316,14 @@ def resolve_overlap_between_vcf_vcf(ins, abs, cohort):
                 line=line.decode()
             if not line[0] == '#':
                 ls=line.split('\t', 10)
-                if ls[6] == 'PASS':
-                    if ls[0] in keep:
-                        if ls[1] in keep[ls[0]]:
-                            if ls[2] in keep[ls[0]][ls[1]]:
-                                outfile.write(keep[ls[0]][ls[1]])
-                        else:
-                            outfile.write(line)
+                if ls[0] in keep:
+                    if ls[1] in keep[ls[0]]:
+                        if ls[2] in keep[ls[0]][ls[1]]:
+                            outfile.write(keep[ls[0]][ls[1]])
                     else:
                         outfile.write(line)
+                else:
+                    outfile.write(line)
         insfile.close()
         absfile.close()
         outfile.close()
@@ -337,8 +339,7 @@ def resolve_overlap_between_vcf_vcf(ins, abs, cohort):
                 line=line.decode()
             if not line[0] == '#':
                 ls=line.split('\t', 10)
-                if ls[6] == 'PASS':
-                    outfile.write(line)
+                outfile.write(line)
             else:
                 outfile.write(line)
         for line in absfile:
@@ -346,8 +347,7 @@ def resolve_overlap_between_vcf_vcf(ins, abs, cohort):
                 line=line.decode()
             if not line[0] == '#':
                 ls=line.split('\t', 10)
-                if ls[6] == 'PASS':
-                    outfile.write(line)
+                outfile.write(line)
         insfile.close()
         absfile.close()
         outfile.close()
@@ -366,6 +366,22 @@ summary_out.append('Multi-allelic ME removal finished. Please see: %s' % final_o
 
 with open('%s_multiallelic_ME_summary.txt' % cohort, 'w') as outfile:
     outfile.write(''.join(summary_out))
+
+# convert to bed
+outfname= final_outf[:-7] + '.bed.gz'
+infile=gzip.open(final_outf)
+outfile=gzip.open(outfname, 'wt')
+
+for line in infile:
+    line=line.decode()
+    if not line[0] == '#':
+        ls=line.split('\t', 10)
+        for info in ls[7].split(';'):
+            if '1END=' in info:
+                end=info.replace('1END=', '')
+                break
+        start= int(ls[1]) - 1
+        outfile.write('%s\t%d\t%s\t%s\n' % (ls[0], start, end, ls[2]))
 
 print('\nMulti-allelic ME removal finished. Please see: %s' % final_outf)
 
