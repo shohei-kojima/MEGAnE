@@ -361,7 +361,7 @@ def merge_vcf_abs(args, params, filenames):
 
         # load high confidence and unique MEIs
         all={}
-        for dir in args.dir:
+        for dir in args.dirs:
             f=args.dirs[dir][0]
             with open(f) as infile:
                 for line in infile:

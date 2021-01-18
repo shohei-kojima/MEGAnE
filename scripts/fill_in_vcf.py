@@ -45,6 +45,7 @@ def fill_in_ins(args, params, filenames):
         sample_ids=hs[9:]
         sample_ids_n=len(sample_ids)
         # fill-in
+        processed_n=0
         for sample_id in sample_ids:
             dir=args.sample_id_to_dir[sample_id]
             f=args.dirs[dir][2]
@@ -67,6 +68,9 @@ def fill_in_ins(args, params, filenames):
             for id in reads:
                 if reads[id] >= params.min_support_reads_ins:
                     geno_orig[id][sample_id]='0/.'
+            processed_n += 1
+            if (processed_n % params.processed_interval) == 0:
+                log.logger.info('%d samples processed...' % processed_n)
         
         # output
         missing_line_added=False
@@ -149,6 +153,7 @@ def fill_in_abs(args, params, filenames):
         sample_ids=hs[9:]
         sample_ids_n=len(sample_ids)
         # fill-in
+        processed_n=0
         for sample_id in sample_ids:
             dir=args.sample_id_to_dir[sample_id]
             f=args.dirs[dir][1]
@@ -167,6 +172,9 @@ def fill_in_abs(args, params, filenames):
             for id in to_be_added:
                 if not sample_id in geno_orig[id]:
                     geno_orig[id][sample_id]='0/.'
+            processed_n += 1
+            if (processed_n % params.processed_interval) == 0:
+                log.logger.info('%d samples processed...' % processed_n)
         
         # output
         missing_line_added=False
