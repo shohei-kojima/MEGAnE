@@ -290,8 +290,10 @@ class load_merge_vcf:
             self.blastn_evalue=float('1e-05')
             self.blastn_ident=80
             self.blastn_word_size=11
-            
             self.pass_perc_threshold=0.25
+            self.overhang_evalue_threshold=float('1e-05')
+            self.slop_len_for_abs=float('1e-05')
+            self.min_support_reads_ins=1
             
             params_for_debug=[]
             for k,v in self.__dict__.items():

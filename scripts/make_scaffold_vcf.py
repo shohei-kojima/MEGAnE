@@ -14,6 +14,41 @@ from utils import parse_fasta_for_merge_vcf
 import log,traceback
 
 
+def check_paths(args):
+    log.logger.debug('started')
+    try:
+        if args.merge_mei is True:
+            necessary_files=['MEI_final_gaussian_genotyped.vcf', 'breakpoint_pairs_pooled_all.txt.gz', 'overhang_to_MEI_list.txt.gz']
+        elif args.merge_absent_me is True:
+            necessary_files=['absent_MEs_genotyped.vcf', 'absent.txt.gz']
+        len_necessary_files=len(necessary_files)
+        dirs={}
+        n=0
+        with open(args.f) as infile:
+            for line in infile:
+                n += 1
+                dir=line.strip()
+                if os.path.exists(dir) is False:
+                    log.logger.error('%s does not exist.' % dir)
+                    exit(1)
+                tmp=[]
+                for f in necessary_files:
+                    f='%s/%s' % (dir, f)
+                    if os.path.exists(f) is False:
+                        log.logger.warning('%s did not found. This sample will NOT be merged.' % f)
+                        continue
+                    tmp.append(f)
+                if len(tmp) == len_necessary_files:
+                    dirs[dir]=tmp
+        log.logger.info('%d directories specified. %d directories will be analyzed.' % (n, len(dirs)))
+        if not n == len(dirs):
+            log.logger.warning('MEGAnE did not find necessary files in %d directory(ies). These will not be used for this analysis.' % n - len(dirs))
+        args.dirs=dirs
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
 def merge_vcf_ins(args, params, filenames):
     log.logger.debug('started')
     try:
@@ -33,19 +68,12 @@ def merge_vcf_ins(args, params, filenames):
         te_len[te]=len(''.join(tmp))
         
         # load file paths
-        files=[]
-        with open(args.f) as infile:
-            for line in infile:
-                line=line.strip()
-                if os.path.exists(line) is False:
-                    exit(1)
-                else:
-                    files.append(line)
-        file_num=len(files)
+        file_num=len(args.dirs)
                     
         # load high confidence and unique MEIs
         all={}
-        for f in files:
+        for dir in args.dirs:
+            f=args.dirs[dir][0]
             with open(f) as infile:
                 for line in infile:
                     if not line[0] == '#':
@@ -67,7 +95,9 @@ def merge_vcf_ins(args, params, filenames):
         load_header=False
         bed={}
         vlc={}
-        for f in files:
+        sample_id_to_dir={}
+        for dir in args.dirs:
+            f=args.dirs[dir][0]
             vcf_loaded=set()
             with open(f) as infile:
                 for line in infile:
@@ -78,6 +108,8 @@ def merge_vcf_ins(args, params, filenames):
                         if line[:6] == '#CHROM':
                             ls=line.split()
                             sample_id=ls[9]
+                            sample_id_to_dir[sample_id]=dir
+                            args.dirs[dir].append(sample_id)
                     elif not line[0] == '#':
                         ls=line.split()
                         if not 'Y' in ls[6]:
@@ -145,10 +177,7 @@ def merge_vcf_ins(args, params, filenames):
                                 vcf_loaded.add(ls[2])
                 load_header=True
             # load very low confidence
-            dir=os.path.dirname(f)
-            f='%s/breakpoint_pairs_pooled_all.txt.gz' % dir
-            if os.path.exists(f) is False:
-                exit(1)
+            f=args.dirs[dir][1]
             with gzip.open(f) as infile:
                 for line in infile:
                     ls=line.decode().split()
@@ -156,6 +185,7 @@ def merge_vcf_ins(args, params, filenames):
                         if not ls[7] in vlc:
                             vlc[ls[7]]=[]
                         vlc[ls[7]].append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[2], sample_id))
+        args.sample_id_to_dir=sample_id_to_dir
         count={}
         poss={}
         vlc_intersects={}
@@ -299,7 +329,7 @@ def merge_vcf_ins(args, params, filenames):
         header.append('##INFO=<ID=AC,Number=1,Type=Integer,Description="Allele count.">\n')
         header.append('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
         header.append('##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Copy number genotype for imprecise events">\n')
-        with open(filenames.merged_vcf_ins, 'w') as outfile:
+        with gzip.open(filenames.merged_vcf_ins, 'wt') as outfile:
             outfile.write(''.join(header))
             outfile.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s\n' % '\t'.join(sample_ids))
             col_names=['CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT'] + sample_ids
@@ -327,19 +357,12 @@ def merge_vcf_abs(args, params, filenames):
                     clas_to_fam[clas]=ls[1]
         
         # load file paths
-        files=[]
-        with open(args.f) as infile:
-            for line in infile:
-                line=line.strip()
-                if os.path.exists(line) is False:
-                    exit(1)
-                else:
-                    files.append(line)
-        file_num=len(files)
-        
+        file_num=len(args.dirs)
+
         # load high confidence and unique MEIs
         all={}
-        for f in files:
+        for dir in args.dir:
+            f=args.dirs[dir][0]
             with open(f) as infile:
                 for line in infile:
                     if not line[0] == '#':
@@ -371,8 +394,9 @@ def merge_vcf_abs(args, params, filenames):
         # count how many samples have a certain MEI
         load_header=False
         bed={}
-        for f in files:
-            sample_id=f
+        sample_id_to_dir={}
+        for dir in args.dirs:
+            f=args.dirs[dir][0]
             with open(f) as infile:
                 for line in infile:
                     if line[0] == '#':
@@ -382,6 +406,8 @@ def merge_vcf_abs(args, params, filenames):
                         if line[:6] == '#CHROM':
                             ls=line.split()
                             sample_id=ls[9]
+                            sample_id_to_dir[sample_id]=dir
+                            args.dirs[dir].append(sample_id)
                     else:
                         ls=line.split()
                         if not 'Y' in ls[6]:
@@ -405,6 +431,7 @@ def merge_vcf_abs(args, params, filenames):
                                     bed[te]=[]
                                 bed[te].append('\t'.join([ls[0], str(start), str(end), '%s,%s,%s,%s,%s' % (sample_id, ls[9], '.', leng, ls[6]), ','.join(clases)]))
                 load_header=True
+        args.sample_id_to_dir=sample_id_to_dir
         count={}
         poss={}
         for m in bed:
@@ -512,7 +539,7 @@ def merge_vcf_abs(args, params, filenames):
         header.append('##INFO=<ID=AC,Number=1,Type=Integer,Description="Allele count.">\n')
         header.append('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
         header.append('##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Copy number genotype for imprecise events">\n')
-        with open(filenames.merged_vcf_abs, 'w') as outfile:
+        with gzip.open(filenames.merged_vcf_abs, 'wt') as outfile:
             outfile.write(''.join(header))
             outfile.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s\n' % '\t'.join(sample_ids))
             col_names=['CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO', 'FORMAT'] + sample_ids
