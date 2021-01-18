@@ -60,28 +60,17 @@ log.start_log(args)
 log.logger.debug('Logging started.')
 
 
-# file check
-if args.i is None:
-    log.logger.error('Error: You need to specify input file with "-i" flag.')
-    exit(1)
-if args.a is None:
-    log.logger.error('Error: You need to specify input file with "-a" flag.')
-    exit(1)
-for f in (args.i, args.a):
-    if os.path.exists(f) is not True:
-        log.logger.error('Error: Input file %s does not exist.' % f)
-        exit(1)
+# initial check
+import initial_check
+log.logger.debug('This is %s version %s' % (__file__, version))
+print()
+log.logger.info('Initial check started.')
+initial_check.check_reshape_vcf(args, sys.argv)
+
 
 ins=args.i
 abs=args.a
 cohort=args.cohort_name
-
-if not '.vcf' in ins:
-    log.logger.error('please specify .vcf file')
-    exit(1)
-if not '.vcf' in abs:
-    log.logger.error('please specify .vcf file')
-    exit(1)
 
 
 # main

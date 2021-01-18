@@ -145,10 +145,52 @@ def check_merge_vcf(args, argv):
         if args.cohort_name is None:
             dt_now=datetime.datetime.now()
             args.cohort_name='%d-%d-%d-%d%d%d' % (dt_now.year, dt_now.month, dt_now.day, dt_now.hour, dt_now.minute, dt_now.second)
-        
+            log.logger.info('-cohort_name was not specified. Will use %s as a cohort name' % args.cohort_name)
+
         # check prerequisite modules
         from pybedtools import BedTool
         from Bio.Blast.Applications import NcbiblastnCommandline
+    except SystemExit:
+        log.logger.debug('\n'+ traceback.format_exc())
+        exit(1)
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
+def check_reshape_vcf(args, argv):
+    log.logger.debug('started')
+    try:
+        log.logger.debug('command line:\n'+ ' '.join(argv))
+        # check python version
+        version=sys.version_info
+        if (version[0] >= 3) and (version[1] >= 7):
+            log.logger.debug('Python version=%d.%d.%d' % (version[0], version[1], version[2]))
+        else:
+            log.logger.error('Please use Python 3.7 or later. Your Python is version %d.%d.' % (version[0], version[1]))
+            exit(1)
+                        
+        for f_check,f_name in zip([args.i, args.a], ['VCF of MEI (-i flag)', 'VCF of absent ME (-a flag)']):
+            if f_check is None:
+                log.logger.error('%s was not specified.' % f_name)
+                exit(1)
+            elif os.path.exists(f_check) is False:
+                log.logger.error('%s was not found.' % f_check)
+                exit(1)
+            else:
+                log.logger.debug('%s found.' % f_check)
+        
+        if not '.vcf' in args.i:
+            log.logger.error('please specify .vcf file with -i flag.')
+            exit(1)
+        if not '.vcf' in args.a:
+            log.logger.error('please specify .vcf file with -a flag.')
+            exit(1)
+        
+        if args.cohort_name is None:
+            dt_now=datetime.datetime.now()
+            args.cohort_name='%d-%d-%d-%d%d%d' % (dt_now.year, dt_now.month, dt_now.day, dt_now.hour, dt_now.minute, dt_now.second)
+            log.logger.info('-cohort_name was not specified. Will use %s as a cohort name' % args.cohort_name)
     except SystemExit:
         log.logger.debug('\n'+ traceback.format_exc())
         exit(1)
