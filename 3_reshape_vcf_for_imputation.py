@@ -86,9 +86,9 @@ if not '.vcf' in abs:
 
 # main
 import reshape_vcf_for_impute
-ins_nonoverlap=reshape_vcf_for_impute.resolve_overlap_in_a_vcf(ins, '%s_MEI' % cohort)
-abs_nonoverlap=reshape_vcf_for_impute.resolve_overlap_in_a_vcf(abs, '%s_MEA' % cohort)
-final_outf=reshape_vcf_for_impute.resolve_overlap_between_vcf_vcf(ins_nonoverlap, abs_nonoverlap, cohort)
+ins_nonoverlap=reshape_vcf_for_impute.resolve_overlap_in_a_vcf(ins, os.path.join(args.outdir, '%s_MEI' % cohort))
+abs_nonoverlap=reshape_vcf_for_impute.resolve_overlap_in_a_vcf(abs, os.path.join(args.outdir, '%s_MEA' % cohort))
+final_outf=reshape_vcf_for_impute.resolve_overlap_between_vcf_vcf(ins_nonoverlap, abs_nonoverlap, os.path.join(args.outdir, cohort))
 reshape_vcf_for_impute.convert_to_bed(final_outf)
 log.logger.info('\n\nMulti-allelic ME removal finished. Please see: %s\n' % final_outf)
 
