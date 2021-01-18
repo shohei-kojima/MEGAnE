@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='2021/01/18'
+version='v0.1.0 2021/01/18'
 
 
 # args
@@ -24,9 +24,9 @@ parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify Rep
 parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing the names of non-ME repeat class. Default: /path/to/prog/lib/human_non_ME_rep_headers.txt')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./jointcall_out', default='./jointcall_out')
 parser.add_argument('-cohort_name', metavar='str', type=str, help='Optional. Specify a cohort name. This will be used for the variant names as well the output file name. Default: YYYY-MM-DD-HHMMSS')
-parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
+parser.add_argument('-do_not_overwrite', help='Optional. Specify if you do NOT overwrite previous results.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
-parser.add_argument('-v', '--version', help='Print version.', action='store_true')
+parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (__file__, version))
 args=parser.parse_args()
 args.version=version
 

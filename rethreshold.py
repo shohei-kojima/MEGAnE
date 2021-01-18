@@ -15,7 +15,7 @@ python rethreshold.py -b test_data/NA12878.chr22.bam -fa /home/kooojiii/Document
 
 
 # version
-version='2020/03/05'
+version='2021/01/18'
 
 
 # args
@@ -41,7 +41,7 @@ parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Speci
 parser.add_argument('-pA_ME', metavar='str', type=str, help='Optional. Specify full path to a file containing repat class with polyA tail. Default: /path/to/prog/lib/ME_with_polyA_tail.txt')
 parser.add_argument('-only_ins', help='Optional. Specify if you only analyze non-reference MEI insertions.', action='store_true')
 parser.add_argument('-only_abs', help='Optional. Specify if you only analyze absence of reference MEI.', action='store_true')
-parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
+parser.add_argument('-do_not_overwrite', help='Optional. Specify if you do NOT overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Do not need to specify this. Rethresholding uses single core.', default=1)
 args=parser.parse_args()

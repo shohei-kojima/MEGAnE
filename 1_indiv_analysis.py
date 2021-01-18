@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='2021/01/09'
+version='v0.1.0/2021/01/18'
 
 
 # args
@@ -40,11 +40,11 @@ parser.add_argument('-only_abs', help='Optional. Specify if you only analyze abs
 parser.add_argument('-only_geno', help='Optional. Specify if you only genotype using previously analyzed data.', action='store_true')
 parser.add_argument('-unsorted', help='Optional. Specify if an input BAM/CRAM is not position sorted.', action='store_true')
 parser.add_argument('-pybedtools_tmp', metavar='str', type=str, help='Optional. Specify directory for temporary bedtools files, e.g. /dev/shm')
-parser.add_argument('-overwrite', help='Optional. Specify if you overwrite previous results.', action='store_true')
+parser.add_argument('-do_not_overwrite', help='Optional. Specify if you do NOT overwrite previous results.', action='store_true')
 parser.add_argument('-keep', help='Optional. Specify if you do not want to delete temporary files.', action='store_true')
 parser.add_argument('-no_pdf', help='Optional. Specify if you do not want to output pdf summary files.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
-parser.add_argument('-v', '--version', help='Print version.', action='store_true')
+parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (__file__, version))
 parser.add_argument('-only_geno_precall', action='store_true', help=argparse.SUPPRESS)
 parser.add_argument('-skip_unmapped', action='store_true', help=argparse.SUPPRESS)
 args=parser.parse_args()

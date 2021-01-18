@@ -32,12 +32,17 @@ import os,sys,glob,gzip,argparse
 import collections
 
 
+version='v0.1.0 2021/01/18'
+
+
 parser=argparse.ArgumentParser(description='')
 parser.add_argument('-i', metavar='str', type=str, help='Required. Specify output file from samtools coverage.')
 parser.add_argument('-a', metavar='str', type=str, help='Required. Specify a file containing autosomes. Default=/path/to/prog/lib/human_autosomes_ucsc_style.txt')
 parser.add_argument('-n', metavar='str', type=str, help='Optional. Specify output file name. Otherwise, output result as stdout.')
+parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (__file__, version))
 args=parser.parse_args()
 
+args.version=version
 ins=args.i
 abs=args.a
 cohort=args.n

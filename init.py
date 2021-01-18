@@ -7,7 +7,7 @@ See file LICENSE for details.
 '''
 
 
-import os,sys
+import os,sys,glob
 
 
 def init(args, version):
@@ -22,10 +22,15 @@ def init(args, version):
     sys.path.insert(0, os.path.join(base, 'scripts'))
 
     # make output dir
-    if args.overwrite is False:
+    if args.do_not_overwrite is True:
         if os.path.exists(args.outdir) is True:
-            print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
-            exit(1)
+            if args.outdir[-1] == '/':
+                dir=args.outdir[:-1]
+            else:
+                dir=args.outdir
+            if len(glob.glob('%s/*' % dir)) >= 1:
+                print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
+                exit(1)
         else:
             os.mkdir(args.outdir)
     else:
@@ -45,10 +50,15 @@ def init_geno(args, version):
     sys.path.insert(0, os.path.join(base, 'scripts'))
 
     # make output dir
-    if args.overwrite is False:
+    if args.do_not_overwrite is True:
         if os.path.exists(args.outdir) is True:
-            print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
-            exit(1)
+            if args.outdir[-1] == '/':
+                dir=args.outdir[:-1]
+            else:
+                dir=args.outdir
+            if len(glob.glob('%s/*' % dir)) >= 1:
+                print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
+                exit(1)
         else:
             os.mkdir(args.outdir)
     else:
@@ -68,10 +78,15 @@ def init_jointcall(args, version):
     sys.path.insert(0, os.path.join(base, 'scripts'))
     
     # make output dir
-    if args.overwrite is False:
+    if args.do_not_overwrite is True:
         if os.path.exists(args.outdir) is True:
-            print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
-            exit(1)
+            if args.outdir[-1] == '/':
+                dir=args.outdir[:-1]
+            else:
+                dir=args.outdir
+            if len(glob.glob('%s/*' % dir)) >= 1:
+                print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
+                exit(1)
         else:
             os.mkdir(args.outdir)
     else:
