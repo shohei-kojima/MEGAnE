@@ -377,7 +377,7 @@ if args.monoallelic is True:
     if not args.pybedtools_tmp == args.outdir:
         shutil.rmtree(args.pybedtools_tmp)
     # all finish!
-    utils.output_finish_comment(do_ins, do_abs, filenames)
+    utils.output_finish_comment(args, do_ins, do_abs, filenames)
     exit(0)
 
 
@@ -498,4 +498,4 @@ if not args.pybedtools_tmp == args.outdir:
     shutil.rmtree(args.pybedtools_tmp)
 
 # all finish!
-utils.output_finish_comment(do_ins, do_abs, filenames)
+utils.output_finish_comment(args, do_ins, do_abs, filenames)

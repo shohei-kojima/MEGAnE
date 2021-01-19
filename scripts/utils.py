@@ -126,24 +126,24 @@ def gzip_d(gzfile):
         exit(1)
 
 
-def output_finish_comment(do_ins, do_abs, filenames):
+def output_finish_comment(args, do_ins, do_abs, filenames):
     if do_ins is True and do_abs is True:
         if os.path.exists(filenames.bp_final_g) is True and os.path.exists(filenames.bp_final_p) is True:
-            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  When you next generate joint VCF, please use:  MEI_final_gaussian_genotyped.vcf & absent_MEs_genotyped.vcf\n  When you analyze only this sample, please use: MEI_final_percentile_genotyped.vcf & absent_MEs_genotyped.vcf\n\033[0m\n')
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  When you next generate joint VCF, please specify the output directory (%s) in Step 2.\n  When you analyze only this sample, please use: MEI_final_percentile_genotyped.vcf & absent_MEs_genotyped.vcf\n\033[0m\n' % args.outdir)
         elif os.path.exists(filenames.bp_final_f) is True:
-            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  We failed to call and genotype pMEIs. Please check again whether the input BAM/CRAM contains abundant pMEI.\n\033[0m\n')
+            log.logger.warning('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  We failed to call and genotype pMEIs. Please check again whether the input BAM/CRAM contains abundant pMEI.\n\033[0m\n')
     elif do_ins is True:
         if os.path.exists(filenames.bp_final_g) is True and os.path.exists(filenames.bp_final_p) is True:
-            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  When you next generate joint VCF, please use:  MEI_final_gaussian_genotyped.vcf\n  When you analyze only this sample, please use: MEI_final_percentile_genotyped.vcf\n\033[0m\n')
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  When you next generate joint VCF, please specify the output directory (%s) in Step 2.\n  When you analyze only this sample, please use: MEI_final_percentile_genotyped.vcf\n\033[0m\n' % args.outdir)
         elif os.path.exists(filenames.bp_final_f) is True:
-            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  We failed to call and genotype pMEIs. Please check again whether the input BAM/CRAM contains abundant pMEI.\n\033[0m\n')
+            log.logger.warning('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  We failed to call and genotype pMEIs. Please check again whether the input BAM/CRAM contains abundant pMEI.\n\033[0m\n')
     elif do_abs is True:
-        log.logger.info('\n\n\033[34mAll analysis finished!\n\n  Please use following file for your analysis:  absent_MEs_genotyped.vcf\n\033[0m\n')
+        log.logger.info('\n\n\033[34mAll analysis finished!\n\n  When you next generate joint VCF, please specify the output directory (%s) in Step 2.\n  When you analyze only this sample, please use following file for your analysis:  absent_MEs_genotyped.vcf\n\033[0m\n' % args.outdir)
 
 
 def output_finish_comment_merge_vcf(args, filenames):
     if args.merge_mei is True:
-        log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file for your analysis:  %s\n\033[0m\n' % filenames.filled_vcf_ins)
+        log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file for Step 3:  %s\n\033[0m\n' % filenames.filled_vcf_ins)
     elif args.merge_absent_me is True:
-        log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file for your analysis:  %s\n\033[0m\n' % filenames.filled_vcf_abs)
+        log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file for Step 3:  %s\n\033[0m\n' % filenames.filled_vcf_abs)
 
