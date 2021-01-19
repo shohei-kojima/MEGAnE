@@ -42,7 +42,8 @@ def check_paths(args):
                     dirs[dir]=tmp
         log.logger.info('%d directories specified. %d directories will be analyzed.' % (n, len(dirs)))
         if not n == len(dirs):
-            log.logger.warning('MEGAnE did not find necessary files in %d directory(ies). These will not be used for this analysis.' % n - len(dirs))
+            failed_n= n - len(dirs)
+            log.logger.warning('MEGAnE did not find necessary files in %d directory(ies). These directory(ies) will not be used for this analysis.' % failed_n)
         args.dirs=dirs
     except:
         log.logger.error('\n'+ traceback.format_exc())
