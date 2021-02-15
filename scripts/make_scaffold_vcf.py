@@ -236,6 +236,8 @@ def merge_vcf_ins(args, params, filenames):
             for id in count[m]:
                 chr=id.split(':')[0]
                 start= int(poss[m][id][0]) - 1  # add one base before bp
+                if start < 0:
+                    start=0
                 bed.append('%s\t%d\t%s\t%s\n' % (chr, start, poss[m][id][1], id))
         bed=BedTool(''.join(bed), from_string=True)
         fa=bed.sequence(fi=args.fa, name=True)
