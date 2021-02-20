@@ -24,6 +24,7 @@ parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify Rep
 parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing the names of non-ME repeat class. Default: /path/to/prog/lib/human_non_ME_rep_headers.txt')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./jointcall_out', default='./jointcall_out')
 parser.add_argument('-cohort_name', metavar='str', type=str, help='Optional. Specify a cohort name. This will be used for the variant names as well the output file name. Default: YYYY-MM-DD-HHMMSS')
+parser.add_argument('-pybedtools_tmp', metavar='str', type=str, help='Optional. Specify directory for temporary bedtools files, e.g. /dev/shm')
 parser.add_argument('-do_not_overwrite', help='Optional. Specify if you do NOT overwrite previous results.', action='store_true')
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
 parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (os.path.basename(__file__), version))

@@ -7,3 +7,8 @@ L2
 RTE
 RTEX
 Non-LTR Retrotransposon
+L1-dep
+B2
+Alu
+B4
+ID

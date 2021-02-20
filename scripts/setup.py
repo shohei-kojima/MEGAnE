@@ -305,6 +305,23 @@ def setup_geno(args, base):
 def setup_merge_vcf(args, base):
     log.logger.debug('started')
     try:
+        # tmp dir for pybedtools
+        if args.pybedtools_tmp is None:
+            args.pybedtools_tmp=args.outdir
+        else:
+            if os.path.exists(args.pybedtools_tmp) is False:
+                log.logger.info('%s does not exist. Please check if %s exists.' % (args.pybedtools_tmp, args.pybedtools_tmp))
+                exit(1)
+            nowtime=str(time.time()).replace('.', '_')
+            randval=random.randint(0, 1000000000)
+            nowtime='%s_%s' % (nowtime, str(randval))
+            args.pybedtools_tmp=os.path.join(args.pybedtools_tmp, nowtime)
+            if os.path.exists(args.pybedtools_tmp) is True:
+                log.logger.info('Exited due to a quite minor and corner reason. Please run again.')
+                exit(1)
+            else:
+                os.mkdir(args.pybedtools_tmp)
+        
         # load main chrs
         global female, male, chrX, chrY
         female={'female', 'Female', 'F', 'f'}

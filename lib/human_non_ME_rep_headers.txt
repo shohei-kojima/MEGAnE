@@ -5,3 +5,8 @@ Pseudogene
 snRNA
 KER
 HSFAU
+ARTEFACT
+scRNA
+tRNA
+Unknown
+rRNA

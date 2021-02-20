@@ -53,6 +53,7 @@ def check_paths(args):
 def merge_vcf_ins(args, params, filenames):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
         chrY_set={'Y', 'chrY'}
         # load te length
         te_len={}
@@ -349,6 +350,7 @@ def merge_vcf_ins(args, params, filenames):
 def merge_vcf_abs(args, params, filenames):
     log.logger.debug('started')
     try:
+        pybedtools.set_tempdir(args.pybedtools_tmp)
         # load te length
         clas_to_fam={}
         tmp=[]
