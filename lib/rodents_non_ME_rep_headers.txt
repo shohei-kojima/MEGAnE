@@ -11,3 +11,5 @@ tRNA
 Unknown
 rRNA
 snRNA
+centromeric
+Y-chromosome

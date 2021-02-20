@@ -7,3 +7,6 @@ L2
 RTE
 RTEX
 Non-LTR Retrotransposon
+Alu
+L1
+SVA

@@ -9,6 +9,7 @@ See file LICENSE for details.
 
 import os,datetime,collections,gzip
 import numpy as np
+import pybedtools
 from pybedtools import BedTool
 from utils import parse_fasta_for_merge_vcf
 import log,traceback

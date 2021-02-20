@@ -10,3 +10,6 @@ scRNA
 tRNA
 Unknown
 rRNA
+acromeric
+centromeric
+subtelomeric
