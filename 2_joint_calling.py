@@ -22,6 +22,8 @@ parser.add_argument('-f', metavar='str', type=str, help='Required. Specify paths
 parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: GRCh38DH.fa')
 parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
 parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing the names of non-ME repeat class. Default: /path/to/prog/lib/human_non_ME_rep_headers.txt')
+parser.add_argument('-male_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the male-specific chromosome(s). Default: chrY,Y', default='chrY,Y')
+parser.add_argument('-female_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) that is diploid in female. Default: chrX,X', default='chrX,X')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./jointcall_out', default='./jointcall_out')
 parser.add_argument('-cohort_name', metavar='str', type=str, help='Optional. Specify a cohort name. This will be used for the variant names as well the output file name. Default: YYYY-MM-DD-HHMMSS')
 parser.add_argument('-pybedtools_tmp', metavar='str', type=str, help='Optional. Specify directory for temporary bedtools files, e.g. /dev/shm')

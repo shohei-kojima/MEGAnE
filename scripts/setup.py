@@ -52,8 +52,8 @@ def setup(args, base):
         auto=args.auto
         female={'female', 'Female', 'FEMALE', 'F', 'f'}
         male={'male', 'Male', 'MALE', 'M', 'm'}
-        chrX={'chrX', 'X', '23'}
-        chrY={'chrY', 'Y', '24'}
+        chrX=set([ for chr in args.female_sex_chr.split(',') ])
+        chrY=set([ for chr in args.male_sex_chr.split(',') ])
         if not args.sex in auto:
             if not args.sex in female:
                 if not args.sex in male:
@@ -108,6 +108,46 @@ def setup(args, base):
             elif args.readlen < 100:
                 log.logger.warning('< 100 was specified with -readlen. Efficiency of polymorphic ME detection may not be good.')
         
+        # chromosome check
+        import pysam
+        if args.c is not None:
+            header=pysam.AlignmentFile(args.c, '-H')
+            samfilename=args.c
+        elif args.b is not None:
+            header=pysam.AlignmentFile(args.b, '-H')
+            samfilename=args.b
+        all_chrs_in_bam_header=set()
+        for line in infile.split('\n'):
+            if '@SQ\tSN:' in line:
+                seqname=line.split()[1][3:]
+                all_chrs_in_bam_header.add(seqname)
+        log.logger.debug('%d chromosome(s) were found in %s.' % (len(all_chrs_in_bam_header), samfilename))
+        # main chr
+        found_n=0
+        not_found=[]
+        for chr in main_chrs:
+            if chr in all_chrs_in_bam_header:
+                found_n += 1
+            else:
+                not_found.append(chr)
+        if len(not_found) >= 1:
+            log.logger.error('Chromosomes %s were NOT found in %s. Please check again if you are specifying correct chrosomes with "-mainchr" flag.' % (','.join(not_found), samfilename))
+            exit(1)
+        else:
+            log.logger.info('All %d main chromosome(s) were found in %s.' % (found_n, samfilename))
+        # sex chr
+        found_n=0
+        for chr in chrX:
+            if chr in all_chrs_in_bam_header:
+                log.logger.info('%s were found in %s. %s will be considered as a sex chromosome.' % (chr, samfilename, chr))
+                found_n += 1
+        for chr in chrY:
+            if chr in all_chrs_in_bam_header:
+                log.logger.info('%s were found in %s. %s will be considered as a sex chromosome.' % (chr, samfilename, chr))
+                found_n += 1
+        if found_n == 0:
+            log.logger.error('Sex chromosomes were NOT found in %s. Please check again if you are specifying correct chrosomes with "-female_sex_chr" and "-male_sex_chr" flags.' % samfilename)
+            exit(1)
         
         # fai
         global fai_path
@@ -181,8 +221,8 @@ def setup_geno_only_load_params(args, base):
         auto=args.auto
         female={'female', 'Female', 'FEMALE', 'F', 'f'}
         male={'male', 'Male', 'MALE', 'M', 'm'}
-        chrX={'chrX', 'X', '23'}
-        chrY={'chrY', 'Y', '24'}
+        chrX=set([ for chr in args.female_sex_chr.split(',') ])
+        chrY=set([ for chr in args.male_sex_chr.split(',') ])
         if not args.sex in auto:
             if not args.sex in female:
                 if not args.sex in male:
@@ -265,8 +305,8 @@ def setup_geno(args, base):
         global female, male, chrX, chrY
         female={'female', 'Female', 'F', 'f'}
         male={'male', 'Male', 'M', 'm'}
-        chrX={'chrX', 'X', '23'}
-        chrY={'chrY', 'Y', '24'}
+        chrX=set([ for chr in args.female_sex_chr.split(',') ])
+        chrY=set([ for chr in args.male_sex_chr.split(',') ])
 #        if not args.sex == 'male':
 #            if args.sex in female:
 #                new_main_chr=[]
@@ -326,8 +366,8 @@ def setup_merge_vcf(args, base):
         global female, male, chrX, chrY
         female={'female', 'Female', 'F', 'f'}
         male={'male', 'Male', 'M', 'm'}
-        chrX={'chrX', 'X', '23'}
-        chrY={'chrY', 'Y', '24'}
+        chrX=set([ for chr in args.female_sex_chr.split(',') ])
+        chrY=set([ for chr in args.male_sex_chr.split(',') ])
         
         # load rep headers to be removed
         global rep_headers_to_be_removed

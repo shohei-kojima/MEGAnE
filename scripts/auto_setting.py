@@ -31,7 +31,7 @@ def estimate_readlen(args):
                 if len(lens) == 200:
                     break
         avelen=round(np.mean(lens))
-        args.readlen=avelen
+        args.readlen=int(avelen)
         log.logger.debug('avelen=%d;lens=%s' % (avelen, ','.join([ str(v) for v in lens ])))
         log.logger.info('estimated read lenth = %d' % avelen)
     except SystemExit:
