@@ -57,8 +57,9 @@ def setup(args, base):
         if not args.sex in auto:
             if not args.sex in female:
                 if not args.sex in male:
-                    log.logger.error('Unknown value was specified with -sex. Please check again.')
-                    exit(1)
+                    if not args.sex.lower() == 'unknown':
+                        log.logger.error('Unknown value was specified with -sex. Please check again.')
+                        exit(1)
         if not args.cov in auto:
             if isinstance(args.cov, int) is True:
                 pass
@@ -226,8 +227,9 @@ def setup_geno_only_load_params(args, base):
         if not args.sex in auto:
             if not args.sex in female:
                 if not args.sex in male:
-                    log.logger.error('Unknown value was specified with -sex. Please check again.')
-                    exit(1)
+                    if not args.sex.lower() == 'unknown':
+                        log.logger.error('Unknown value was specified with -sex. Please check again.')
+                        exit(1)
         if not args.cov in auto:
             if isinstance(args.cov, int) is True:
                 pass
@@ -307,19 +309,13 @@ def setup_geno(args, base):
         male={'male', 'Male', 'M', 'm'}
         chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
         chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
-#        if not args.sex == 'male':
-#            if args.sex in female:
-#                new_main_chr=[]
-#                for chr in main_chrs:
-#                    if not chr in chrY:
-#                        new_main_chr.append(chr)
-#                main_chrs=[]
-#                main_chrs.extend(new_main_chr)
-#                log.logger.info('You specified "female" as sex, chrY is going to be excluded from analysis.')
-#            else:
-#                log.logger.error('Unknown value was specified with -sex. Please check again.')
-#                exit(1)
-        
+#        if not args.sex in auto:
+#            if not args.sex in female:
+#                if not args.sex in male:
+#                    if not args.sex.lower() == 'unknown':
+#                        log.logger.error('Unknown value was specified with -sex. Please check again.')
+#                        exit(1)
+
         # fai
         global fai_path
         if os.path.exists(args.fa + '.fai') is False:
