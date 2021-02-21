@@ -17,6 +17,8 @@ def init(args):
     if args.sex.lower() == 'unknown' and args.make_sex_auto is True:
         args.sex='auto'
         log.logger.info('Sex was not specified. It will be automatically estimated. The input should be a human sample.')
+    elif args.sex.lower() == 'unknown':
+        log.logger.warning('Sex was not specified. MEGAnE consider all sex chromosomes as diploid. This option is NOT recommended. Please use this option at your own risk. Please specify sex whenever possible.')
     return {'auto', 'Auto', 'AUTO'}
 
 
