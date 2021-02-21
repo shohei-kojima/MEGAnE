@@ -52,8 +52,8 @@ def setup(args, base):
         auto=args.auto
         female={'female', 'Female', 'FEMALE', 'F', 'f'}
         male={'male', 'Male', 'MALE', 'M', 'm'}
-        chrX=set([ for chr in args.female_sex_chr.split(',') ])
-        chrY=set([ for chr in args.male_sex_chr.split(',') ])
+        chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
+        chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
         if not args.sex in auto:
             if not args.sex in female:
                 if not args.sex in male:
@@ -221,8 +221,8 @@ def setup_geno_only_load_params(args, base):
         auto=args.auto
         female={'female', 'Female', 'FEMALE', 'F', 'f'}
         male={'male', 'Male', 'MALE', 'M', 'm'}
-        chrX=set([ for chr in args.female_sex_chr.split(',') ])
-        chrY=set([ for chr in args.male_sex_chr.split(',') ])
+        chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
+        chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
         if not args.sex in auto:
             if not args.sex in female:
                 if not args.sex in male:
@@ -305,8 +305,8 @@ def setup_geno(args, base):
         global female, male, chrX, chrY
         female={'female', 'Female', 'F', 'f'}
         male={'male', 'Male', 'M', 'm'}
-        chrX=set([ for chr in args.female_sex_chr.split(',') ])
-        chrY=set([ for chr in args.male_sex_chr.split(',') ])
+        chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
+        chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
 #        if not args.sex == 'male':
 #            if args.sex in female:
 #                new_main_chr=[]
@@ -366,8 +366,8 @@ def setup_merge_vcf(args, base):
         global female, male, chrX, chrY
         female={'female', 'Female', 'F', 'f'}
         male={'male', 'Male', 'M', 'm'}
-        chrX=set([ for chr in args.female_sex_chr.split(',') ])
-        chrY=set([ for chr in args.male_sex_chr.split(',') ])
+        chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
+        chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
         
         # load rep headers to be removed
         global rep_headers_to_be_removed
