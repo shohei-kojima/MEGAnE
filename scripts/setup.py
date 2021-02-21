@@ -111,10 +111,10 @@ def setup(args, base):
         # chromosome check
         import pysam
         if args.c is not None:
-            header=pysam.AlignmentFile(args.c, '-H')
+            header=pysam.view(args.c, '-H')
             samfilename=args.c
         elif args.b is not None:
-            header=pysam.AlignmentFile(args.b, '-H')
+            header=pysam.view(args.b, '-H')
             samfilename=args.b
         all_chrs_in_bam_header=set()
         for line in infile.split('\n'):
