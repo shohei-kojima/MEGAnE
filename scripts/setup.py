@@ -117,7 +117,7 @@ def setup(args, base):
             header=pysam.view(args.b, '-H')
             samfilename=args.b
         all_chrs_in_bam_header=set()
-        for line in infile.split('\n'):
+        for line in header.split('\n'):
             if '@SQ\tSN:' in line:
                 seqname=line.split()[1][3:]
                 all_chrs_in_bam_header.add(seqname)
