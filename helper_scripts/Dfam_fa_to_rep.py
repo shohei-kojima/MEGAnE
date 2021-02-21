@@ -63,14 +63,9 @@ with open(args.i) as infile:
                 exit(1)
             species=ls[1].replace('@', '')
             me=ls[0].replace('>', '').split('#')[0]
-            if not '/' in ls[0]:
-                clas=ls[0].split('#')[1]
-                clas_set.add(clas)
-                out.append('>%s\t%s\t%s\n' % (me, clas, species))
-            else:
-                clas=ls[0].split('#')[1].split('/')[1]
-                clas_set.add(clas)
-                out.append('>%s\t%s\t%s\n' % (me, clas, species))
+            clas=ls[0].split('#')[1]
+            clas_set.add(clas)
+            out.append('>%s\t%s\t%s\n' % (me, clas, species))
             header_n += 1
         else:
             out.append(line)
