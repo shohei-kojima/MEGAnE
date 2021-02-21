@@ -64,7 +64,9 @@ with open(args.i) as infile:
             species=ls[1].replace('@', '')
             me=ls[0].replace('>', '').split('#')[0]
             if not '/' in ls[0]:
-                out.append('>%s\n' % me)
+                clas=ls[0].split('#')[1]
+                clas_set.add(clas)
+                out.append('>%s\t%s\t%s\n' % (me, clas, species))
             else:
                 clas=ls[0].split('#')[1].split('/')[1]
                 clas_set.add(clas)

@@ -53,7 +53,7 @@ def check(args, argv):
                 exit(1)
         
         # check file path
-        for f_check,f_name in zip([args.fa, args.rep, args.repout, args.mainchr], ['Reference genome (-fa flag)', 'RepBase library (-rep flag)', 'RepeatMasker output file (-repout flag)', 'chr name file (-mainchr flag)']):
+        for f_check,f_name in zip([args.fa, args.rep, args.repout, args.mainchr, args.repremove, args.pA_ME], ['Reference genome (-fa flag)', 'RepBase library (-rep flag)', 'RepeatMasker output file (-repout flag)', 'chr name file (-mainchr flag)', 'Non-ME rep list (-repremove flag)', 'ME with pA list (-pA_ME flag)']):
             if f_check is None:
                 log.logger.error('%s was not specified.' % f_name)
                 exit(1)

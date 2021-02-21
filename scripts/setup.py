@@ -29,7 +29,7 @@ def setup(args, base):
             nowtime='%s_%s' % (nowtime, str(randval))
             args.pybedtools_tmp=os.path.join(args.pybedtools_tmp, nowtime)
             if os.path.exists(args.pybedtools_tmp) is True:
-                log.logger.info('Exited due to a quite minor and corner reason. Please run again.')
+                log.logger.error('Exited due to a quite minor and corner reason. Please run again.')
                 exit(1)
             else:
                 os.mkdir(args.pybedtools_tmp)
@@ -39,7 +39,8 @@ def setup(args, base):
         if args.mainchr is not None:
             main_chr_path=args.mainchr
         else:
-            main_chr_path=join(base, 'lib/hg38_human_main_chrs_plus_alt_ucsc_style.txt')
+            log.logger.error('Please specify a file containing chromosomes to be analyzed with "-mainchr" flag.')
+            exit(1)
         main_chrs=[]
         with open(main_chr_path) as infile:
             for line in infile:
@@ -54,10 +55,11 @@ def setup(args, base):
         male={'male', 'Male', 'MALE', 'M', 'm'}
         chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
         chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
+        args.sex=args.sex.replace('"', '')
         if not args.sex in auto:
             if not args.sex in female:
                 if not args.sex in male:
-                    if not args.sex.lower() == 'unknown':
+                    if not args.sex.lower().replace('"', '') == 'unknown':
                         log.logger.error('Unknown value was specified with -sex. Please check again.')
                         exit(1)
         if not args.cov in auto:
@@ -140,14 +142,14 @@ def setup(args, base):
         found_n=0
         for chr in chrX:
             if chr in all_chrs_in_bam_header:
-                log.logger.info('%s were found in %s. %s will be considered as a sex chromosome.' % (chr, samfilename, chr))
+                log.logger.info('"%s" was found in %s. "%s" will be considered as a sex chromosome.' % (chr, samfilename, chr))
                 found_n += 1
         for chr in chrY:
             if chr in all_chrs_in_bam_header:
-                log.logger.info('%s were found in %s. %s will be considered as a sex chromosome.' % (chr, samfilename, chr))
+                log.logger.info('"%s" was found in %s. "%s" will be considered as a sex chromosome.' % (chr, samfilename, chr))
                 found_n += 1
         if found_n == 0:
-            log.logger.error('Sex chromosomes were NOT found in %s. Please check again if you are specifying correct chrosomes with "-female_sex_chr" and "-male_sex_chr" flags.' % samfilename)
+            log.logger.error('Sex chromosome(s) was NOT found in %s. Please check again if you are specifying correct chrosomes with "-female_sex_chr" and "-male_sex_chr" flags.' % samfilename)
             exit(1)
         
         # fai
@@ -181,7 +183,8 @@ def setup(args, base):
         if args.repremove is not None:
             param_path=args.repremove
         else:
-            param_path=join(base, 'lib/human_non_ME_rep_headers.txt')
+            log.logger.error('Please specify a file containing non-ME repeats with "-repremove" flag.')
+            exit(1)
         rep_headers_to_be_removed=set()
         with open(param_path) as infile:
             for line in infile:
@@ -194,7 +197,8 @@ def setup(args, base):
         if args.pA_ME is not None:
             param_path=args.pA_ME
         else:
-            param_path=join(base, 'lib/human_ME_with_polyA_tail.txt')
+            log.logger.error('Please specify a file containing MEs with poly-A tail with "-pA_ME" flag.')
+            exit(1)
         rep_with_pA=set()
         with open(param_path) as infile:
             for line in infile:
@@ -224,10 +228,11 @@ def setup_geno_only_load_params(args, base):
         male={'male', 'Male', 'MALE', 'M', 'm'}
         chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
         chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
+        args.sex=args.sex.replace('"', '')
         if not args.sex in auto:
             if not args.sex in female:
                 if not args.sex in male:
-                    if not args.sex.lower() == 'unknown':
+                    if not args.sex.lower().replace('"', '') == 'unknown':
                         log.logger.error('Unknown value was specified with -sex. Please check again.')
                         exit(1)
         if not args.cov in auto:
@@ -297,7 +302,8 @@ def setup_geno(args, base):
         if args.mainchr is not None:
             main_chr_path=args.mainchr
         else:
-            main_chr_path=join(base, 'lib/hg38_human_main_chrs_plus_alt_ucsc_style.txt')
+            log.logger.error('Please specify a file containing chromosomes to be analyzed with "-mainchr" flag.')
+            exit(1)
         main_chrs=[]
         with open(main_chr_path) as infile:
             for line in infile:
@@ -309,10 +315,11 @@ def setup_geno(args, base):
         male={'male', 'Male', 'M', 'm'}
         chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
         chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
+        args.sex=args.sex.replace('"', '')
 #        if not args.sex in auto:
 #            if not args.sex in female:
 #                if not args.sex in male:
-#                    if not args.sex.lower() == 'unknown':
+#                    if not args.sex.lower().replace('"', '') == 'unknown':
 #                        log.logger.error('Unknown value was specified with -sex. Please check again.')
 #                        exit(1)
 

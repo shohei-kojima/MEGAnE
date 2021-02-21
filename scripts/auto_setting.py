@@ -14,10 +14,10 @@ import log,traceback
 
 
 def init(args):
-    if args.sex.lower() == 'unknown' and args.make_sex_auto is True:
+    if args.sex.lower().replace('"', '') == 'unknown' and args.make_sex_auto is True:
         args.sex='auto'
         log.logger.warning('Sex is not specified. It will be automatically estimated. Please make sure the input must be a human sample.')
-    elif args.sex.lower() == 'unknown':
+    elif args.sex.lower().replace('"', '') == 'unknown':
         log.logger.warning('Sex is not specified. MEGAnE consider all sex chromosomes as diploid. This option is NOT recommended. Please use this option at your own risk. Please specify sex whenever possible.')
     return {'auto', 'Auto', 'AUTO'}
 
