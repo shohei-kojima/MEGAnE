@@ -13,7 +13,10 @@ import numpy as np
 import log,traceback
 
 
-def init():
+def init(args):
+    if args.sex.lower() == 'unknown' and args.make_sex_auto is True:
+        args.sex='auto'
+        log.logger.info('Sex was not specified. It will be automatically estimated. The input should be a human sample.')
     return {'auto', 'Auto', 'AUTO'}
 
 

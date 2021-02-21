@@ -28,7 +28,7 @@ parser.add_argument('-threshold', metavar='int', type=int, help='Optional. Speci
 parser.add_argument('-sample_name', metavar='str', type=str, help='Optional. Specify sample name which will be labeled in the VCF output. If not specified, BAM/CRAM filename will be output.')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Optional. Specify full path if you analyze non-human sample. Default: /path/to/prog/lib/human_main_chrs.txt')
 parser.add_argument('-monoallelic', help='Optional. Specify if you use monoalellic sample, such as inbread mouse strains or HAP1 cells.', action='store_true')
-parser.add_argument('-sex', metavar='str', type=str, help='Required. Specify "female" or "male" or "auto" or "unknown". "auto" is only available for human samples. If "auto" is specified, it automatically estimate the sex. Default: auto', default='auto')
+parser.add_argument('-sex', metavar='str', type=str, help='Required. Specify "female" or "male" or "auto" or "unknown". "auto" is only available for human samples. If "auto" is specified, it automatically estimate the sex. Default: unknown', default='unknown')
 parser.add_argument('-male_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the male-specific chromosome(s). Default: chrY,Y', default='chrY,Y')
 parser.add_argument('-female_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) that is diploid in female. Default: chrX,X', default='chrX,X')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
@@ -49,6 +49,7 @@ parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of thr
 parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (os.path.basename(__file__), version))
 parser.add_argument('-only_geno_precall', action='store_true', help=argparse.SUPPRESS)
 parser.add_argument('-skip_unmapped', action='store_true', help=argparse.SUPPRESS)
+parser.add_argument('-make_sex_auto', action='store_true', help=argparse.SUPPRESS)
 args=parser.parse_args()
 args.version=version
 
@@ -82,7 +83,7 @@ initial_check.check(args, sys.argv)
 
 # set up
 import setup,auto_setting
-args.auto=auto_setting.init()
+args.auto=auto_setting.init(args)
 if args.readlen in args.auto:
     auto_setting.estimate_readlen(args)
 setup.setup(args, init.base)
