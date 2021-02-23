@@ -63,6 +63,8 @@ def init_jointcall(args, version):
     sys.path.insert(0, os.path.join(base, 'scripts'))
     
     # make output dir
+    if args.chr is not None and args.outdir == './jointcall_out':
+        args.outdir=os.path.join(args.outdir, args.chr.replace(',', '_'))
     if args.do_not_overwrite is True:
         if os.path.exists(args.outdir) is True:
             if args.outdir[-1] == '/':

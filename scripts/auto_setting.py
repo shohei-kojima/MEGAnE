@@ -76,7 +76,48 @@ def estimate_depth_unsorted(args, infile, chrx, chry):
     return depth,xnum,ynum
 
 
-def estimate_depth_sex(args, params, auto):
+def estimate_depth_sex(args, params, auto, read_cnts):
+    log.logger.debug('started')
+    try:
+        # load fai
+        nonXY_len=0
+        X_len=0
+        Y_len=0
+        with open(args.fai) as infile:
+            for line in infile:
+                ls=line.split()
+                if ls[0] in params.chrX:
+                    X_len += int(ls[1])
+                elif ls[0] in params.chrY:
+                    Y_len += int(ls[1])
+                else:
+                    nonXY_len += int(ls[1])
+        if X_len == 0 or Y_len == 0:
+            log.logger.error('Sex chromosome not found in the reference fasta index. Please check again if the reference fasta contains sex chromosomes.')
+            exit(1)
+        if nonXY_len == 0:
+            log.logger.error('Autosomes not found in the reference fasta index. Please check again if the reference fasta contains autosomes.')
+            exit(1)
+        depth= (args.readlen * read_cnts[0]) / nonXY_len
+        x_depth= (args.readlen * read_cnts[1]) / X_len
+        y_depth= (args.readlen * read_cnts[2]) / Y_len
+        sex='female' if (y_depth / x_depth) < params.sex_est_XY_ratio_threshold else 'male'
+        log.logger.debug('depth=%d;x_depth=%f;y_depth=%f;sex=%s;nonXY_len=%d' % (depth, x_depth, y_depth, sex, nonXY_len))
+        if args.cov in auto:
+            args.cov= int(round(depth))
+            log.logger.info('estimated autosome depth = %d' % int(round(depth)))
+        if args.sex in auto:
+            args.sex=sex
+            log.logger.info('estimated sex = %s' % sex)
+    except SystemExit:
+        log.logger.debug('\n'+ traceback.format_exc())
+        exit(1)
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
+def estimate_depth_sex_only_human(args, params, auto):  # deprecated
     log.logger.debug('started')
     try:
         if args.c is not None:

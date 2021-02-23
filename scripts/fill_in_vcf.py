@@ -8,7 +8,31 @@ See file LICENSE for details.
 
 
 import os,datetime,collections,gzip
+from multiprocessing import Pool
 import log,traceback
+
+
+def fill_in_ins_pool(args, sample_id, params, bps, geno_orig):
+    dir=args.sample_id_to_dir[sample_id]
+    f=args.dirs[dir][2]
+    reads=collections.Counter()
+    with gzip.open(f, 'rt') as infile:
+        for line in infile:
+            ls=line.strip().split('\t')
+            if float(ls[2]) < params.overhang_evalue_threshold:
+                chr,tmp=ls[0].split(':', 1)
+                if chr in args.chr:
+                    start,tmp=tmp.split('-', 1)
+                    end,lr,_=tmp.split('/', 2)
+                    bp=int(start) if lr == 'L' else int(end)
+                    me,_=ls[1].split(',', 1)
+                    if me in bps:
+                        if chr in bps[me]:
+                            if bp in bps[me][chr]:
+                                id=bps[me][chr][bp]
+                                if not sample_id in geno_orig[id]:
+                                    reads[id] += 1
+    return [reads, sample_id]
 
 
 def fill_in_ins(args, params, filenames):
@@ -45,32 +69,27 @@ def fill_in_ins(args, params, filenames):
         sample_ids=hs[9:]
         sample_ids_n=len(sample_ids)
         # fill-in
-        processed_n=0
-        for sample_id in sample_ids:
-            dir=args.sample_id_to_dir[sample_id]
-            f=args.dirs[dir][2]
-            reads=collections.Counter()
-            with gzip.open(f) as infile:
-                for line in infile:
-                    ls=line.decode().strip().split('\t')
-                    if float(ls[2]) < params.overhang_evalue_threshold:
-                        chr,tmp=ls[0].split(':', 1)
-                        start,tmp=tmp.split('-', 1)
-                        end,lr,_=tmp.split('/', 2)
-                        bp=int(start) if lr == 'L' else int(end)
-                        me,_=ls[1].split(',', 1)
-                        if me in bps:
-                            if chr in bps[me]:
-                                if bp in bps[me][chr]:
-                                    id=bps[me][chr][bp]
-                                    if not sample_id in geno_orig[id]:
-                                        reads[id] += 1
-            for id in reads:
-                if reads[id] >= params.min_support_reads_ins:
-                    geno_orig[id][sample_id]='0/.'
-            processed_n += 1
-            if (processed_n % params.processed_interval) == 0:
-                log.logger.info('%d samples processed...' % processed_n)
+        print_chunk=10 if args.p == 1 else 5
+        chunk=0
+        with Pool(processes=args.p) as p:
+            for n in range(0, sample_ids_n, args.p):
+                end= n + args.p
+                if end > sample_ids_n:
+                    end=sample_ids_n
+                jobs=[]
+                for sample_id in sample_ids[n:end]:
+                    jobs.append(p.apply_async(fill_in_ins_pool, (args, sample_id, params, bps, geno_orig)))
+                res=[]
+                for j in jobs:
+                    res.append(j.get())
+                for reads,sample_id in res:
+                    for id in reads:
+                        if reads[id] >= params.min_support_reads_ins:
+                            geno_orig[id][sample_id]='0/.'
+                chunk += 1
+                if (chunk % print_chunk) == 0:
+                    log.logger.info('Adding missing genotypes, %d files processed...' % (chunk * args.p))
+            log.logger.info('Adding missing genotypes, %d files processed...' % end)
         
         # output
         missing_line_added=False
@@ -120,6 +139,25 @@ def fill_in_ins(args, params, filenames):
         exit(1)
 
 
+def fill_in_abs_pool(args, sample_id, bps):
+    dir=args.sample_id_to_dir[sample_id]
+    f=args.dirs[dir][1]
+    to_be_added=set()
+    with gzip.open(f, 'rt') as infile:
+        for line in infile:
+            ls=line.strip().split('\t')
+            chr=ls[1]
+            if chr in args.chr:
+                start=int(ls[2])
+                end=int(ls[3])
+                if chr in bps:
+                    if start in bps[chr]:
+                        if end in bps[chr]:
+                            if bps[chr][start] == bps[chr][end]:
+                                to_be_added.add(bps[chr][start])
+    return [to_be_added, sample_id]
+
+
 def fill_in_abs(args, params, filenames):
     log.logger.debug('started')
     try:
@@ -153,28 +191,27 @@ def fill_in_abs(args, params, filenames):
         sample_ids=hs[9:]
         sample_ids_n=len(sample_ids)
         # fill-in
-        processed_n=0
-        for sample_id in sample_ids:
-            dir=args.sample_id_to_dir[sample_id]
-            f=args.dirs[dir][1]
-            to_be_added=set()
-            with gzip.open(f) as infile:
-                for line in infile:
-                    ls=line.decode().strip().split('\t')
-                    chr=ls[1]
-                    start=int(ls[2])
-                    end=int(ls[3])
-                    if chr in bps:
-                        if start in bps[chr]:
-                            if end in bps[chr]:
-                                if bps[chr][start] == bps[chr][end]:
-                                    to_be_added.add(bps[chr][start])
-            for id in to_be_added:
-                if not sample_id in geno_orig[id]:
-                    geno_orig[id][sample_id]='0/.'
-            processed_n += 1
-            if (processed_n % params.processed_interval) == 0:
-                log.logger.info('%d samples processed...' % processed_n)
+        print_chunk=10 if args.p == 1 else 5
+        chunk=0
+        with Pool(processes=args.p) as p:
+            for n in range(0, sample_ids_n, args.p):
+                end= n + args.p
+                if end > sample_ids_n:
+                    end=sample_ids_n
+                jobs=[]
+                for sample_id in sample_ids[n:end]:
+                    jobs.append(p.apply_async(fill_in_abs_pool, (args, sample_id, bps)))
+                res=[]
+                for j in jobs:
+                    res.append(j.get())
+                for to_be_added,sample_id in res:
+                    for id in to_be_added:
+                        if not sample_id in geno_orig[id]:
+                            geno_orig[id][sample_id]='0/.'
+                chunk += 1
+                if (chunk % print_chunk) == 0:
+                    log.logger.info('Adding missing genotypes, %d files processed...' % (chunk * args.p))
+            log.logger.info('Adding missing genotypes, %d files processed...' % end)
         
         # output
         missing_line_added=False

@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='v0.1.1 2021/02/15'
+version='v0.1.1 2021/02/23'
 
 
 # args
@@ -22,6 +22,7 @@ parser.add_argument('-f', metavar='str', type=str, help='Required. Specify paths
 parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: GRCh38DH.fa')
 parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
 parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing the names of non-ME repeat class. Default: /path/to/prog/lib/human_non_ME_rep_headers.txt')
+parser.add_argument('-chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) to be analyzed with comma as a delimiter (e.g. chr1,chr2). By default (i.e. without this flag), MEGAnE analyzes all chromosomes.')
 parser.add_argument('-male_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the male-specific chromosome(s). Default: chrY,Y', default='chrY,Y')
 parser.add_argument('-female_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) that is diploid in female. Default: chrX,X', default='chrX,X')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./jointcall_out', default='./jointcall_out')
@@ -89,10 +90,12 @@ if args.merge_absent_me is True:
     log.logger.info('Preprocess started.')
     reshape_rep.reshape(args, params, filenames)
     for ext in ['nhr', 'nin', 'nog', 'nsd', 'nsi', 'nsq']:
-        os.remove('%s.%s' % (filenames.repdb, ext))
+        f='%s.%s' % (filenames.repdb, ext)
+        if os.path.exists(f) is True:
+            os.remove('%s.%s' % (filenames.repdb, ext))
 
 
-# 1. make scaffold
+# 1. make scaffold, fill-in
 import make_scaffold_vcf,fill_in_vcf
 log.logger.info('File check started.')
 make_scaffold_vcf.check_paths(args)

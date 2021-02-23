@@ -205,6 +205,10 @@ def setup(args, base):
                 line=line.strip().replace(' ', '_')
                 if not line == '':
                     rep_with_pA.add(line)
+        
+        # homozygous
+        if args.homozygous is True:
+            args.monoallelic=True
     except SystemExit:
         log.logger.debug('\n'+ traceback.format_exc())
         exit(1)
@@ -371,6 +375,8 @@ def setup_merge_vcf(args, base):
         male={'male', 'Male', 'M', 'm'}
         chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
         chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
+        if args.chr is not None:
+            args.chr=set([ chr for chr in args.chr.split(',') ])
         
         # load rep headers to be removed
         global rep_headers_to_be_removed

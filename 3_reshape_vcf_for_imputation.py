@@ -32,7 +32,7 @@ import os,sys,glob,gzip,argparse
 import collections
 
 
-version='v0.1.1 2021/02/15'
+version='v0.1.1 2021/02/23'
 
 
 parser=argparse.ArgumentParser(description='')

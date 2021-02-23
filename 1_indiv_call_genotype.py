@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='v0.1.1 2021/02/15'
+version='v0.1.1 2021/02/23'
 
 
 # args
@@ -25,14 +25,15 @@ parser.add_argument('-repout', metavar='str', type=str, help='Required. Specify 
 parser.add_argument('-repremove', metavar='str', type=str, help='Required. Specify full path to a file containing the names of non-ME repeat class. E.g. non_ME_rep.txt')
 parser.add_argument('-pA_ME', metavar='str', type=str, help='Required. Specify full path to a file containing repat class with polyA tail. E.g. ME_with_pA.txt')
 parser.add_argument('-mainchr', metavar='str', type=str, help='Required. Specify full path if you analyze non-human sample. E.g. main_chr_list.txt')
-parser.add_argument('-cov', metavar='int or auto', type=str, help='Optional, but specify whenever possible. Specify mapping depth. If "auto" was specified, it estimate autosome depth. "auto" is only available for human samples. Default: 30', default='30')
+parser.add_argument('-cov', metavar='int or auto', type=str, help='Optional, but specify whenever possible. Specify mapping depth. If "auto" was specified, it estimate autosome depth. "auto" is only available for human samples. Default: auto', default='auto')
 parser.add_argument('-readlen', metavar='int or auto', type=str, help='Optional. Specify read length. If "auto" was specified, it estimate read length. Default: auto', default='auto')
-parser.add_argument('-sex', metavar='str', type=str, help='Optional, but specify whenever possible. Specify "female" or "male" or "auto" or "unknown". "auto" is only available for human samples. If "auto" is specified, it automatically estimate the sex. Default: auto for human, unknown for non-human.', default='unknown')
+parser.add_argument('-sex', metavar='str', type=str, help='Optional, but specify whenever possible. Specify "female" or "male" or "auto" or "unknown". "auto" is only available for human samples. If "auto" is specified, it automatically estimate the sex. Default: auto', default='auto')
 parser.add_argument('-male_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the male-specific chromosome(s). Default: chrY,Y', default='chrY,Y')
 parser.add_argument('-female_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) that is diploid in female. Default: chrX,X', default='chrX,X')
 parser.add_argument('-sample_name', metavar='str', type=str, help='Optional. Specify sample name which will be labeled in the VCF output. If not specified, BAM/CRAM filename will be output.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
-parser.add_argument('-monoallelic', help='Optional. Specify if you use monoalellic sample, such as inbread mouse strains and HAP1 cells.', action='store_true')
+parser.add_argument('-homozygous', help='Optional. Specify if you use inbred mouse strains (i.e. homozygous at all loci).', action='store_true')
+parser.add_argument('-monoallelic', help='Optional. Specify if you use haploid sample, such as CHM1.', action='store_true')
 parser.add_argument('-unsorted', help='Optional. Specify if an input BAM/CRAM is not position sorted.', action='store_true')
 parser.add_argument('-verylowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 10x).', action='store_true')
 parser.add_argument('-lowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 15x).', action='store_true')
@@ -99,8 +100,6 @@ params.female=setup.female
 params.male=setup.male
 do_ins=False if args.only_abs is True else True
 do_abs=False if args.only_ins is True else True
-if args.cov in args.auto or args.sex in args.auto:
-    auto_setting.estimate_depth_sex(args, params, args.auto)
 
 
 # output file names
@@ -188,9 +187,13 @@ if args.only_geno is False:
     if args.p >= 2:
         from multiprocessing import Pool
         def extract_discordant_exe(n):
-            extract_discordant_c.main(args, params, filenames, n)  ### c
+            tmp=extract_discordant_c.main(args, params, filenames, n)  ### c
+            return tmp
         with Pool(args.p) as p:
-            p.map(extract_discordant_exe, range(args.p))
+            res=p.map(extract_discordant_exe, range(args.p))
+        read_cnts=extract_discordant.summarize(res)
+        if args.cov in args.auto or args.sex in args.auto:
+            auto_setting.estimate_depth_sex(args, params, args.auto, read_cnts)
         if do_abs is True:
             extract_discordant.concat_for_abs(args, filenames)
     else:
@@ -319,7 +322,9 @@ if args.only_geno is False:
     os.remove(filenames.repout_bed)
     os.remove(filenames.reshaped_rep)
     for ext in ['nhr', 'nin', 'nog', 'nsd', 'nsi', 'nsq']:
-        os.remove('%s.%s' % (filenames.repdb, ext))
+        f='%s.%s' % (filenames.repdb, ext)
+        if os.path.exists(f) is True:
+            os.remove('%s.%s' % (filenames.repdb, ext))
     log.logger.info('pME search finished!')
     print()
 

@@ -69,6 +69,26 @@ def concat_for_abs(args, filenames):
         exit(1)
 
 
+def summarize(res):
+    log.logger.debug('started')
+    try:
+        nonXY_n,X_n,Y_n,chimeric_n,hybrid_n,pA_n,unmapped_n,absent_n=0,0,0,0,0,0,0,0
+        for nonXY,X,Y,chimeric,hybrid,pA,unmapped,absent in res:
+            nonXY_n    += nonXY
+            X_n        += X
+            Y_n        += Y
+            chimeric_n += chimeric
+            hybrid_n   += hybrid
+            pA_n       += pA
+            unmapped_n += unmapped
+            absent_n   += absent
+        log.logger.info('Screening results:nonXY_reads=%d,X_reads=%d,Y_reads=%s,chimeric_reads=%d,hybrid_reads=%d,pA_reads=%d,unmapped_reads=%d,absent_reads=%d' % (nonXY_n, X_n, Y_n, chimeric_n, hybrid_n, pA_n, unmapped_n, absent_n))
+        return [nonXY_n, X_n, Y_n]
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
 # main
 def main(args, params, filenames, n):
     log.logger.debug('started')
@@ -181,6 +201,16 @@ def main(args, params, filenames, n):
             infile=pysam.AlignmentFile(args.c, 'rc', reference_filename=args.fa)
         if not n is None:  # multi process
             infile=itertools.islice(infile, n, None, args.p)
+        chrX_set=params.chrX
+        chrY_set=params.chrY
+        nonXY_n=0
+        X_n=0
+        Y_n=0
+        chimeric_n=0
+        hybrid_n=0
+        pA_n=0
+        unmapped_n=0
+        absent_n=0
         for line in infile:
             line=line.tostring()
             ls=line.strip().split('\t')
@@ -194,7 +224,14 @@ def main(args, params, filenames, n):
                                     continue
                             strand='/1' if b[-7] == '1' else '/2'
                             f_unmapped.write('>%s%s\n%s\n' % (ls[0], strand, ls[9]))
+                            unmapped_n += 1
                     else:
+                        if ls[2] in chrX_set:
+                            X_n += 1
+                        elif ls[2] in chrY_set:
+                            Y_n += 1
+                        else:
+                            nonXY_n += 1
                         if do_ins is True:
                             if (('S' in ls[5]) or ('SA:Z:' in line) or ('XA:Z:' in line)) and not ('H' in ls[5]):   # start retrieving overhangs
                                 deletion=False
@@ -255,7 +292,8 @@ def main(args, params, filenames, n):
                                                         Acount=clip_seq.count('T')
                                                     mapped_seq= seq[L_clip_len:seqlen - R_clip_len]
                                                     if (Acount / len(clip_seq)) >= params.polyA_overhang_threshold:
-                                                        f_pA.write('%s:%d-%d/%s/%s%s/%s\t%d\n' %(chr, start, end, breakpoint, ls[0], first_or_second, strand, len(clip_seq)))  # reads with pA
+                                                        f_pA.write('%s:%d-%d/%s/%s%s/%s\t%d\n' % (chr, start, end, breakpoint, ls[0], first_or_second, strand, len(clip_seq)))  # reads with pA
+                                                        pA_n += 1
                                                         if not mapped_seq in d_mapped:
                                                             d_mapped[mapped_seq]=[]
                                                         d_mapped[mapped_seq].append('%s:%d-%d/%s/%s%s/%s' % (chr, start, end, breakpoint, ls[0], first_or_second, strand))
@@ -270,6 +308,7 @@ def main(args, params, filenames, n):
                                     if len(d) >= 1:
                                         out_overhang=[ '>%s;\n%s\n' % (';'.join(d[seq]), seq) for seq in d ]
                                         f_overhang.write(''.join(out_overhang))   # end retrieving overhang seqs
+                                        chimeric_n += 1
                                     if len(d_mapped) >= 1:
                                         out_mapped=[ '>%s;\n%s\n' % (';'.join(d_mapped[seq]), seq) for seq in d_mapped ]
                                         f_mapped.write(''.join(out_mapped))   # end retrieving mapped seqs
@@ -318,6 +357,7 @@ def main(args, params, filenames, n):
                                             first_or_second='/1' if b[-7] == '1' else '/2'
                                             readname= ls[0] + first_or_second
                                             f_distant.write(readname +'\t'+ ';'.join(tmp) +'\n')   # end retrieving distant reads
+                                            hybrid_n += 1
                         
                         if do_abs is True:   # retrieve reads with absent ME
                             if 'SA:Z:' in line:
@@ -402,11 +442,13 @@ def main(args, params, filenames, n):
                                                     for l_s,l_e,l_pos in xaz[strand][chr]['L']:
                                                         if params.abs_min_dist <= (l_s - r_e) <= params.abs_max_dist:
                                                             f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\t%s\t%s\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e, r_pos, l_pos))
+                                                            absent_n += 1
                                             if ('R' in xaz[strand][chr]) and ('L' in saz[strand][chr]):
                                                 for r_s,r_e,r_pos in xaz[strand][chr]['R']:
                                                     for l_s,l_e,l_pos in saz[strand][chr]['L']:
                                                         if params.abs_min_dist <= (l_s - r_e) <= params.abs_max_dist:
                                                             f_abs.write('%s%s\t%s\t%d\t%d\t%s:%d-%d\t%s:%d-%d\t%s\t%s\n' %(ls[0], first_or_second, chr, r_e, l_s, chr, r_s, r_e, chr, l_s, l_e, r_pos, l_pos))   # end retrieving reads with absent ME
+                                                            absent_n += 1
         if do_ins is True:
             f_overhang.flush()
             f_pA.flush()
@@ -427,6 +469,7 @@ def main(args, params, filenames, n):
             f_abs.flush()
             os.fdatasync(f_abs.fileno())
             f_abs.close()
+        return [nonXY_n, X_n, Y_n, chimeric_n, hybrid_n, pA_n, unmapped_n, absent_n]
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

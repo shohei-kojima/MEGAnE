@@ -8,6 +8,7 @@ See file LICENSE for details.
 
 
 import os,datetime,collections,gzip
+from multiprocessing import Pool
 import numpy as np
 import pybedtools
 from pybedtools import BedTool
@@ -51,11 +52,100 @@ def check_paths(args):
         exit(1)
 
 
+def load_geno_ins_pool(args, dir, te_len, chrY_set):
+    f=args.dirs[dir][0]
+    vcf_loaded=set()
+    tmp_bed={}
+    tmp_vlc={}
+    with open(f) as infile:
+        for line in infile:
+            if line[0] == '#':
+                if line[:6] == '#CHROM':
+                    ls=line.split()
+                    sample_id=ls[9]
+            elif not line[0] == '#':
+                ls=line.strip().split('\t')
+                if ls[0] in args.chr and not 'Y' in ls[6]:
+                    te=ls[7].split(';')[0].replace('SVTYPE=', '')
+                    start=str(int(ls[1]) - 1)
+                    end=ls[7].split(';')[3].replace('MEI_rpos=', '')
+                    pred_class=[]
+                    te_lens=[]
+                    strands=[]
+                    infos=ls[7].split(';')
+                    if infos[1] == 'MEPRED=PASS':
+                        mepred='PASS'
+                        if 'MEI=' in infos[4]:
+                            preds=infos[4].replace('MEI=', '')
+                            for pred in preds.split('|'):
+                                if len(pred.split(',')) == 3:
+                                    clas,bp,strand=pred.split(',')
+                                    pred_class.append('%s,%s' % (clas, clas))
+                                    s,e=bp.split('/')
+                                    if strand == '+/+':
+                                        strands.append('+')
+                                        tmp_len= int(e) - int(s)
+                                        if tmp_len > 0:
+                                            te_lens.append(tmp_len)
+                                    elif strand == '-/-':
+                                        strands.append('-')
+                                        tmp_len= int(s) - int(e)
+                                        if tmp_len > 0:
+                                            te_lens.append(tmp_len)
+                                    else:
+                                        strands.append(strand)
+                        elif infos[4] == 'MEI_lbp=pT':
+                            preds=infos[5].replace('MEI_rbp=', '')
+                            for pred in preds.split('|'):
+                                clas,bp,strand=pred.split(',')
+                                pred_class.append('%s,%s' % (clas, clas))
+                                te_lens.append(te_len[clas] - int(bp))
+                                strands.append(strand)
+                        elif infos[5] == 'MEI_rbp=pA':
+                            preds=infos[4].replace('MEI_lbp=', '')
+                            for pred in preds.split('|'):
+                                clas,bp,strand=pred.split(',')
+                                pred_class.append('%s,%s' % (clas, clas))
+                                te_lens.append(te_len[clas] - int(bp))
+                                strands.append(strand)
+                    else:
+                        mepred='FAILED'
+                        left, right=infos[4].replace('MEI_lbp=', ''), infos[5].replace('MEI_rbp=', '')
+                        for pred in left.split('|'):
+                            pred_class.append(pred.split(',')[0])
+                        for pred in right.split('|'):
+                            pred_class.append(pred.split(',')[0])
+                    if len(te_lens) > 0:
+                        telen= str(int(np.round(np.mean(te_lens))))
+                    else:
+                        telen= 'NA'
+                    if len(strands) > 0:
+                        strand=collections.Counter(strands).most_common()[0][0]
+                    else:
+                        strand= 'NA'
+                    if not te in tmp_bed:
+                        tmp_bed[te]=[]
+                    if len(pred_class) > 0:
+                        tmp_bed[te].append('\t'.join([ls[0], start, end, '%s,%s,%s,%s,%s,%s' % (sample_id, ls[9], mepred, telen, ls[6], strand), ','.join(pred_class)]))
+                        vcf_loaded.add(ls[2])
+    # load very low confidence
+    f=args.dirs[dir][1]
+    with gzip.open(f, 'rt') as infile:
+        for line in infile:
+            ls=line.strip().split('\t')
+            if ls[0] in args.chr:
+                if not ls[-1] in vcf_loaded and not ls[0] in chrY_set:
+                    if not ls[7] in tmp_vlc:
+                        tmp_vlc[ls[7]]=[]
+                    tmp_vlc[ls[7]].append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[2], sample_id))
+    return [tmp_bed, tmp_vlc, sample_id, dir]
+
+
 def merge_vcf_ins(args, params, filenames):
     log.logger.debug('started')
     try:
         pybedtools.set_tempdir(args.pybedtools_tmp)
-        chrY_set={'Y', 'chrY'}
+        chrY_set=set([ chr for chr in args.male_sex_chr.split(',') ])
         # load te length
         te_len={}
         tmp=[]
@@ -72,122 +162,103 @@ def merge_vcf_ins(args, params, filenames):
         
         # load file paths
         file_num=len(args.dirs)
-                    
+        
         # load high confidence and unique MEIs
         all={}
-        for dir in args.dirs:
-            f=args.dirs[dir][0]
-            with open(f) as infile:
-                for line in infile:
-                    if not line[0] == '#':
-                        ls=line.split()
-                        if ls[6] == 'PASS':
-                            te=ls[7].split(';')[0].replace('SVTYPE=', '')
-                            pos=[ls[0], str(int(ls[1]) - 1), ls[7].split(';')[3].replace('MEI_rpos=', '')]
-                            if not te in all:
-                                all[te]=[]
-                            all[te].append(pos)
+        if args.chr is None:
+            chrs_set=set()
+            for dir in args.dirs:
+                f=args.dirs[dir][0]
+                with open(f) as infile:
+                    for line in infile:
+                        if not line[0] == '#':
+                            ls=line.split('\t')
+                            if ls[6] == 'PASS':
+                                chrs_set.add(ls[0])
+                                te=ls[7].split(';')[0].replace('SVTYPE=', '')
+                                pos=[ls[0], str(int(ls[1]) - 1), ls[7].split(';')[3].replace('MEI_rpos=', '')]
+                                if not te in all:
+                                    all[te]=[]
+                                all[te].append(pos)
+            log.logger.debug('%d chrs found.' % len(chrs_set))
+            args.chr=chrs_set
+        else:
+            found_on_chr=False
+            for dir in args.dirs:
+                f=args.dirs[dir][0]
+                with open(f) as infile:
+                    for line in infile:
+                        if not line[0] == '#':
+                            ls=line.split('\t')
+                            if ls[0] in args.chr:  # check chr
+                                found_on_chr=True
+                                if ls[6] == 'PASS':
+                                    te=ls[7].split(';')[0].replace('SVTYPE=', '')
+                                    pos=[ls[0], str(int(ls[1]) - 1), ls[7].split(';')[3].replace('MEI_rpos=', '')]
+                                    if not te in all:
+                                        all[te]=[]
+                                    all[te].append(pos)
+            if found_on_chr == False:
+                log.logger.error('No MEs found in specified chromosomes. Exit.')
+                exit(1)
+        if len(all) == 0:
+            log.logger.error('No MEs with "FILTER PASS" found. Exit.')
+            exit(1)
         # header
         header=[]
         header.append('##fileformat=VCFv4.1\n')
         header.append('##fileDate=%s\n' % str(datetime.datetime.now()).split('.')[0])
         header.append('##source=MEI merge version "%s"\n' % args.version)
         header.append('##reference=%s\n' % args.fa)
-        
-        # count how many samples have a certain MEI
-        load_header=False
-        bed={}
-        vlc={}
-        sample_id_to_dir={}
+        # load header
         for dir in args.dirs:
             f=args.dirs[dir][0]
             vcf_loaded=set()
             with open(f) as infile:
                 for line in infile:
                     if line[0] == '#':
-                        if load_header is False:
-                            if '##contig=' in line or '##ALT=' in line or '##FILTER=' in line:
-                                header.append(line)
+                        if '##contig=' in line or '##ALT=' in line or '##FILTER=' in line:
+                            header.append(line)
                         if line[:6] == '#CHROM':
-                            ls=line.split()
-                            sample_id=ls[9]
-                            sample_id_to_dir[sample_id]=dir
-                            args.dirs[dir].append(sample_id)
-                    elif not line[0] == '#':
-                        ls=line.split()
-                        if not 'Y' in ls[6]:
-                            te=ls[7].split(';')[0].replace('SVTYPE=', '')
-                            start=str(int(ls[1]) - 1)
-                            end=ls[7].split(';')[3].replace('MEI_rpos=', '')
-                            pred_class=[]
-                            te_lens=[]
-                            strands=[]
-                            infos=ls[7].split(';')
-                            if infos[1] == 'MEPRED=PASS':
-                                mepred='PASS'
-                                if 'MEI=' in infos[4]:
-                                    preds=infos[4].replace('MEI=', '')
-                                    for pred in preds.split('|'):
-                                        if len(pred.split(',')) == 3:
-                                            clas,bp,strand=pred.split(',')
-                                            pred_class.append('%s,%s' % (clas, clas))
-                                            s,e=bp.split('/')
-                                            if strand == '+/+':
-                                                strands.append('+')
-                                                tmp_len= int(e) - int(s)
-                                                if tmp_len > 0:
-                                                    te_lens.append(tmp_len)
-                                            elif strand == '-/-':
-                                                strands.append('-')
-                                                tmp_len= int(s) - int(e)
-                                                if tmp_len > 0:
-                                                    te_lens.append(tmp_len)
-                                            else:
-                                                strands.append(strand)
-                                elif infos[4] == 'MEI_lbp=pT':
-                                    preds=infos[5].replace('MEI_rbp=', '')
-                                    for pred in preds.split('|'):
-                                        clas,bp,strand=pred.split(',')
-                                        pred_class.append('%s,%s' % (clas, clas))
-                                        te_lens.append(te_len[clas] - int(bp))
-                                        strands.append(strand)
-                                elif infos[5] == 'MEI_rbp=pA':
-                                    preds=infos[4].replace('MEI_lbp=', '')
-                                    for pred in preds.split('|'):
-                                        clas,bp,strand=pred.split(',')
-                                        pred_class.append('%s,%s' % (clas, clas))
-                                        te_lens.append(te_len[clas] - int(bp))
-                                        strands.append(strand)
-                            else:
-                                mepred='FAILED'
-                                left, right=infos[4].replace('MEI_lbp=', ''), infos[5].replace('MEI_rbp=', '')
-                                for pred in left.split('|'):
-                                    pred_class.append(pred.split(',')[0])
-                                for pred in right.split('|'):
-                                    pred_class.append(pred.split(',')[0])
-                            if len(te_lens) > 0:
-                                telen= str(int(np.round(np.mean(te_lens))))
-                            else:
-                                telen= 'NA'
-                            if len(strands) > 0:
-                                strand=collections.Counter(strands).most_common()[0][0]
-                            else:
-                                strand= 'NA'
-                            if not te in bed:
-                                bed[te]=[]
-                            if len(pred_class) > 0:
-                                bed[te].append('\t'.join([ls[0], start, end, '%s,%s,%s,%s,%s,%s' % (sample_id, ls[9], mepred, telen, ls[6], strand), ','.join(pred_class)]))
-                                vcf_loaded.add(ls[2])
-                load_header=True
-            # load very low confidence
-            f=args.dirs[dir][1]
-            with gzip.open(f) as infile:
-                for line in infile:
-                    ls=line.decode().split()
-                    if not ls[-1] in vcf_loaded and not ls[0] in chrY_set:
-                        if not ls[7] in vlc:
-                            vlc[ls[7]]=[]
-                        vlc[ls[7]].append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[2], sample_id))
+                            break
+            break
+        
+        # count how many samples have a certain MEI
+        bed={}
+        vlc={}
+        sample_id_to_dir={}
+        dirs=[]
+        for dir in args.dirs:
+            dirs.append(dir)
+        print_chunk=20
+        chunk=0
+        with Pool(processes=args.p) as p:
+            for n in range(0, file_num, args.p):
+                end= n + args.p
+                if end > file_num:
+                    end=file_num
+                jobs=[]
+                for dir in dirs[n:end]:
+                    jobs.append(p.apply_async(load_geno_ins_pool, (args, dir, te_len, chrY_set)))
+                res=[]
+                for job in jobs:
+                    res.append(job.get())
+                for tmp_bed,tmp_vlc,sample_id,dir in res:
+                    for me in tmp_bed:
+                        if not me in bed:
+                            bed[me]=[]
+                        bed[me].extend(tmp_bed[me])
+                    for me in tmp_vlc:
+                        if not me in vlc:
+                            vlc[me]=[]
+                        vlc[me].extend(tmp_vlc[me])
+                    sample_id_to_dir[sample_id]=dir
+                    args.dirs[dir].append(sample_id)
+                chunk += 1
+                if (chunk % print_chunk) == 0:
+                    log.logger.info('Loading genotypes, %d samples processed...' % (chunk * args.p))
+        log.logger.info('Loading genotypes, %d samples processed...' % end)
+        
         args.sample_id_to_dir=sample_id_to_dir
         count={}
         poss={}
@@ -367,29 +438,68 @@ def merge_vcf_abs(args, params, filenames):
 
         # load high confidence and unique MEIs
         all={}
-        for dir in args.dirs:
-            f=args.dirs[dir][0]
-            with open(f) as infile:
-                for line in infile:
-                    if not line[0] == '#':
-                        ls=line.split()
-                        if ls[6] == 'PASS':
-                            tmp=ls[7].split(';SVLEN=')[0].replace('MEI=', '')
-                            fam_set=set()
-                            for v in tmp.split(';'):
-                                clas,_=v.split(':')
-                                if clas in clas_to_fam:
-                                    fam=clas_to_fam[clas]
-                                    fam_set.add(fam)
-                            leng=ls[7].split(';SVLEN=')[1].split(';')[0]
-                            start= int(ls[1]) - 1
-                            end= start + int(leng)
-                            pos=[ls[0], str(start), str(end)]
-                            if len(fam_set) >= 1:
-                                te='|'.join(sorted(list(fam_set)))
-                                if not te in all:
-                                    all[te]=[]
-                                all[te].append(pos)
+        if args.chr is None:
+            chrs_set=set()
+            for dir in args.dirs:
+                f=args.dirs[dir][0]
+                with open(f) as infile:
+                    for line in infile:
+                        if not line[0] == '#':
+                            ls=line.split()
+                            if ls[6] == 'PASS':
+                                chrs_set.add(ls[0])
+                                tmp=ls[7].split(';SVLEN=')[0].replace('MEI=', '')
+                                fam_set=set()
+                                for v in tmp.split(';'):
+                                    clas,_=v.split(':')
+                                    if clas in clas_to_fam:
+                                        fam=clas_to_fam[clas]
+                                        fam_set.add(fam)
+                                leng=ls[7].split(';SVLEN=')[1].split(';')[0]
+                                start= int(ls[1]) - 1
+                                end= start + int(leng)
+                                pos=[ls[0], str(start), str(end)]
+                                if len(fam_set) >= 1:
+                                    te='|'.join(sorted(list(fam_set)))
+                                    if not te in all:
+                                        all[te]=[]
+                                    all[te].append(pos)
+            log.logger.debug('%d chrs found.' % len(chrs_set))
+            args.chr=chrs_set
+        else:
+            found_on_chr=False
+            for dir in args.dirs:
+                f=args.dirs[dir][0]
+                with open(f) as infile:
+                    for line in infile:
+                        if not line[0] == '#':
+                            ls=line.split('\t')
+                            if ls[0] in args.chr:
+                                found_on_chr=True
+                                if ls[6] == 'PASS':
+                                    tmp=ls[7].split(';SVLEN=')[0].replace('MEI=', '')
+                                    fam_set=set()
+                                    for v in tmp.split(';'):
+                                        clas,_=v.split(':')
+                                        if clas in clas_to_fam:
+                                            fam=clas_to_fam[clas]
+                                            fam_set.add(fam)
+                                    leng=ls[7].split(';SVLEN=')[1].split(';')[0]
+                                    start= int(ls[1]) - 1
+                                    end= start + int(leng)
+                                    pos=[ls[0], str(start), str(end)]
+                                    if len(fam_set) >= 1:
+                                        te='|'.join(sorted(list(fam_set)))
+                                        if not te in all:
+                                            all[te]=[]
+                                        all[te].append(pos)
+            if found_on_chr == False:
+                log.logger.error('No MEs found in specified chromosomes. Exit.')
+                exit(1)
+        if len(all) == 0:
+            log.logger.error('No MEs with "FILTER PASS" found. Exit.')
+            exit(1)
+        
         # header
         header=[]
         header.append('##fileformat=VCFv4.1\n')
@@ -415,27 +525,28 @@ def merge_vcf_abs(args, params, filenames):
                             sample_id_to_dir[sample_id]=dir
                             args.dirs[dir].append(sample_id)
                     else:
-                        ls=line.split()
-                        if not 'Y' in ls[6]:
-                            tmp=ls[7].split(';SVLEN=')[0].replace('MEI=', '')
-                            fam_set=set()
-                            clases=set()
-                            for v in tmp.split(';'):
-                                clas,_=v.split(':')
-                                if clas in clas_to_fam:
-                                    fam=clas_to_fam[clas]
-                                    fam_set.add(fam)
-                                    clases.add(clas)
-                            if len(fam_set) >= 1:
-                                te='|'.join(sorted(list(fam_set)))
-                                clases=sorted(list(clases))
-                                leng=ls[7].split(';SVLEN=')[1].split(';')[0]
-                                start= int(ls[1]) - 1
-                                end= start + int(leng)
-                                infos=ls[7].split(';')
-                                if not te in bed:
-                                    bed[te]=[]
-                                bed[te].append('\t'.join([ls[0], str(start), str(end), '%s,%s,%s,%s,%s' % (sample_id, ls[9], '.', leng, ls[6]), ','.join(clases)]))
+                        ls=line.strip().split('\t')
+                        if ls[0] in args.chr:
+                            if not 'Y' in ls[6]:
+                                tmp=ls[7].split(';SVLEN=')[0].replace('MEI=', '')
+                                fam_set=set()
+                                clases=set()
+                                for v in tmp.split(';'):
+                                    clas,_=v.split(':')
+                                    if clas in clas_to_fam:
+                                        fam=clas_to_fam[clas]
+                                        fam_set.add(fam)
+                                        clases.add(clas)
+                                if len(fam_set) >= 1:
+                                    te='|'.join(sorted(list(fam_set)))
+                                    clases=sorted(list(clases))
+                                    leng=ls[7].split(';SVLEN=')[1].split(';')[0]
+                                    start= int(ls[1]) - 1
+                                    end= start + int(leng)
+                                    infos=ls[7].split(';')
+                                    if not te in bed:
+                                        bed[te]=[]
+                                    bed[te].append('\t'.join([ls[0], str(start), str(end), '%s,%s,%s,%s,%s' % (sample_id, ls[9], '.', leng, ls[6]), ','.join(clases)]))
                 load_header=True
         args.sample_id_to_dir=sample_id_to_dir
         count={}

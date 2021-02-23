@@ -107,10 +107,13 @@ def output_ins_bed_vcf(args, params, filenames):
             if filt == 'PASS':
                 count += 1
             info='SVTYPE=%s;MEPRED=%s;HOMLEN=%d;MEI_rpos=%s;%s;CN_conf=.' % (ls[3], mepred, homlen, ls[2], meinfo)
-            allele_count=2
-            if single_XY is True and ls[0] in params.chrX:
-                allele_count=1
-            elif single_XY is True and ls[0] in params.chrY:
+            if args.homozygous is True:
+                allele_count=2
+                if single_XY is True and ls[0] in params.chrX:
+                    allele_count=1
+                elif single_XY is True and ls[0] in params.chrY:
+                    allele_count=1
+            else:
                 allele_count=1
             vcfline='%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\n' % (ls[0], onebase_start, new_id, seq, '<INS:ME>', '.', filt, info, 'CN', allele_count)
             out_vcf.append(vcfline)
