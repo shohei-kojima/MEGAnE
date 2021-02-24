@@ -9,10 +9,11 @@ See file LICENSE for details.
 
 import os,datetime,collections,gzip
 from multiprocessing import Pool
+import mmap,io
 import log,traceback
 
 
-def fill_in_ins_pool(args, sample_id, params, bps, geno_orig):
+def fill_in_ins_pool_not_mmap(args, sample_id, params, bps, geno_orig):
     dir=args.sample_id_to_dir[sample_id]
     f=args.dirs[dir][2]
     reads=collections.Counter()
@@ -32,6 +33,31 @@ def fill_in_ins_pool(args, sample_id, params, bps, geno_orig):
                                 id=bps[me][chr][bp]
                                 if not sample_id in geno_orig[id]:
                                     reads[id] += 1
+    return [reads, sample_id]
+
+
+def fill_in_ins_pool(args, sample_id, params, bps, geno_orig):
+    dir=args.sample_id_to_dir[sample_id]
+    f=args.dirs[dir][2]
+    reads=collections.Counter()
+    with open(f) as infile0:
+        with mmap.mmap(infile0.fileno(), 0, access=mmap.ACCESS_READ) as mapped:
+            with io.TextIOWrapper(gzip.GzipFile(fileobj=mapped)) as infile:
+                for line in infile:
+                    ls=line.strip().split('\t')
+                    if float(ls[2]) < params.overhang_evalue_threshold:
+                        chr,tmp=ls[0].split(':', 1)
+                        if chr in args.chr:
+                            start,tmp=tmp.split('-', 1)
+                            end,lr,_=tmp.split('/', 2)
+                            bp=int(start) if lr == 'L' else int(end)
+                            me,_=ls[1].split(',', 1)
+                            if me in bps:
+                                if chr in bps[me]:
+                                    if bp in bps[me][chr]:
+                                        id=bps[me][chr][bp]
+                                        if not sample_id in geno_orig[id]:
+                                            reads[id] += 1
     return [reads, sample_id]
 
 
@@ -143,18 +169,20 @@ def fill_in_abs_pool(args, sample_id, bps):
     dir=args.sample_id_to_dir[sample_id]
     f=args.dirs[dir][1]
     to_be_added=set()
-    with gzip.open(f, 'rt') as infile:
-        for line in infile:
-            ls=line.strip().split('\t')
-            chr=ls[1]
-            if chr in args.chr:
-                start=int(ls[2])
-                end=int(ls[3])
-                if chr in bps:
-                    if start in bps[chr]:
-                        if end in bps[chr]:
-                            if bps[chr][start] == bps[chr][end]:
-                                to_be_added.add(bps[chr][start])
+    with open(f) as infile0:
+        with mmap.mmap(infile0.fileno(), 0, access=mmap.ACCESS_READ) as mapped:
+            with io.TextIOWrapper(gzip.GzipFile(fileobj=mapped)) as infile:
+                for line in infile:
+                    ls=line.strip().split('\t')
+                    chr=ls[1]
+                    if chr in args.chr:
+                        start=int(ls[2])
+                        end=int(ls[3])
+                        if chr in bps:
+                            if start in bps[chr]:
+                                if end in bps[chr]:
+                                    if bps[chr][start] == bps[chr][end]:
+                                        to_be_added.add(bps[chr][start])
     return [to_be_added, sample_id]
 
 

@@ -9,6 +9,7 @@ See file LICENSE for details.
 
 import os,datetime,collections,gzip
 from multiprocessing import Pool
+import mmap,io
 import numpy as np
 import pybedtools
 from pybedtools import BedTool
@@ -58,86 +59,90 @@ def load_geno_ins_pool(args, dir, te_len, chrY_set):
     tmp_bed={}
     tmp_vlc={}
     with open(f) as infile:
-        for line in infile:
-            if line[0] == '#':
-                if line[:6] == '#CHROM':
-                    ls=line.split()
-                    sample_id=ls[9]
-            elif not line[0] == '#':
-                ls=line.strip().split('\t')
-                if ls[0] in args.chr and not 'Y' in ls[6]:
-                    te=ls[7].split(';')[0].replace('SVTYPE=', '')
-                    start=str(int(ls[1]) - 1)
-                    end=ls[7].split(';')[3].replace('MEI_rpos=', '')
-                    pred_class=[]
-                    te_lens=[]
-                    strands=[]
-                    infos=ls[7].split(';')
-                    if infos[1] == 'MEPRED=PASS':
-                        mepred='PASS'
-                        if 'MEI=' in infos[4]:
-                            preds=infos[4].replace('MEI=', '')
-                            for pred in preds.split('|'):
-                                if len(pred.split(',')) == 3:
+        with mmap.mmap(infile.fileno(), 0, access=mmap.ACCESS_READ) as mapped:
+            for line in iter(mapped.readline, b''):
+                line=line.decode()
+                if line[0] == '#':
+                    if line[:6] == '#CHROM':
+                        ls=line.split()
+                        sample_id=ls[9]
+                elif not line[0] == '#':
+                    ls=line.strip().split('\t')
+                    if ls[0] in args.chr and not 'Y' in ls[6]:
+                        te=ls[7].split(';')[0].replace('SVTYPE=', '')
+                        start=str(int(ls[1]) - 1)
+                        end=ls[7].split(';')[3].replace('MEI_rpos=', '')
+                        pred_class=[]
+                        te_lens=[]
+                        strands=[]
+                        infos=ls[7].split(';')
+                        if infos[1] == 'MEPRED=PASS':
+                            mepred='PASS'
+                            if 'MEI=' in infos[4]:
+                                preds=infos[4].replace('MEI=', '')
+                                for pred in preds.split('|'):
+                                    if len(pred.split(',')) == 3:
+                                        clas,bp,strand=pred.split(',')
+                                        pred_class.append('%s,%s' % (clas, clas))
+                                        s,e=bp.split('/')
+                                        if strand == '+/+':
+                                            strands.append('+')
+                                            tmp_len= int(e) - int(s)
+                                            if tmp_len > 0:
+                                                te_lens.append(tmp_len)
+                                        elif strand == '-/-':
+                                            strands.append('-')
+                                            tmp_len= int(s) - int(e)
+                                            if tmp_len > 0:
+                                                te_lens.append(tmp_len)
+                                        else:
+                                            strands.append(strand)
+                            elif infos[4] == 'MEI_lbp=pT':
+                                preds=infos[5].replace('MEI_rbp=', '')
+                                for pred in preds.split('|'):
                                     clas,bp,strand=pred.split(',')
                                     pred_class.append('%s,%s' % (clas, clas))
-                                    s,e=bp.split('/')
-                                    if strand == '+/+':
-                                        strands.append('+')
-                                        tmp_len= int(e) - int(s)
-                                        if tmp_len > 0:
-                                            te_lens.append(tmp_len)
-                                    elif strand == '-/-':
-                                        strands.append('-')
-                                        tmp_len= int(s) - int(e)
-                                        if tmp_len > 0:
-                                            te_lens.append(tmp_len)
-                                    else:
-                                        strands.append(strand)
-                        elif infos[4] == 'MEI_lbp=pT':
-                            preds=infos[5].replace('MEI_rbp=', '')
-                            for pred in preds.split('|'):
-                                clas,bp,strand=pred.split(',')
-                                pred_class.append('%s,%s' % (clas, clas))
-                                te_lens.append(te_len[clas] - int(bp))
-                                strands.append(strand)
-                        elif infos[5] == 'MEI_rbp=pA':
-                            preds=infos[4].replace('MEI_lbp=', '')
-                            for pred in preds.split('|'):
-                                clas,bp,strand=pred.split(',')
-                                pred_class.append('%s,%s' % (clas, clas))
-                                te_lens.append(te_len[clas] - int(bp))
-                                strands.append(strand)
-                    else:
-                        mepred='FAILED'
-                        left, right=infos[4].replace('MEI_lbp=', ''), infos[5].replace('MEI_rbp=', '')
-                        for pred in left.split('|'):
-                            pred_class.append(pred.split(',')[0])
-                        for pred in right.split('|'):
-                            pred_class.append(pred.split(',')[0])
-                    if len(te_lens) > 0:
-                        telen= str(int(np.round(np.mean(te_lens))))
-                    else:
-                        telen= 'NA'
-                    if len(strands) > 0:
-                        strand=collections.Counter(strands).most_common()[0][0]
-                    else:
-                        strand= 'NA'
-                    if not te in tmp_bed:
-                        tmp_bed[te]=[]
-                    if len(pred_class) > 0:
-                        tmp_bed[te].append('\t'.join([ls[0], start, end, '%s,%s,%s,%s,%s,%s' % (sample_id, ls[9], mepred, telen, ls[6], strand), ','.join(pred_class)]))
-                        vcf_loaded.add(ls[2])
+                                    te_lens.append(te_len[clas] - int(bp))
+                                    strands.append(strand)
+                            elif infos[5] == 'MEI_rbp=pA':
+                                preds=infos[4].replace('MEI_lbp=', '')
+                                for pred in preds.split('|'):
+                                    clas,bp,strand=pred.split(',')
+                                    pred_class.append('%s,%s' % (clas, clas))
+                                    te_lens.append(te_len[clas] - int(bp))
+                                    strands.append(strand)
+                        else:
+                            mepred='FAILED'
+                            left, right=infos[4].replace('MEI_lbp=', ''), infos[5].replace('MEI_rbp=', '')
+                            for pred in left.split('|'):
+                                pred_class.append(pred.split(',')[0])
+                            for pred in right.split('|'):
+                                pred_class.append(pred.split(',')[0])
+                        if len(te_lens) > 0:
+                            telen= str(int(np.round(np.mean(te_lens))))
+                        else:
+                            telen= 'NA'
+                        if len(strands) > 0:
+                            strand=collections.Counter(strands).most_common()[0][0]
+                        else:
+                            strand= 'NA'
+                        if not te in tmp_bed:
+                            tmp_bed[te]=[]
+                        if len(pred_class) > 0:
+                            tmp_bed[te].append('\t'.join([ls[0], start, end, '%s,%s,%s,%s,%s,%s' % (sample_id, ls[9], mepred, telen, ls[6], strand), ','.join(pred_class)]))
+                            vcf_loaded.add(ls[2])
     # load very low confidence
     f=args.dirs[dir][1]
-    with gzip.open(f, 'rt') as infile:
-        for line in infile:
-            ls=line.strip().split('\t')
-            if ls[0] in args.chr:
-                if not ls[-1] in vcf_loaded and not ls[0] in chrY_set:
-                    if not ls[7] in tmp_vlc:
-                        tmp_vlc[ls[7]]=[]
-                    tmp_vlc[ls[7]].append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[2], sample_id))
+    with open(f) as infile0:
+        with mmap.mmap(infile0.fileno(), 0, access=mmap.ACCESS_READ) as mapped:
+            with io.TextIOWrapper(gzip.GzipFile(fileobj=mapped)) as infile:
+                for line in infile:
+                    ls=line.strip().split('\t')
+                    if ls[0] in args.chr:
+                        if not ls[-1] in vcf_loaded and not ls[0] in chrY_set:
+                            if not ls[7] in tmp_vlc:
+                                tmp_vlc[ls[7]]=[]
+                            tmp_vlc[ls[7]].append('%s\t%s\t%s\t%s\n' % (ls[0], ls[1], ls[2], sample_id))
     return [tmp_bed, tmp_vlc, sample_id, dir]
 
 
