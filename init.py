@@ -63,6 +63,8 @@ def init_jointcall(args, version):
     sys.path.insert(0, os.path.join(base, 'scripts'))
     
     # make output dir
+    if args.chunk_vcf_list is not None:
+        args.outdir=os.path.join(args.outdir, 'chunks_merged')
     if args.input_scaffold is not None and args.chunk_f is not None:
         with open(args.chunk_f) as infile:
             first_sample=next(infile).split()[0]
@@ -83,10 +85,10 @@ def init_jointcall(args, version):
                 print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
                 exit(1)
         else:
-            os.mkdir(args.outdir)
+            os.makedirs(args.outdir, exist_ok=True)
     else:
         if os.path.exists(args.outdir) is False:
-            os.mkdir(args.outdir)
+            os.makedirs(args.outdir, exist_ok=True)
 
 
 def init_reshape_vcf(args, version):

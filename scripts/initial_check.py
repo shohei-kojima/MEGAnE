@@ -125,15 +125,16 @@ def check_merge_vcf(args, argv):
                 exit(1)
         
         # check file path
-        for f_check,f_name in zip([args.fa, args.rep, args.f], ['Reference genome (-fa flag)', 'RepBase library (-rep flag)', 'List of vcf files (-f flag)']):
-            if f_check is None:
-                log.logger.error('%s was not specified.' % f_name)
-                exit(1)
-            elif os.path.exists(f_check) is False:
-                log.logger.error('%s was not found.' % f_check)
-                exit(1)
-            else:
-                log.logger.debug('%s found.' % f_check)
+        if args.chunk_vcf_list is None:
+            for f_check,f_name in zip([args.fa, args.rep, args.f], ['Reference genome (-fa flag)', 'RepBase library (-rep flag)', 'List of vcf files (-f flag)']):
+                if f_check is None:
+                    log.logger.error('%s was not specified.' % f_name)
+                    exit(1)
+                elif os.path.exists(f_check) is False:
+                    log.logger.error('%s was not found.' % f_check)
+                    exit(1)
+                else:
+                    log.logger.debug('%s found.' % f_check)
         
         if args.merge_mei is True and args.merge_absent_me is True:
             log.logger.error('Please specify either -merge_mei or -merge_absent_me.')

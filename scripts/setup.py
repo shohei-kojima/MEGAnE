@@ -362,7 +362,7 @@ def setup_merge_vcf(args, base):
         else:
             if args.chunk_f is not None:
                 log.logger.warning('Chunk file was specified with the "-chunk_f" flag. This will be ignored.')
-            if args.f is None:
+            if args.chunk_vcf_list is None and args.f is None:
                 log.logger.error('Necessary file was not specified. Please specify a file with the "-f" flag.')
                 exit(1)
         
@@ -407,11 +407,14 @@ def setup_merge_vcf(args, base):
         
         # fai
         global fai_path
-        if os.path.exists(args.fa + '.fai') is False:
-            import pysam
-            pysam.faidx(args.fa)
-            log.logger.info('Fasta index not found. Generated %s.fai.' % args.fa)
-        fai_path=args.fa + '.fai'
+        if args.chunk_vcf_list is None:
+            if os.path.exists(args.fa + '.fai') is False:
+                import pysam
+                pysam.faidx(args.fa)
+                log.logger.info('Fasta index not found. Generated %s.fai.' % args.fa)
+            fai_path=args.fa + '.fai'
+        else:
+            fai_path='dummy'
         
         # load parameter settings
         global params
