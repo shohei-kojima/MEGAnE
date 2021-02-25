@@ -64,15 +64,46 @@ def fill_in_ins_mmap(args, sample_id, params, bps, geno_orig):
 def fill_in_ins(args, params, filenames):
     log.logger.debug('started')
     try:
+        # load chunk samples
+        only_fill_in=False
+        if args.input_scaffold is not None:
+            sample_ids_chunk=set()
+            for dir in args.dirs:
+                sample_ids_chunk.add(args.dirs[dir][-1])
+            log.logger.debug('%d samples found in args.dirs' % len(sample_ids_chunk))
+            only_fill_in=True
+            scaffold_f=args.input_scaffold
+        else:
+            scaffold_f=filenames.merged_vcf_ins
+        
         # load scaffold
         geno_orig={}
         bps={}
-        with gzip.open(filenames.merged_vcf_ins) as infile:
+        chrs_set=set()
+        with gzip.open(scaffold_f) as infile:
             for line in infile:
                 line=line.decode()
                 if line[0] == '#':
                     if '#CHROM' in line:
                         hs=line.strip().split('\t')
+                        sample_ids=hs[9:]
+                        if args.input_scaffold is not None:
+                            sample_ids_set=set(sample_ids)
+                            not_found=[]
+                            found=[]
+                            for sample_id in sample_ids_chunk:
+                                if not sample_id in sample_ids_set:
+                                    not_found.append(sample_id)
+                                else:
+                                    found.append(sample_id)
+                            if len(not_found) >= 1:
+                                log.logger.error('Samples not found in the scaffold VCF = %s' % ';'.join(not_found))
+                                log.logger.error('%d samples not found in the scaffold VCF. Please check if you specified correct files.' % len(not_found))
+                                exit(1)
+                            log.logger.info('%d samples found in the scaffold VCF. %d will be analyzed.' % (len(found), len(found)))
+                            skip_n= len(sample_ids) - len(found)
+                            log.logger.info('%d samples in the scaffold VCF were not found in the chunk file. %d samples will be skipped.' % (skip_n, skip_n))
+                            sample_ids=found
                 else:
                     ls=line.strip().split('\t')
                     for info in ls[7].split(';'):
@@ -91,8 +122,16 @@ def fill_in_ins(args, params, filenames):
                     geno_orig[ls[2]]={}
                     for h,v in zip(hs[9:], ls[9:]):
                         if not v == '0/0':
+                            if only_fill_in is True:
+                                if not h in sample_ids_chunk:
+                                    continue
                             geno_orig[ls[2]][h]=v
-        sample_ids=hs[9:]
+                    chrs_set.add(ls[0])
+        
+        if args.chr is None:
+            log.logger.debug('args.chr was set.')
+            args.chr=chrs_set
+        
         sample_ids_n=len(sample_ids)
         if args.mmap is True:
             # fill-in, mmap
@@ -150,7 +189,7 @@ def fill_in_ins(args, params, filenames):
         # output
         missing_line_added=False
         with gzip.open(filenames.filled_vcf_ins, 'wt') as outfile:
-            with gzip.open(filenames.merged_vcf_ins) as infile:
+            with gzip.open(scaffold_f) as infile:
                 for line in infile:
                     line=line.decode()
                     if line[0] == '#':
@@ -158,6 +197,11 @@ def fill_in_ins(args, params, filenames):
                             missing_line='##FILTER=<ID=M,Description="Too many missing genotypes">\n'
                             outfile.write(missing_line)
                             missing_line_added=True
+                        if '#CHROM' in line:
+                            ls=line.strip().split('\t')
+                            tmp=ls[:9]
+                            tmp.extend(sample_ids)
+                            line='\t'.join(tmp) +'\n'
                         outfile.write(line)
                     else:
                         ls=line.split('\t', 10)
@@ -178,17 +222,18 @@ def fill_in_ins(args, params, filenames):
                             else:
                                 tmp.append('0/0')
                                 zero += 1
-                        change_to_nonpass=False
-                        if (ac / (sample_ids_n * 2)) < 0.05:
-                            if missing >= (ac * 2):
+                        if args.input_scaffold is None:
+                            change_to_nonpass=False
+                            if (ac / (sample_ids_n * 2)) < 0.05:
+                                if missing >= (ac * 2):
+                                    change_to_nonpass=True
+                            elif missing >= ac or missing > (zero / 2):
                                 change_to_nonpass=True
-                        elif missing >= ac or missing > (zero / 2):
-                            change_to_nonpass=True
-                        if change_to_nonpass is True:
-                            if tmp[6] == 'PASS':
-                                tmp[6]='M'
-                            else:
-                                tmp[6]='%s;M' % tmp[6]
+                            if change_to_nonpass is True:
+                                if tmp[6] == 'PASS':
+                                    tmp[6]='M'
+                                else:
+                                    tmp[6]='%s;M' % tmp[6]
                         outfile.write('\t'.join(tmp) +'\n')
     except:
         log.logger.error('\n'+ traceback.format_exc())
@@ -239,15 +284,47 @@ def fill_in_abs(args, params, filenames):
     log.logger.debug('started')
     try:
         slop_len=params.slop_len_for_abs
+        
+        # load chunk samples
+        only_fill_in=False
+        if args.input_scaffold is not None:
+            sample_ids_chunk=set()
+            for dir in args.dirs:
+                sample_ids_chunk.add(args.dirs[dir][-1])
+            log.logger.debug('%d samples found in args.dirs' % len(sample_ids_chunk))
+            only_fill_in=True
+            scaffold_f=args.input_scaffold
+        else:
+            scaffold_f=filenames.merged_vcf_abs
+        
         # load scaffold
         geno_orig={}
         bps={}
-        with gzip.open(filenames.merged_vcf_abs) as infile:
+        chrs_set=set()
+        with gzip.open(scaffold_f) as infile:
             for line in infile:
                 line=line.decode()
                 if line[0] == '#':
                     if '#CHROM' in line:
                         hs=line.strip().split('\t')
+                        sample_ids=hs[9:]
+                        if args.input_scaffold is not None:
+                            sample_ids_set=set(sample_ids)
+                            not_found=[]
+                            found=[]
+                            for sample_id in sample_ids_chunk:
+                                if not sample_id in sample_ids_set:
+                                    not_found.append(sample_id)
+                                else:
+                                    found.append(sample_id)
+                            if len(not_found) >= 1:
+                                log.logger.error('Samples not found in the scaffold VCF = %s' % ';'.join(not_found))
+                                log.logger.error('%d samples not found in the scaffold VCF. Please check if you specified correct files.' % len(not_found))
+                                exit(1)
+                            log.logger.info('%d samples found in the scaffold VCF. %d will be analyzed.' % (len(found), len(found)))
+                            skip_n= len(sample_ids) - len(found)
+                            log.logger.info('%d samples in the scaffold VCF were not found in the chunk file. %d samples will be skipped.' % (skip_n, skip_n))
+                            sample_ids=found
                 else:
                     ls=line.strip().split('\t')
                     for info in ls[7].split(';'):
@@ -263,9 +340,16 @@ def fill_in_abs(args, params, filenames):
                     geno_orig[ls[2]]={}
                     for h,v in zip(hs[9:], ls[9:]):
                         if not v == '0/0':
+                            if only_fill_in is True:
+                                if not h in sample_ids_chunk:
+                                    continue
                             geno_orig[ls[2]][h]=v
+                    chrs_set.add(ls[0])
         
-        sample_ids=hs[9:]
+        if args.chr is None:
+            log.logger.debug('args.chr was set.')
+            args.chr=chrs_set
+        
         sample_ids_n=len(sample_ids)
         if args.mmap is True:
             # fill-in, mmap
@@ -319,13 +403,19 @@ def fill_in_abs(args, params, filenames):
         # output
         missing_line_added=False
         with gzip.open(filenames.filled_vcf_abs, 'wt') as outfile:
-            with gzip.open(filenames.merged_vcf_abs) as infile:
+            with gzip.open(scaffold_f) as infile:
                 for line in infile:
                     line=line.decode()
                     if line[0] == '#':
                         if '##FILTER=<ID=' in line and missing_line_added is False:
                             missing_line='##FILTER=<ID=M,Description="Too many missing genotypes">\n'
+                            outfile.write(missing_line)
                             missing_line_added=True
+                        if '#CHROM' in line:
+                            ls=line.strip().split('\t')
+                            tmp=ls[:9]
+                            tmp.extend(sample_ids)
+                            line='\t'.join(tmp) +'\n'
                         outfile.write(line)
                     else:
                         ls=line.split('\t', 10)
@@ -346,18 +436,19 @@ def fill_in_abs(args, params, filenames):
                             else:
                                 tmp.append('0/0')
                                 zero += 1
-                        change_to_nonpass=False
-                        if (ac / (sample_ids_n * 2)) < 0.05:
-                            if missing >= (ac * 2):
-                                change_to_nonpass=True
-                        elif ((ac + missing) / (sample_ids_n * 2)) < 0.75:
-                            if missing >= ac or missing > zero:
-                                change_to_nonpass=True
-                        if change_to_nonpass is True:
-                            if tmp[6] == 'PASS':
-                                tmp[6]='M'
-                            else:
-                                tmp[6]='%s;M' % tmp[6]
+                        if args.input_scaffold is None:
+                            change_to_nonpass=False
+                            if (ac / (sample_ids_n * 2)) < 0.05:
+                                if missing >= (ac * 2):
+                                    change_to_nonpass=True
+                            elif ((ac + missing) / (sample_ids_n * 2)) < 0.75:
+                                if missing >= ac or missing > zero:
+                                    change_to_nonpass=True
+                            if change_to_nonpass is True:
+                                if tmp[6] == 'PASS':
+                                    tmp[6]='M'
+                                else:
+                                    tmp[6]='%s;M' % tmp[6]
                         outfile.write('\t'.join(tmp) +'\n')
     except:
         log.logger.error('\n'+ traceback.format_exc())

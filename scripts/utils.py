@@ -143,7 +143,13 @@ def output_finish_comment(args, do_ins, do_abs, filenames):
 
 def output_finish_comment_merge_vcf(args, filenames):
     if args.merge_mei is True:
-        log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file for Step 3:  %s\n\033[0m\n' % filenames.filled_vcf_ins)
+        if args.make_scaffold is True:
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file as a scaffold VCF:  %s, %s\n\033[0m\n' % (filenames.merged_vcf_ins, filenames.scaffold_info_i))
+        else:
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file for Step 3:  %s\n\033[0m\n' % filenames.filled_vcf_ins)
     elif args.merge_absent_me is True:
-        log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file for Step 3:  %s\n\033[0m\n' % filenames.filled_vcf_abs)
+        if args.make_scaffold is True:
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file as a scaffold VCF:  %s, %s\n\033[0m\n' % (filenames.merged_vcf_abs, filenames.scaffold_info_a))
+        else:
+            log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file for Step 3:  %s\n\033[0m\n' % filenames.filled_vcf_abs)
 

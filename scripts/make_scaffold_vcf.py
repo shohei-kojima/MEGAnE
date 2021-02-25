@@ -20,30 +20,54 @@ import log,traceback
 def check_paths(args):
     log.logger.debug('started')
     try:
-        if args.merge_mei is True:
-            necessary_files=['MEI_final_gaussian_genotyped.vcf', 'breakpoint_pairs_pooled_all.txt.gz', 'overhang_to_MEI_list.txt.gz']
-        elif args.merge_absent_me is True:
-            necessary_files=['absent_MEs_genotyped.vcf', 'absent.txt.gz']
-        len_necessary_files=len(necessary_files)
+        if args.input_scaffold is None:
+            if args.merge_mei is True:
+                necessary_files=['MEI_final_gaussian_genotyped.vcf', 'breakpoint_pairs_pooled_all.txt.gz', 'overhang_to_MEI_list.txt.gz']
+            elif args.merge_absent_me is True:
+                necessary_files=['absent_MEs_genotyped.vcf', 'absent.txt.gz']
+            len_necessary_files=len(necessary_files)
         dirs={}
         n=0
-        with open(args.f) as infile:
-            for line in infile:
-                n += 1
-                dir=line.strip()
-                if os.path.exists(dir) is False:
-                    log.logger.error('%s does not exist.' % dir)
-                    exit(1)
-                tmp=[]
-                for f in necessary_files:
-                    f='%s/%s' % (dir, f)
-                    if os.path.exists(f) is False:
-                        log.logger.warning('%s did not found. This sample will NOT be merged.' % f)
-                        continue
-                    tmp.append(f)
-                if len(tmp) == len_necessary_files:
+        if args.input_scaffold is None:
+            with open(args.f) as infile:
+                for line in infile:
+                    n += 1
+                    dir=line.strip()
+                    if os.path.exists(dir) is False:
+                        log.logger.error('%s does not exist.' % dir)
+                        exit(1)
+                    tmp=[]
+                    for f in necessary_files:
+                        f=os.path.join(dir, f)
+                        if os.path.exists(f) is False:
+                            log.logger.warning('%s did not found. This sample will NOT be merged.' % f)
+                            continue
+                        tmp.append(f)
+                    if len(tmp) == len_necessary_files:
+                        dirs[dir]=tmp
+            log.logger.info('%d directories specified. %d directories will be analyzed.' % (n, len(dirs)))
+        else:
+            sample_id_to_dir={}
+            with open(args.chunk_f) as infile:
+                for line in infile:
+                    n += 1
+                    ls=line.split()
+                    overhang_to_MEI_f=ls[1]
+                    dir=os.path.dirname(overhang_to_MEI_f)
+                    if args.merge_mei is True:
+                        tmp=[0, 0]
+                    elif args.merge_absent_me is True:
+                        tmp=[0]
+                    if os.path.exists(overhang_to_MEI_f) is False:
+                        log.logger.error('%s did not found. Please check the path again.' % overhang_to_MEI_f)
+                        exit(1)
+                    tmp.append(overhang_to_MEI_f)
+                    tmp.append(ls[0])
                     dirs[dir]=tmp
-        log.logger.info('%d directories specified. %d directories will be analyzed.' % (n, len(dirs)))
+                    sample_id_to_dir[ls[0]]=dir
+            log.logger.info('%d directories specified. %d directories will be analyzed.' % (n, len(dirs)))
+            args.sample_id_to_dir=sample_id_to_dir
+        
         if not n == len(dirs):
             failed_n= n - len(dirs)
             log.logger.warning('MEGAnE did not find necessary files in %d directory(ies). These directory(ies) will not be used for this analysis.' % failed_n)
@@ -783,3 +807,19 @@ def merge_vcf_abs(args, params, filenames):
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
 
+
+def output_summary_for_fill_in(args, params, filenames):
+    log.logger.debug('started')
+    try:
+        out=[]
+        for dir in args.dirs:
+            out.append('%s\t%s\n' % (args.dirs[dir][-1], args.dirs[dir][-2]))
+        if args.merge_mei is True:
+            with open(filenames.scaffold_info_i, 'w') as outfile:
+                outfile.write(''.join(out))
+        elif args.merge_absent_me is True:
+            with open(filenames.scaffold_info_a, 'w') as outfile:
+                outfile.write(''.join(out))
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)

@@ -63,7 +63,15 @@ def init_jointcall(args, version):
     sys.path.insert(0, os.path.join(base, 'scripts'))
     
     # make output dir
-    if args.chr is not None and args.outdir == './jointcall_out':
+    if args.input_scaffold is not None and args.chunk_f is not None:
+        with open(args.chunk_f) as infile:
+            first_sample=next(infile).split()[0]
+            for line in infile:
+                pass
+        last_sample=line.split()[0]
+        dir_name='%s_to_%s' % (first_sample, last_sample)
+        args.outdir=os.path.join(args.outdir, dir_name)
+    if args.chr is not None:
         args.outdir=os.path.join(args.outdir, args.chr.replace(',', '_'))
     if args.do_not_overwrite is True:
         if os.path.exists(args.outdir) is True:

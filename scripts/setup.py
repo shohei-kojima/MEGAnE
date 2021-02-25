@@ -352,19 +352,33 @@ def setup_geno(args, base):
 def setup_merge_vcf(args, base):
     log.logger.debug('started')
     try:
+        # check options
+        if args.input_scaffold is not None:
+            if args.chunk_f is None:
+                log.logger.error('Chunk file was not specified. Please specify a file with the "-chunk_f" flag.')
+                exit(1)
+            if args.f is not None:
+                log.logger.warning('A file was specified with the "-f" flag. This will be ignored.')
+        else:
+            if args.chunk_f is not None:
+                log.logger.warning('Chunk file was specified with the "-chunk_f" flag. This will be ignored.')
+            if args.f is None:
+                log.logger.error('Necessary file was not specified. Please specify a file with the "-f" flag.')
+                exit(1)
+        
         # tmp dir for pybedtools
         if args.pybedtools_tmp is None:
             args.pybedtools_tmp=args.outdir
         else:
             if os.path.exists(args.pybedtools_tmp) is False:
-                log.logger.info('%s does not exist. Please check if %s exists.' % (args.pybedtools_tmp, args.pybedtools_tmp))
+                log.logger.error('%s does not exist. Please check if %s exists.' % (args.pybedtools_tmp, args.pybedtools_tmp))
                 exit(1)
             nowtime=str(time.time()).replace('.', '_')
             randval=random.randint(0, 1000000000)
             nowtime='%s_%s' % (nowtime, str(randval))
             args.pybedtools_tmp=os.path.join(args.pybedtools_tmp, nowtime)
             if os.path.exists(args.pybedtools_tmp) is True:
-                log.logger.info('Exited due to a quite minor and corner reason. Please run again.')
+                log.logger.error('Exited due to a quite minor and corner reason. Please run again.')
                 exit(1)
             else:
                 os.mkdir(args.pybedtools_tmp)
