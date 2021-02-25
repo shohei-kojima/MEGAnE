@@ -148,12 +148,15 @@ def parse_slide_rep_blastn_res(args, filenames):
 def reshape_repout_to_bed(args, filenames):
     log.logger.debug('started')
     try:
+        non_rep_line={'SW', 'bit', 'score'}
         with open(filenames.repout_bed, 'w') as outfile:
             with open(args.repout) as infile:
-                for _ in range(3):
-                    next(infile)
                 for line in infile:
                     ls=line.split()
+                    if ls[0] in non_rep_line:
+                        continue
+                    if len(ls) < 15:
+                        continue
                     start= int(ls[5]) - 1  # 0-based
                     strand='+' if ls[8] == '+' else '-'
                     outfile.write('%s\t%d\t%s\t%s:%s\t%s\n' % (ls[4], start, ls[6], ls[9], ls[10], strand))
