@@ -153,9 +153,9 @@ def reshape_repout_to_bed(args, filenames):
             with open(args.repout) as infile:
                 for line in infile:
                     ls=line.split()
-                    if ls[0] in non_rep_line:
-                        continue
                     if len(ls) < 15:
+                        continue
+                    if ls[0] in non_rep_line:
                         continue
                     start= int(ls[5]) - 1  # 0-based
                     strand='+' if ls[8] == '+' else '-'
