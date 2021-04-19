@@ -22,6 +22,7 @@ class load:
             self.chrY_start_depth_est=6900000
             self.chrY_end_depth_est=7000000
             self.sex_est_XY_ratio_threshold=0.3
+            self.sex_est_XY_ratio_threshold_for_nochrY=0.75
             self.discordant_reads_clip_len=20
             self.read_pair_gap_len=2000
             self.max_TSD_len=50

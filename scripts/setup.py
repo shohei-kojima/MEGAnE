@@ -142,15 +142,20 @@ def setup(args, base):
         found_n=0
         for chr in chrX:
             if chr in all_chrs_in_bam_header:
-                log.logger.info('"%s" was found in %s. "%s" will be considered as a sex chromosome.' % (chr, samfilename, chr))
-                found_n += 1
-        for chr in chrY:
-            if chr in all_chrs_in_bam_header:
-                log.logger.info('"%s" was found in %s. "%s" will be considered as a sex chromosome.' % (chr, samfilename, chr))
+                log.logger.info('"%s" was found in %s. "%s" will be considered as a female sex chromosome.' % (chr, samfilename, chr))
                 found_n += 1
         if found_n == 0:
-            log.logger.error('Sex chromosome(s) was NOT found in %s. Please check again if you are specifying correct chrosomes with "-female_sex_chr" and "-male_sex_chr" flags.' % samfilename)
+            log.logger.error('Sex chromosome %s was NOT found in %s. Please check again if you are specifying correct chrosomes with "-female_sex_chr" flag.' % (chrX, samfilename))
             exit(1)
+        found_n=0
+        for chr in chrY:
+            if chr in all_chrs_in_bam_header:
+                log.logger.info('"%s" was found in %s. "%s" will be considered as a male sex chromosome.' % (chr, samfilename, chr))
+                found_n += 1
+                args.nochrY=False
+        if found_n == 0:
+            args.nochrY=True
+            log.logger.warning('Sex chromosome %s was NOT found in %s. Male sex chromosome will not be analyzed. Will continue anyway.' % (chrY, samfilename))
         
         # fai
         global fai_path

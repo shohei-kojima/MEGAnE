@@ -92,23 +92,34 @@ def estimate_depth_sex(args, params, auto, read_cnts):
                     Y_len += int(ls[1])
                 else:
                     nonXY_len += int(ls[1])
-        if X_len == 0 or Y_len == 0:
-            log.logger.error('Sex chromosome not found in the reference fasta index. Please check again if the reference fasta contains sex chromosomes.')
-            exit(1)
+        if args.nochrY is False:
+            if X_len == 0 or Y_len == 0:
+                log.logger.error('Sex chromosome not found in the reference fasta index. Please check again if the reference fasta contains sex chromosomes.')
+                exit(1)
+        else:
+            if X_len == 0:
+                log.logger.error('Sex chromosome not found in the reference fasta index. Please check again if the reference fasta contains sex chromosomes.')
+                exit(1)
         if nonXY_len == 0:
             log.logger.error('Autosomes not found in the reference fasta index. Please check again if the reference fasta contains autosomes.')
             exit(1)
         depth= (args.readlen * read_cnts[0]) / nonXY_len
         x_depth= (args.readlen * read_cnts[1]) / X_len
-        y_depth= (args.readlen * read_cnts[2]) / Y_len
-        sex='female' if (y_depth / x_depth) < params.sex_est_XY_ratio_threshold else 'male'
-        log.logger.debug('depth=%d;x_depth=%f;y_depth=%f;sex=%s;nonXY_len=%d' % (depth, x_depth, y_depth, sex, nonXY_len))
+        if args.nochrY is False:
+            y_depth= (args.readlen * read_cnts[2]) / Y_len
+            sex='female' if (y_depth / x_depth) < params.sex_est_XY_ratio_threshold else 'male'
+            log.logger.debug('depth=%d;x_depth=%f;y_depth=%f;sex=%s;nonXY_len=%d' % (depth, x_depth, y_depth, sex, nonXY_len))
+        else:
+            sex='female' if (x_depth / depth) > params.sex_est_XY_ratio_threshold_for_nochrY else 'male'
+            log.logger.debug('depth=%d;x_depth=%f;y_depth=%s;sex=%s;nonXY_len=%d' % (depth, x_depth, 'NA', sex, nonXY_len))
         if args.cov in auto:
             args.cov= int(round(depth))
             log.logger.info('estimated autosome depth = %d' % int(round(depth)))
         if args.sex in auto:
             args.sex=sex
             log.logger.info('estimated sex = %s' % sex)
+            if args.nochrY is True:
+                log.logger.warning('Sex estimation may not correct, due to absence of male sex chromosome in the input BAM/CRAM file. Please use this result at your own risk. Specifying sex with "-sex" flag is highly recommended.')
     except SystemExit:
         log.logger.debug('\n'+ traceback.format_exc())
         exit(1)
