@@ -228,7 +228,7 @@ def evaluate_spanning_read(args, params, filenames):
         log.logger.debug('spanning_zero_threshold=%f,spanning_high_threshold=%f,spanning_outlier=%f' % (spanning_zero_threshold, spanning_high_threshold, spanning_outlier))
         global spanning_thresholds
         if args.geno_custom_param is True:
-            if not params.custom_disc_di_high_conf_threshold_abs is False:
+            if not params.custom_spanning_zero_threshold_abs is False:
                 spanning_zero_threshold=params.custom_spanning_zero_threshold_abs
                 log.logger.debug('Custom threshold applied.')
             if not params.custom_spanning_high_threshold_abs is False:
