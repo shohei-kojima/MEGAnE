@@ -227,6 +227,16 @@ def evaluate_spanning_read(args, params, filenames):
             spanning_outlier= args.cov * params.spanning_outlier_coeff_for_precall_abs
         log.logger.debug('spanning_zero_threshold=%f,spanning_high_threshold=%f,spanning_outlier=%f' % (spanning_zero_threshold, spanning_high_threshold, spanning_outlier))
         global spanning_thresholds
+        if args.geno_custom_param is True:
+            if not params.custom_disc_di_high_conf_threshold_abs is False:
+                spanning_zero_threshold=params.custom_spanning_zero_threshold_abs
+                log.logger.debug('Custom threshold applied.')
+            if not params.custom_spanning_high_threshold_abs is False:
+                spanning_high_threshold=params.custom_spanning_high_threshold_abs
+                log.logger.debug('Custom threshold applied.')
+            if not params.custom_spanning_outlier_abs is False:
+                spanning_outlier=params.custom_spanning_outlier_abs
+                log.logger.debug('Custom threshold applied.')
         spanning_thresholds=[spanning_zero_threshold, spanning_high_threshold, spanning_outlier]
         n=0
         with open(args.abs_bed) as infile:
@@ -555,6 +565,13 @@ def evaluate_bp_depth(args, params, filenames):
             abs_mono_high_conf_threshold= mono_peak / 3
         log.logger.debug('abs_kernel,peaks=%s,bottoms=%s,highest=%s,abs_mono_high_conf_threshold=%f' % (peaks, bottoms, highest, abs_mono_high_conf_threshold))
         global abs_thresholds
+        if args.geno_custom_param is True:
+            if not params.custom_abs_mono_high_conf_threshold is False:
+                abs_mono_high_conf_threshold=params.custom_abs_mono_high_conf_threshold
+                log.logger.debug('Custom threshold applied.')
+            if not params.custom_abs_depth_outlier is False:
+                abs_depth_outlier=params.custom_abs_depth_outlier
+                log.logger.debug('Custom threshold applied.')
         abs_thresholds=[abs_mono_high_conf_threshold, abs_depth_outlier]
         # plot; this is for debug
 #        plt.figure(figsize=(3, 2))  # (x, y)

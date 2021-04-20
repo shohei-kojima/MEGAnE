@@ -485,6 +485,22 @@ def evaluate_tsd_depth(args, params, filenames):
         else:
             log.logger.debug('Not enough MEI with small del at breakpoint found (n=%d).' % len(only_del))
         global tsd_thresholds, del_thresholds
+        if args.geno_custom_param is True:
+            if not params.custom_tsd_mono_high_conf_threshold is False:
+                tsd_mono_high_conf_threshold=params.custom_tsd_mono_high_conf_threshold
+                log.logger.debug('Custom threshold applied.')
+            if not params.custom_tsd_threshold is False:
+                tsd_threshold=params.custom_tsd_threshold
+                log.logger.debug('Custom threshold applied.')
+            if not params.custom_tsd_bi_high_conf_threshold is False:
+                tsd_bi_high_conf_threshold=params.custom_tsd_bi_high_conf_threshold
+                log.logger.debug('Custom threshold applied.')
+            if not params.custom_tsd_outlier is False:
+                tsd_outlier=params.custom_tsd_outlier
+                log.logger.debug('Custom threshold applied.')
+            if not params.custom_tsd_outlier_low_threshold is False:
+                tsd_outlier_low_threshold=params.custom_tsd_outlier_low_threshold
+                log.logger.debug('Custom threshold applied.')
         tsd_thresholds=[tsd_mono_high_conf_threshold, tsd_threshold, tsd_bi_high_conf_threshold, params.tsd_outlier, tsd_outlier_low_threshold]
         if len(only_del) >= 2:
             del_thresholds=[del_mono_high_conf_threshold, del_threshold, del_bi_high_conf_threshold, params.del_outlier]
@@ -731,6 +747,16 @@ def evaluate_spanning_read(args, params, filenames, data):
             spanning_outlier= args.cov * params.spanning_outlier_coeff_for_precall
         log.logger.debug('spanning_zero_threshold=%f,spanning_high_threshold=%f,spanning_outlier=%f' % (spanning_zero_threshold, spanning_high_threshold, spanning_outlier))
         global spanning_thresholds
+        if args.geno_custom_param is True:
+            if not params.custom_disc_di_high_conf_threshold is False:
+                spanning_zero_threshold=params.custom_spanning_zero_threshold
+                log.logger.debug('Custom threshold applied.')
+            if not params.custom_spanning_high_threshold is False:
+                spanning_high_threshold=params.custom_spanning_high_threshold
+                log.logger.debug('Custom threshold applied.')
+            if not params.custom_spanning_outlier is False:
+                spanning_outlier=params.custom_spanning_outlier
+                log.logger.debug('Custom threshold applied.')
         spanning_thresholds=[spanning_zero_threshold, spanning_high_threshold, spanning_outlier]
         with open(args.ins_bed) as infile:
             for line in infile:
@@ -883,6 +909,19 @@ def evaluate_discordant(args, params, filenames):
                     disc_di_high_conf_threshold= popt[1] * 1.66
                 disc_outlier_threshold= popt[1] * params.discordant_outlier_coeff  # theoretically 3x depth
                 log.logger.debug('disc_threshold=%f,disc_mono_high_conf_threshold=%f,disc_di_high_conf_threshold=%f,disc_outlier_threshold=%f' % (float(disc_threshold), disc_mono_high_conf_threshold, disc_di_high_conf_threshold, disc_outlier_threshold))
+                if args.geno_custom_param is True:
+                    if not params.custom_disc_mono_high_conf_threshold is False:
+                        disc_mono_high_conf_threshold=params.custom_disc_mono_high_conf_threshold
+                        log.logger.debug('Custom threshold applied.')
+                    if not params.custom_disc_threshold is False:
+                        disc_threshold=params.custom_disc_threshold
+                        log.logger.debug('Custom threshold applied.')
+                    if not params.custom_disc_di_high_conf_threshold is False:
+                        disc_di_high_conf_threshold=params.custom_disc_di_high_conf_threshold
+                        log.logger.debug('Custom threshold applied.')
+                    if not params.custom_disc_di_high_conf_threshold is False:
+                        disc_outlier_threshold=params.custom_disc_outlier_threshold
+                        log.logger.debug('Custom threshold applied.')
                 disc_thresholds=[disc_mono_high_conf_threshold, disc_threshold, disc_di_high_conf_threshold, disc_outlier_threshold]
                 # prep for plot
                 mono_x,mono_y, di_x,di_y, outlier_x,outlier_y=[],[], [],[], [],[]

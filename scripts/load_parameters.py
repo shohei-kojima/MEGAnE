@@ -254,6 +254,18 @@ class load_geno:
             self.fit_gaussian_init_sigma_coeff=0.33
             self.discordant_outlier_coeff=3.5
             self.spanning_threshold_coeff_for_merge=0.01
+            self.custom_tsd_mono_high_conf_threshold=False
+            self.custom_tsd_threshold=False
+            self.custom_tsd_bi_high_conf_threshold=False
+            self.custom_tsd_outlier=False
+            self.custom_tsd_outlier_low_threshold=False
+            self.custom_spanning_zero_threshold=False
+            self.custom_spanning_high_threshold=False
+            self.custom_spanning_outlier=False
+            self.custom_disc_mono_high_conf_threshold=-1
+            self.custom_disc_threshold=-1
+            self.custom_disc_di_high_conf_threshold=-1
+            self.custom_disc_outlier_threshold=False
             
             self.abs_slop_len=300
             self.min_len_overhang_for_spanning_abs=31
@@ -271,6 +283,11 @@ class load_geno:
             self.abs_depth_outlier=0.8
             self.abs_depth_outlier_precall=0.75
             self.spanning_threshold_coeff_for_merge_abs=0.01
+            self.custom_spanning_zero_threshold_abs=False
+            self.custom_spanning_high_threshold_abs=False
+            self.custom_spanning_outlier_abs=False
+            self.custom_abs_mono_high_conf_threshold=False
+            self.custom_abs_depth_outlier=False
             
             self.bam_sort_maxmem='2G'
             

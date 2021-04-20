@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='v0.1.1 2021/04/19'
+version='v0.1.1 2021/04/20'
 
 
 # args
@@ -46,6 +46,7 @@ parser.add_argument('-do_not_overwrite', help='Optional. Specify if you do NOT o
 parser.add_argument('-p', metavar='int', type=int, help='Optional. Number of threads. 3 or more is recommended. Default: 2', default=2)
 parser.add_argument('-v', '--version', action='version', version='MEGAnE %s %s' % (os.path.basename(__file__), version))
 parser.add_argument('-only_geno', action='store_true', help=argparse.SUPPRESS)
+parser.add_argument('-geno_custom_param', action='store_true', help=argparse.SUPPRESS)
 parser.add_argument('-threshold', metavar='int', type=int, help=argparse.SUPPRESS)
 parser.add_argument('-only_geno_precall', action='store_true', help=argparse.SUPPRESS)
 parser.add_argument('-skip_unmapped', action='store_true', help=argparse.SUPPRESS)
