@@ -919,7 +919,7 @@ def evaluate_discordant(args, params, filenames):
                     if not params.custom_disc_di_high_conf_threshold is False:
                         disc_di_high_conf_threshold=params.custom_disc_di_high_conf_threshold
                         log.logger.debug('Custom threshold applied.')
-                    if not params.custom_disc_di_high_conf_threshold is False:
+                    if not params.custom_disc_outlier_threshold is False:
                         disc_outlier_threshold=params.custom_disc_outlier_threshold
                         log.logger.debug('Custom threshold applied.')
                 disc_thresholds=[disc_mono_high_conf_threshold, disc_threshold, disc_di_high_conf_threshold, disc_outlier_threshold]

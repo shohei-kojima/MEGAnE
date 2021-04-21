@@ -55,7 +55,15 @@ def plot_orig(args, params, filenames, data):
             ax.yaxis.set_ticks([])
             
             ax=plt.subplot(gs[1,0])  # tsd, x=tsd, y=spanning
-            ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.1)
+            if len(x) > 2000:
+                alpha_coeff=0.5
+            elif len(x) > 10000:
+                alpha_coeff=0.2
+            elif len(x) > 20000:
+                alpha_coeff=0.1
+            else:
+                alpha_coeff=1
+            ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha= 0.1 * alpha_coeff)
             ax.axvline(x=data.tsd_thresholds[0], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[1], linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[2], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
@@ -92,7 +100,15 @@ def plot_orig(args, params, filenames, data):
             ax.yaxis.set_ticks([])
             
             ax=plt.subplot(gs[4,0])  # tsd, x=tsd, y=discordant reads
-            ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha=0.1)
+            if len(x) > 2000:
+                alpha_coeff=0.5
+            elif len(x) > 10000:
+                alpha_coeff=0.2
+            elif len(x) > 20000:
+                alpha_coeff=0.1
+            else:
+                alpha_coeff=1
+            ax.scatter(x, y, s=5, c='dodgerblue', linewidths=0.5, alpha= 0.1 * alpha_coeff)
             ax.axvline(x=data.tsd_thresholds[0], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[1], linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[2], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
@@ -360,9 +376,18 @@ def plot_merged(args, params, filenames, data):
             ax.yaxis.set_ticks([])
             
             ax=plt.subplot(gs[1,0])  # tsd, x=tsd, y=spanning
-            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
-            ax.scatter(x_mono, y_mono, s=5, c='lightskyblue', linewidths=0.5, alpha=0.1)
-            ax.scatter(x_bi, y_bi, s=5, c='steelblue', linewidths=0.5, alpha=0.1)
+            n_datapoint= len(x_failed + x_mono + x_bi)
+            if n_datapoint > 2000:
+                alpha_coeff=0.5
+            elif n_datapoint > 10000:
+                alpha_coeff=0.2
+            elif n_datapoint > 20000:
+                alpha_coeff=0.1
+            else:
+                alpha_coeff=1
+            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1 * alpha_coeff)
+            ax.scatter(x_mono, y_mono, s=5, c='lightskyblue', linewidths=0.5, alpha=0.1 * alpha_coeff)
+            ax.scatter(x_bi, y_bi, s=5, c='steelblue', linewidths=0.5, alpha=0.1 * alpha_coeff)
             ax.axvline(x=data.tsd_thresholds[4], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[1], linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
@@ -407,9 +432,18 @@ def plot_merged(args, params, filenames, data):
             ax.yaxis.set_ticks([])
             
             ax=plt.subplot(gs[4,0])  # tsd, x=tsd, y=discordant reads
-            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
-            ax.scatter(x_mono, y_mono, s=5, c='lightskyblue', linewidths=0.5, alpha=0.1)
-            ax.scatter(x_bi, y_bi, s=5, c='steelblue', linewidths=0.5, alpha=0.1)
+            n_datapoint= len(x_failed + x_mono + x_bi)
+            if n_datapoint > 2000:
+                alpha_coeff=0.5
+            elif n_datapoint > 10000:
+                alpha_coeff=0.2
+            elif n_datapoint > 20000:
+                alpha_coeff=0.1
+            else:
+                alpha_coeff=1
+            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1 * alpha_coeff)
+            ax.scatter(x_mono, y_mono, s=5, c='lightskyblue', linewidths=0.5, alpha=0.1 * alpha_coeff)
+            ax.scatter(x_bi, y_bi, s=5, c='steelblue', linewidths=0.5, alpha=0.1 * alpha_coeff)
             ax.axvline(x=data.tsd_thresholds[4], linewidth=0.5, alpha=0.25, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[1], linewidth=0.5, alpha=0.50, color='steelblue', linestyle='dashed')
             ax.axvline(x=data.tsd_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
@@ -457,9 +491,18 @@ def plot_merged(args, params, filenames, data):
                 ax.yaxis.set_ticks([])
 
                 ax=plt.subplot(gs[1,3])  # del, x=tsd, y=spanning
-                ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
-                ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2)
-                ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
+                n_datapoint= len(x_failed + x_mono + x_bi)
+                if n_datapoint > 2000:
+                    alpha_coeff=0.5
+                elif n_datapoint > 10000:
+                    alpha_coeff=0.2
+                elif n_datapoint > 20000:
+                    alpha_coeff=0.1
+                else:
+                    alpha_coeff=1
+                ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1 * alpha_coeff)
+                ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2 * alpha_coeff)
+                ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2 * alpha_coeff)
                 ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
                 ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
                 ax.axhline(y=spanning_threshold_for_merge, linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
@@ -504,9 +547,18 @@ def plot_merged(args, params, filenames, data):
                 ax.yaxis.set_ticks([])
 
                 ax=plt.subplot(gs[4,3])  # del, x=tsd, y=discordant reads
-                ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
-                ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2)
-                ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2)
+                n_datapoint= len(x_failed + x_mono + x_bi)
+                if n_datapoint > 2000:
+                    alpha_coeff=0.5
+                elif n_datapoint > 10000:
+                    alpha_coeff=0.2
+                elif n_datapoint > 20000:
+                    alpha_coeff=0.1
+                else:
+                    alpha_coeff=1
+                ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1 * alpha_coeff)
+                ax.scatter(x_mono, y_mono, s=5, c='gold', linewidths=0.5, alpha=0.2 * alpha_coeff)
+                ax.scatter(x_bi, y_bi, s=5, c='darkred', linewidths=0.5, alpha=0.2 * alpha_coeff)
                 ax.axvline(x=data.del_thresholds[1], linewidth=0.5, alpha=0.50, color='orangered', linestyle='dashed')
                 ax.axvline(x=data.del_thresholds[3], linewidth=0.5, alpha=0.25, color='grey', linestyle='dashed')
                 ax.axhline(y=data.disc_thresholds[0], linewidth=0.5, alpha=0.25, color='orangered', linestyle='dashed')
@@ -551,9 +603,18 @@ def plot_merged(args, params, filenames, data):
             ax.yaxis.set_ticks([])
 
             ax=plt.subplot(gs[1,6])  # x=discordant, y=spanning reads
-            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1)
-            ax.scatter(x_mono, y_mono, s=5, c='lightgreen', linewidths=0.5, alpha=0.1)
-            ax.scatter(x_bi, y_bi, s=5, c='darkolivegreen', linewidths=0.5, alpha=0.1)
+            n_datapoint= len(x_failed + x_mono + x_bi)
+            if n_datapoint > 2000:
+                alpha_coeff=0.5
+            elif n_datapoint > 10000:
+                alpha_coeff=0.2
+            elif n_datapoint > 20000:
+                alpha_coeff=0.1
+            else:
+                alpha_coeff=1
+            ax.scatter(x_failed, y_failed, s=5, c='silver', linewidths=0.5, alpha=0.1 * alpha_coeff)
+            ax.scatter(x_mono, y_mono, s=5, c='lightgreen', linewidths=0.5, alpha=0.1 * alpha_coeff)
+            ax.scatter(x_bi, y_bi, s=5, c='darkolivegreen', linewidths=0.5, alpha=0.1 * alpha_coeff)
             ax.axvline(x=data.disc_thresholds[0], linewidth=0.5, alpha=0.25, color='forestgreen', linestyle='dashed')
             ax.axvline(x=data.disc_thresholds[1], linewidth=0.5, alpha=0.50, color='forestgreen', linestyle='dashed')
             ax.axvline(x=data.disc_thresholds[2], linewidth=0.5, alpha=0.25, color='forestgreen', linestyle='dashed')
