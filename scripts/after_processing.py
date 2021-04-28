@@ -33,12 +33,18 @@ def grouped_mei_to_bed(args, params, filenames):
                 d={}
                 for te in tes:
                     d[te]=[[], []]
-                for te,s,_,_ in R_list:
+                for te,s,e,_ in R_list:
                     if te in tes:
-                        d[te][0].append(int(s))
-                for te,_,e,_ in L_list:
+                        if r_strand == '+':
+                            d[te][0].append(int(s))
+                        else:
+                            d[te][0].append(int(e))
+                for te,s,e,_ in L_list:
                     if te in tes:
-                        d[te][1].append(int(e))
+                        if r_strand == '+':
+                            d[te][1].append(int(e))
+                        else:
+                            d[te][1].append(int(s))
                 for te in d:
                     d[te][0]=round(mean(d[te][0]))
                     d[te][1]=round(mean(d[te][1]))
