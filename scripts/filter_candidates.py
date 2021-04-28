@@ -274,7 +274,7 @@ def filter(args, params, filenames):
                     # second filter, 90% accuracy
                     if (retain_count is True) and (retain_eval is True):
                         if (int(ls[12]) >= params.second_filter_hybrid_read_num) and (int(ls[13]) >= params.second_filter_hybrid_read_num):
-                            if ls[7] == 'L1':
+                            if args.L1_filt_off == False and ls[7] == 'L1':
                                 L1_judge=L1_filter(line, r_pos, l_pos, pA_only, R_eval, L_eval)
                                 pybedtools.cleanup()
                                 if L1_judge is True:
@@ -290,7 +290,7 @@ def filter(args, params, filenames):
                                 if (min(R_eval) < params.second_filter_eval_threshold_for_few_hybrid) and (min(L_eval) < params.second_filter_eval_threshold_for_few_hybrid):
                                     proc_next=True
                             if proc_next is True:
-                                if ls[7] == 'L1':
+                                if args.L1_filt_off == False and ls[7] == 'L1':
                                     L1_judge=L1_filter(line, r_pos, l_pos, pA_only, R_eval, L_eval)
                                     pybedtools.cleanup()
                                     if L1_judge is True:
@@ -307,7 +307,7 @@ def filter(args, params, filenames):
                                 if min(RL_eval) < params.second_filter_eval_threshold_for_few_hybrid:
                                     proc_next=True
                             if proc_next is True:
-                                if ls[7] == 'L1':
+                                if args.L1_filt_off == False and ls[7] == 'L1':
                                     L1_judge=L1_filter(line, r_pos, l_pos, pA_only, R_eval, L_eval)
                                     pybedtools.cleanup()
                                     if L1_judge is True:

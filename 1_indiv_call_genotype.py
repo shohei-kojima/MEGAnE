@@ -34,6 +34,7 @@ parser.add_argument('-sample_name', metavar='str', type=str, help='Optional. Spe
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-homozygous', help='Optional. Specify if you use inbred mouse strains (i.e. homozygous at all loci).', action='store_true')
 parser.add_argument('-monoallelic', help='Optional. Specify if you use haploid sample, such as CHM1.', action='store_true')
+parser.add_argument('-L1_filt_off', help='Optional. Specify if your sample is NOT human. By default, this is on (this is recommended for human samples). If on, MEGAnE applies additional filtering step for L1 insertions.', action='store_true')
 parser.add_argument('-unsorted', help='Optional. Specify if an input BAM/CRAM is not position sorted.', action='store_true')
 parser.add_argument('-verylowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 10x).', action='store_true')
 parser.add_argument('-lowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 15x).', action='store_true')
