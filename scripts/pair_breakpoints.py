@@ -332,14 +332,14 @@ def remove_cand_inside_TE(args, params, filenames):
         breakpoints=list(breakpoints)
         breakpoints='\n'.join(breakpoints) +'\n'
         breakpoints=BedTool(breakpoints, from_string=True).sort()
-        breakpoints=breakpoints.intersect(simple, v=True)
+        breakpoints=breakpoints.intersect(simple, v=True, nonamecheck=True)
         del(simple)
 
         # retrieve candidate hotspots overlaps with reference TEs
         ref_genome_tes=BedTool(filenames.repout_bed)
         if not params.ref_TE_slop_len == 0:
             ref_genome_tes=ref_genome_tes.slop(g=args.fai, b=slop_len)
-        breakpoints_intersect=breakpoints.intersect(ref_genome_tes, wa=True, wb=True)
+        breakpoints_intersect=breakpoints.intersect(ref_genome_tes, wa=True, wb=True, nonamecheck=True)
         del(ref_genome_tes)
 
         # load similar TEs

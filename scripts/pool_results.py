@@ -198,7 +198,7 @@ def add_hybrid(args, params, filenames):
 
         # list up hybrid reads near from integration junction candidates
         hybrid={}
-        bed_up=bed_up.intersect(bed_hybrid, wa=True, wb=True)
+        bed_up=bed_up.intersect(bed_hybrid, wa=True, wb=True, nonamecheck=True)
         for line in bed_up:
             line=str(line)
             ls=line.split()
@@ -214,7 +214,7 @@ def add_hybrid(args, params, filenames):
                     hybrid_read_info= ls[5] +':'+ ls[6] +'-'+ ls[7] +'(+)'
                     hybrid[ls[3]]['up'].add(ls[9] +'\t'+ ls[8] +'\t'+ hybrid_read_info)
 
-        bed_down=bed_down.intersect(bed_hybrid, wa=True, wb=True)
+        bed_down=bed_down.intersect(bed_hybrid, wa=True, wb=True, nonamecheck=True)
         for line in bed_down:
             line=str(line)
             ls=line.split()

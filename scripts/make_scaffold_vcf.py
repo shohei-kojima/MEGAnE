@@ -417,7 +417,7 @@ def merge_vcf_ins(args, params, filenames):
                 log.logger.info('Merging %s....' % m)
                 
                 tmp=BedTool('\n'.join(bed[m]), from_string=True)
-                tmp=tmp.intersect(all[m], wa=True, wb=True)
+                tmp=tmp.intersect(all[m], wa=True, wb=True, nonamecheck=True)
                 ss,es=[],[]
                 for line in tmp:
                     ls=str(line).split()
@@ -428,7 +428,7 @@ def merge_vcf_ins(args, params, filenames):
                  
                 if m in vlc:
                     tmp=BedTool('\n'.join(vlc[m]), from_string=True)
-                    tmp=tmp.intersect(all[m], wa=True, wb=True)
+                    tmp=tmp.intersect(all[m], wa=True, wb=True, nonamecheck=True)
                     for line in tmp:
                         ls=str(line).split()
                         id='%s:%s-%s:%s' % (ls[4], ls[5], ls[6], m)
@@ -706,7 +706,7 @@ def merge_vcf_abs(args, params, filenames):
                     log.logger.info('Merging %s....' % m)
                 
                 tmp=BedTool('\n'.join(bed[m]), from_string=True)
-                tmp=tmp.intersect(all[m], wa=True, wb=True)
+                tmp=tmp.intersect(all[m], wa=True, wb=True, nonamecheck=True)
                 ss,es=[],[]
                 for line in tmp:
                     ls=str(line).split()

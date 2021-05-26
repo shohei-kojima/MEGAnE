@@ -51,7 +51,7 @@ def find_abs(args, params, filenames):
 
         # identify unfixed TEs
         bed_te=BedTool(filenames.repout_bed)
-        bed_te_intersect=bed_te.intersect(bed_high_cov, wa=True, wb=True)
+        bed_te_intersect=bed_te.intersect(bed_high_cov, wa=True, wb=True, nonamecheck=True)
         d={}
         for line in bed_te_intersect:
             ls=str(line).split()

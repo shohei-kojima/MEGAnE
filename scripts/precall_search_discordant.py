@@ -109,7 +109,7 @@ def detect_discordant(args, params, filenames):
         slopbed,count_ins,count_abs,iids,aids=generate_slopbed(args, params, filenames, params.ins_slop_len_for_disc_detection, params.ins_discard_flank_len, params.abs_slop_len_for_disc_detection)
         log.logger.info('total ins=%d,abs=%d bed lines found.' % (count_ins, count_abs))
         
-        intersect=slopbed.intersect(disc_bed, wa=True)
+        intersect=slopbed.intersect(disc_bed, wa=True, nonamecheck=True)
         disc_ids_d={}
         for id in iids:
             disc_ids_d['l%s' % id]=0

@@ -111,7 +111,7 @@ def grouped_mei_to_bed(args, params, filenames):
                             end=str(end)
                             flank.append('\t'.join([ls[0], l_bp, end, ls[7], '.', '-\n']))
                 flank=BedTool(''.join(flank), from_string=True)
-                flank_intersect=flank.intersect(bed, s=True, wa=True, wb=True)
+                flank_intersect=flank.intersect(bed, s=True, wa=True, wb=True, nonamecheck=True)
                 flank_read_names_d1,flank_read_names_d2=retrieve_read_names(flank_intersect)
                 trans_d={}
                 with gzip.open(filenames.distant_txt +'.gz') as infile:
@@ -525,7 +525,7 @@ def retrieve_3transd_reads(args, params, filenames):
             def process_bed(bed):
                 ids={}
                 bed=BedTool(bed, from_string=True)
-                bed=bed.intersect(poss_for_hybrid, wa=True, wb=True, s=True)
+                bed=bed.intersect(poss_for_hybrid, wa=True, wb=True, s=True, nonamecheck=True)
                 if len(bed) >= 1:
                     for line in bed:
                         line=str(line)

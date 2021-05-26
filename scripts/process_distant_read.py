@@ -22,8 +22,8 @@ def process_reads(args, params, filenames):
         def process_bed(bed):
             ids={}
             bed=BedTool(bed, from_string=True)
-            bed=bed.intersect(simple, v=True)
-            bed=bed.intersect(tes, f=0.9, wa=True, wb=True)
+            bed=bed.intersect(simple, v=True, nonamecheck=True)
+            bed=bed.intersect(tes, f=0.9, wa=True, wb=True, nonamecheck=True)
             if len(bed) >= 1:
                 for line in bed:
                     line=str(line)
