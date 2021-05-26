@@ -1,5 +1,6 @@
 Satellite
 SAT
+MSAT
 direct repeat
 Simple Repeat
 STR47

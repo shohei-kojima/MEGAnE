@@ -4,7 +4,6 @@ SINE2/tRNA
 SINE3/5S
 L1
 L2
-RTE
 RTEX
 Non-LTR Retrotransposon
 L1-dep
