@@ -136,7 +136,7 @@ def limit(args, params, filenames, data):
 #                        pysam.index(args.b, '-@ %d' % args.p)
                 cmd='samtools view -@ %d %s -bh -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_tb)
             else:
-                if os.path.exists(args.c + '.crai') is False:
+#                if os.path.exists(args.c + '.crai') is False:
 #                    base,_=os.path.splitext(args.c)
 #                    if os.path.exists(base + '.crai') is False:
 #                        log.logger.info('Generating CRAM index...')
