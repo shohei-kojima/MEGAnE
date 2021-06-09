@@ -129,18 +129,8 @@ def limit(args, params, filenames, data):
                 cmd='samtools view -@ %d %s -T %s -Ch -M -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_c)
         else:
             if args.b is not None:
-#                if os.path.exists(args.b + '.bai') is False:
-#                    base,_=os.path.splitext(args.b)
-#                    if os.path.exists(base + '.bai') is False:
-#                        log.logger.info('Generating BAM index...')
-#                        pysam.index(args.b, '-@ %d' % args.p)
                 cmd='samtools view -@ %d %s -bh -L %s -o %s' % (args.p, args.b, slopbed.fn, filenames.limited_tb)
             else:
-#                if os.path.exists(args.c + '.crai') is False:
-#                    base,_=os.path.splitext(args.c)
-#                    if os.path.exists(base + '.crai') is False:
-#                        log.logger.info('Generating CRAM index...')
-#                        pysam.index(args.c, '-@ %d' % args.p)
                 cmd='samtools view -@ %d %s -T %s -Ch -L %s -o %s' % (args.p, args.c, args.fa, slopbed.fn, filenames.limited_tc)
         log.logger.debug('samtools command = `'+ cmd +'`')
         out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
@@ -450,7 +440,7 @@ def evaluate_tsd_depth(args, params, filenames):
         xs=np.linspace(1, 2, 200)  # TSD
         ys=tsd_kernel(xs)
         peaks,bottoms,highest=find_threshold(xs, ys)
-        if len(bottoms) >= 1:
+        if len(bottoms) >= 1 and len(peaks) >= 1:
             tsd_threshold=bottoms[-1]
             for peak in peaks:
                 if peak < tsd_threshold:
