@@ -440,23 +440,32 @@ def evaluate_tsd_depth(args, params, filenames):
         xs=np.linspace(1, 2, 200)  # TSD
         ys=tsd_kernel(xs)
         peaks,bottoms,highest=find_threshold(xs, ys)
-        log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,highest=%s' % (peaks, bottoms, highest))
-        if len(bottoms) >= 1 and len(peaks) >= 2:
+        if len(bottoms) >= 1:
             tsd_threshold=bottoms[-1]
-            for peak in peaks:
-                if peak < tsd_threshold:
-                    mono_peak=peak
-                else:
-                    bi_peak=peak
-                    break
-            tsd_mono_high_conf_threshold= (mono_peak + tsd_threshold + tsd_threshold) / 3
-            tsd_bi_high_conf_threshold=   (bi_peak   + tsd_threshold + tsd_threshold) / 3
-            tsd_outlier_low_threshold= 1 + ((mono_peak - 1) * params.tsd_outlier_low_coeff)
+            mono_peak_n=len([ peak for peak in peaks if peak < tsd_threshold ])
+            bi_peak_n=len([ peak for peak in peaks if peak >= tsd_threshold ])
+            if mono_peak_n >= 1 and bi_peak_n >= 1:
+                for peak in peaks:
+                    if peak < tsd_threshold:
+                        mono_peak=peak
+                    else:
+                        bi_peak=peak
+                        break
+                tsd_mono_high_conf_threshold= (mono_peak + tsd_threshold + tsd_threshold) / 3
+                tsd_bi_high_conf_threshold=   (bi_peak   + tsd_threshold + tsd_threshold) / 3
+                tsd_outlier_low_threshold= 1 + ((mono_peak - 1) * params.tsd_outlier_low_coeff)
+            else:
+                tsd_threshold= ((highest[0] - 1) * 1.5) + 1  # would be corner cases
+                tsd_mono_high_conf_threshold= ((highest[0] - 1) * 1.333) + 1
+                tsd_bi_high_conf_threshold=   ((highest[0] - 1) * 1.666) + 1
+                tsd_outlier_low_threshold= 1 + (highest[0] * params.tsd_outlier_low_coeff)
+                log.logger.debug('tsd_kernel fitting failed,peaks=%s,bottoms=%s,highest=%s' % (peaks, bottoms, highest))
         else:
             tsd_threshold= ((highest[0] - 1) * 1.5) + 1  # would be corner cases
             tsd_mono_high_conf_threshold= ((highest[0] - 1) * 1.333) + 1
             tsd_bi_high_conf_threshold=   ((highest[0] - 1) * 1.666) + 1
             tsd_outlier_low_threshold= 1 + (highest[0] * params.tsd_outlier_low_coeff)
+            log.logger.debug('tsd_kernel fitting failed,peaks=%s,bottoms=%s,highest=%s' % (peaks, bottoms, highest))
         if args.only_geno_precall is True:
             tsd_outlier_low_threshold=params.tsd_outlier_low_for_precall
             tsd_threshold= tsd_threshold + params.tsd_threshold_correction
