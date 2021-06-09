@@ -440,7 +440,8 @@ def evaluate_tsd_depth(args, params, filenames):
         xs=np.linspace(1, 2, 200)  # TSD
         ys=tsd_kernel(xs)
         peaks,bottoms,highest=find_threshold(xs, ys)
-        if len(bottoms) >= 1 and len(peaks) >= 1:
+        log.logger.debug('tsd_kernel,peaks=%s,bottoms=%s,highest=%s' % (peaks, bottoms, highest))
+        if len(bottoms) >= 1 and len(peaks) >= 2:
             tsd_threshold=bottoms[-1]
             for peak in peaks:
                 if peak < tsd_threshold:
