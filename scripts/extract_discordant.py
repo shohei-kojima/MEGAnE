@@ -36,7 +36,7 @@ def flagstat(args):
 def concat_for_ins(args, filenames):
     log.logger.debug('started')
     try:
-        outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.unmapped_fa, filenames.mapped_fa, filenames.blast1_res]
+        outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.mapped_fa, filenames.blast1_res]
         for file_base in outfiles:
             shutil.move(file_base +'0.txt', file_base)
             with open(file_base, 'a') as outfile:
@@ -46,6 +46,23 @@ def concat_for_ins(args, filenames):
                     os.remove(file_base + str(n) +'.txt')
                 outfile.flush()
                 os.fdatasync(outfile.fileno())
+        # unmapped read, remove short seq
+        file_base=filenames.unmapped_fa
+        unmapped_min_len= params.blastn_word_size + 2
+        with open(file_base, 'w') as outfile:
+            for n in range(args.p):
+                with open(file_base + str(n) +'.txt') as infile:
+                    for line in infile:
+                        if line[0] == '>':
+                            tmp=line.copy()
+                        else:
+                            nonN_len=len(line.replace('N', ''))
+                            if nonN_len >= unmapped_min_len:
+                                tmp += line
+                                outfile.write(tmp)
+                os.remove(file_base + str(n) +'.txt')
+            outfile.flush()
+            os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
