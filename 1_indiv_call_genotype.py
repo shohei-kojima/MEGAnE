@@ -209,7 +209,7 @@ if args.only_geno is False:
                 blastn.blastn_single_thread(args, params, infpath, filenames.repdb, outfpath)
             with Pool(args.p) as p:
                 p.map(blast_exe, range(args.p))
-            extract_discordant.concat_for_ins(args, filenames)
+            extract_discordant.concat_for_ins(args, params, filenames)
         else:
             blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
         parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)

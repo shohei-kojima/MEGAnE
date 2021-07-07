@@ -33,7 +33,7 @@ def flagstat(args):
 
 
 # concatenate result files
-def concat_for_ins(args, filenames):
+def concat_for_ins(args, params, filenames):
     log.logger.debug('started')
     try:
         outfiles=[filenames.overhang_fa, filenames.overhang_pA, filenames.distant_txt, filenames.mapped_fa, filenames.blast1_res]
