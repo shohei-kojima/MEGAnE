@@ -49,20 +49,24 @@ def concat_for_ins(args, params, filenames):
         # unmapped read, remove short seq
         file_base=filenames.unmapped_fa
         unmapped_min_len= params.blastn_word_size + 2
+        discarded=0
         with open(file_base, 'w') as outfile:
             for n in range(args.p):
                 with open(file_base + str(n) +'.txt') as infile:
                     for line in infile:
                         if line[0] == '>':
-                            tmp=line.copy()
+                            tmp=line
                         else:
                             nonN_len=len(line.replace('N', ''))
                             if nonN_len >= unmapped_min_len:
                                 tmp += line
                                 outfile.write(tmp)
+                            else:
+                                discarded += 1
                 os.remove(file_base + str(n) +'.txt')
             outfile.flush()
             os.fdatasync(outfile.fileno())
+        log.logger.debug('%d unmapped reads discarded due to shorter than word size' % discarded)
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
