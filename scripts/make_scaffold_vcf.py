@@ -436,15 +436,25 @@ def merge_vcf_ins(args, params, filenames):
                             vlc_intersects[id]=set()
                         vlc_intersects[id].add(ls[3])
         # determine most common breakpoint
+        failed={}
         for m in poss:
+            failed[m]=set()
             for id in poss[m]:
-                start=collections.Counter(poss[m][id][0]).most_common()[0][0]
-                end=  collections.Counter(poss[m][id][1]).most_common()[0][0]
-                poss[m][id]=[start, end]
+                if len(poss[m][id][0]) >= 1:
+                    start=collections.Counter(poss[m][id][0]).most_common()[0][0]
+                    end=  collections.Counter(poss[m][id][1]).most_common()[0][0]
+                    poss[m][id]=[start, end]
+                else:
+                    failed[m].add(id)
+        for m in failed:
+            if len(failed[m]) >= 1:
+                log.logger.debug('%s=%d ids failed' % (m, len(failed[m])))
         # retrieve fasta
         bed=[]
         for m in count:
             for id in count[m]:
+                if id in failed[m]:
+                    continue
                 chr=id.split(':')[0]
                 start= int(poss[m][id][0]) - 1  # add one base before bp
                 if start < 0:
@@ -462,6 +472,8 @@ def merge_vcf_ins(args, params, filenames):
         sample_ids=set()
         for m in count:
             for id in count[m]:
+                if id in failed[m]:
+                    continue
                 afs=[]    # allele freq
                 quals=[]  # me prediction quality
                 lens=[]   # me length
