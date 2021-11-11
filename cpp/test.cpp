@@ -1,6 +1,6 @@
 #include <iostream>
 #include "hash_rep.hpp"
-
+using namespace hasp_rep_hpp;
 
 
 int main(int argc, char* argv[]) {

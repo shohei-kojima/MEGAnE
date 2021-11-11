@@ -18,6 +18,7 @@ typedef unsigned long long ull;
 const ull HASH_BASE = 100000007;
 const char FASTA_HEADER_START = '>';
 
+namespace hasp_rep_hpp {
 
 /*
  Hash a single seq
@@ -165,3 +166,4 @@ int _main(int argc, char* argv[]) {
     return ret;
 }
 
+}  // namespace
