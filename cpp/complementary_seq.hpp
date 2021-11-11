@@ -1,6 +1,7 @@
 /*
  Author: Shohei Kojima @ RIKEN
  This is a minimum prog to generate complementary DNA seq.
+ This is a header-only lib.
  */
 
 #ifndef COMPLEMENTARY_SEQ_HPP
