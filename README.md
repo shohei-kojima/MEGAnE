@@ -1,3 +1,3 @@
-# pME search pipeline
+# MEGAnE
 
 To be written.

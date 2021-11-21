@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 '''
+Author: Shohei Kojima @ RIKEN
 Copyright (c) 2020 RIKEN
 All Rights Reserved
 See file LICENSE for details.

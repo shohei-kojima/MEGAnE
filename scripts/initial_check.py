@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 '''
+Author: Shohei Kojima @ RIKEN
 Copyright (c) 2020 RIKEN
 All Rights Reserved
 See file LICENSE for details.
@@ -192,6 +193,44 @@ def check_reshape_vcf(args, argv):
             dt_now=datetime.datetime.now()
             args.cohort_name='%d-%d-%d-%d%d%d' % (dt_now.year, dt_now.month, dt_now.day, dt_now.hour, dt_now.minute, dt_now.second)
             log.logger.info('-cohort_name was not specified. Will use %s as a cohort name' % args.cohort_name)
+    except SystemExit:
+        log.logger.debug('\n'+ traceback.format_exc())
+        exit(1)
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
+def check_build_kmer(args, argv):
+    log.logger.debug('started')
+    try:
+        log.logger.debug('command line:\n'+ ' '.join(argv))
+        # check python version
+        version=sys.version_info
+        if (version[0] >= 3) and (version[1] >= 7):
+            log.logger.debug('Python version=%d.%d.%d' % (version[0], version[1], version[2]))
+        else:
+            log.logger.error('Please use Python 3.7 or later. Your Python is version %d.%d.' % (version[0], version[1]))
+            exit(1)
+                        
+        for f_check,f_name in zip([args.fa, args.fa + '.fai'], ['Input fasta file (-fa flag)', 'Index of the input fasta file (.fa.fai)']):
+            if f_check is None:
+                log.logger.error('%s was not specified.' % f_name)
+                exit(1)
+            elif os.path.exists(f_check) is False:
+                log.logger.error('%s was not found.' % f_check)
+                exit(1)
+            else:
+                log.logger.debug('%s found.' % f_check)
+        
+        # make sure "/" is not included in the prefix
+        if args.prefix is None:
+            args.prefix=os.path.basename(args.fa)
+            log.logger.info('Output prefix was set as "%s"' % args.prefix)
+        if '/' in args.prefix:
+            log.logger.error('The letter "/" cannot be used in the prefix. Please use another prefix name.')
+            exit(1)
+        
     except SystemExit:
         log.logger.debug('\n'+ traceback.format_exc())
         exit(1)

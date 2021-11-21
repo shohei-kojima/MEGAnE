@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 '''
+Author: Shohei Kojima @ RIKEN
 Copyright (c) 2020 RIKEN
 All Rights Reserved
 See file LICENSE for details.
@@ -152,4 +153,5 @@ def output_finish_comment_merge_vcf(args, filenames):
             log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file as a scaffold VCF:  %s, %s\n\033[0m\n' % (filenames.merged_vcf_abs, filenames.scaffold_info_a))
         else:
             log.logger.info('\n\n\033[34mAll analysis finished! Thank you for using MEGAnE!\n\n  Please use following file for Step 3:  %s\n\033[0m\n' % filenames.filled_vcf_abs)
+
 

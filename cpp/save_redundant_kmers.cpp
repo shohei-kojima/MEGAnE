@@ -6,6 +6,7 @@
     as a 2-bit binary file.
  Compile:
     g++ -o save_redundant_kmers save_redundant_kmers.cpp -O2
+    g++ -shared -fPIC -o save_redundant_kmers.so save_redundant_kmers.cpp -O2
  Usage:
     ./prog input.fa output_prefix
  Output:
@@ -28,6 +29,7 @@
 #include <vector>
 #include "dna_to_2bit.hpp"
 #include "parse_fai.hpp"
+#include "save_redundant_kmers.hpp"
 using namespace dna_to_2bit_hpp;
 using namespace parse_fai_hpp;
 

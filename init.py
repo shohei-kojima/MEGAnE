@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 '''
+Author: Shohei Kojima @ RIKEN
 Copyright (c) 2020 RIKEN
 All Rights Reserved
 See file LICENSE for details.
@@ -27,10 +28,10 @@ def init(args, version):
                 print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
                 exit(1)
         else:
-            os.mkdir(args.outdir)
+            os.makedirs(args.outdir, exist_ok=True)
     else:
         if os.path.exists(args.outdir) is False:
-            os.mkdir(args.outdir)
+            os.makedirs(args.outdir, exist_ok=True)
 
 
 def init_geno(args, version):
@@ -50,10 +51,10 @@ def init_geno(args, version):
                 print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
                 exit(1)
         else:
-            os.mkdir(args.outdir)
+            os.makedirs(args.outdir, exist_ok=True)
     else:
         if os.path.exists(args.outdir) is False:
-            os.mkdir(args.outdir)
+            os.makedirs(args.outdir, exist_ok=True)
 
 
 def init_jointcall(args, version):
@@ -108,7 +109,17 @@ def init_reshape_vcf(args, version):
                 print('Error: %s already exists. Please specify another directory name.' % args.outdir, file=sys.stderr)
                 exit(1)
         else:
-            os.mkdir(args.outdir)
+            os.makedirs(args.outdir, exist_ok=True)
     else:
         if os.path.exists(args.outdir) is False:
-            os.mkdir(args.outdir)
+            os.makedirs(args.outdir, exist_ok=True)
+
+
+def init_build_kmer(args, version):
+    # pythonpath
+    global base
+    base=os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+    sys.path.insert(0, os.path.join(base, 'scripts'))
+    
+    # make output dir
+    os.makedirs(args.outdir, exist_ok=True)
