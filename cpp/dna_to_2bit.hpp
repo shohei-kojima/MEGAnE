@@ -19,12 +19,94 @@ namespace dna_to_2bit_hpp {
 
 
 /*
+ uint16
+ */
+static uint16_t dna_to_2bitf_16[128]={0u};
+static uint16_t dna_to_2bitr_16[128]={0u};
+
+inline const int init_dna_to_2bit_16() {
+    int shift=14;
+    const int window_size=8;
+    
+    dna_to_2bitf_16['A']=0u; dna_to_2bitf_16['a']=0u;
+    dna_to_2bitf_16['T']=1u; dna_to_2bitf_16['t']=1u;
+    dna_to_2bitf_16['G']=2u; dna_to_2bitf_16['g']=2u;
+    dna_to_2bitf_16['C']=3u; dna_to_2bitf_16['c']=3u;
+    dna_to_2bitf_16['N']=0u; dna_to_2bitf_16['n']=0u;
+    
+    dna_to_2bitr_16['A']=1u << shift; dna_to_2bitr_16['a']=1u << shift;
+    dna_to_2bitr_16['T']=0u << shift; dna_to_2bitr_16['t']=0u << shift;
+    dna_to_2bitr_16['G']=3u << shift; dna_to_2bitr_16['g']=3u << shift;
+    dna_to_2bitr_16['C']=2u << shift; dna_to_2bitr_16['c']=2u << shift;
+    dna_to_2bitr_16['N']=0u << shift; dna_to_2bitr_16['n']=0u << shift;
+    
+    return window_size;
+}
+
+/*
+ This converts 8-nt DNA to 2bit and stores as uint16_t in the vector.
+ Args:
+    1) pointer to seq
+    2) seq len (ull)
+    3) window_size (must be 8)
+    4) vector to store the 2bit seq
+ */
+inline void dna_to_2bit_bidirectional_16(char* seq, ull& seqlen, const int& window_size, std::vector<uint16_t>& v) {
+    if (seqlen < window_size) {
+        return;
+    }
+    
+    // first window_size
+    uint16_t bit2f=0;
+    uint16_t bit2r=0;
+    int nn=0;
+    for (int i=0; i < window_size; i++) {
+        bit2f <<= 2;
+        bit2f |= dna_to_2bitf_16[seq[i]];
+        bit2r >>= 2;
+        bit2r |= dna_to_2bitr_16[seq[i]];
+        if (seq[i] == 'N' || seq[i] == 'n') {  // ignore when N or n appears
+            nn= window_size - 1;
+        } else if (nn > 0) {  // within window_size-nt from N or n
+            nn--;
+        }
+    }
+    if (nn == 0) {
+        if (bit2f == bit2r) {
+            v.push_back(bit2f);
+        } else {
+            v.push_back(bit2f);
+            v.push_back(bit2r);
+        }
+    }
+    
+    // rolling calc.
+    for (ull i=window_size; i < seqlen; i++) {
+        bit2f <<= 2;
+        bit2f |= dna_to_2bitf_16[seq[i]];
+        bit2r >>= 2;
+        bit2r |= dna_to_2bitr_16[seq[i]];
+        if (seq[i] == 'N' || seq[i] == 'n') {  // ignore when N or n appears
+            nn= window_size - 1;
+        } else if (nn > 0) {  // within window_size-nt from N or n
+            nn--;
+        } else if (bit2f == bit2r) {
+            v.push_back(bit2f);
+        } else {
+            v.push_back(bit2f);
+            v.push_back(bit2r);
+        }
+    }
+}
+
+
+/*
  uint32
  */
-static uint32_t dna_to_2bitf_32[128];
-static uint32_t dna_to_2bitr_32[128];
+static uint32_t dna_to_2bitf_32[128]={0ul};
+static uint32_t dna_to_2bitr_32[128]={0ul};
 
-const int init_dna_to_2bit_32() {
+inline const int init_dna_to_2bit_32() {
     int shift=30;
     const int window_size=16;
     
@@ -51,7 +133,7 @@ const int init_dna_to_2bit_32() {
     3) window_size (must be 16)
     4) vector to store the 2bit seq
  */
-void dna_to_2bit_bidirectional_32(char* seq, ull& seqlen, const int& window_size, std::vector<uint32_t>& v) {
+inline void dna_to_2bit_bidirectional_32(char* seq, ull& seqlen, const int& window_size, std::vector<uint32_t>& v) {
     if (seqlen < window_size) {
         return;
     }
@@ -103,10 +185,10 @@ void dna_to_2bit_bidirectional_32(char* seq, ull& seqlen, const int& window_size
 /*
  uint64
  */
-static uint64_t dna_to_2bitf_64[128];
-static uint64_t dna_to_2bitr_64[128];
+static uint64_t dna_to_2bitf_64[128]={0ull};
+static uint64_t dna_to_2bitr_64[128]={0ull};
 
-const int init_dna_to_2bit_64() {
+inline const int init_dna_to_2bit_64() {
     int shift=62;
     const int window_size=32;
     
@@ -133,7 +215,7 @@ const int init_dna_to_2bit_64() {
     3) window_size (must be 32)
     4) vector to store the 2bit seq
  */
-void dna_to_2bit_bidirectional_64(char* seq, ull& seqlen, const int& window_size, std::vector<uint64_t>& v) {
+inline void dna_to_2bit_bidirectional_64(char* seq, ull& seqlen, const int& window_size, std::vector<uint64_t>& v) {
     if (seqlen < window_size) {
         return;
     }
