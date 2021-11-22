@@ -1,6 +1,6 @@
 /*
  Author: Shohei Kojima @ RIKEN
- This is just a header file of remove_multimapping_reads_from_fa.cpp
+ This is just a header file of convert_rep_to_2bit.cpp
  */
 
 extern "C" {
