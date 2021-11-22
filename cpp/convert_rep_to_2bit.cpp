@@ -14,8 +14,6 @@
  Output:
     1) output_prefix.mk : 2-bit compressed k-mers
     2) output_prefix.mi : number of k-mers saved in output_prefix.mk
- Prerequisites:
-    fasta index for the input fasta file.
  Misc info:
     This only uses one thread.
  */
@@ -23,17 +21,16 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <cassert>
 #include "dna_to_2bit.hpp"
-#include "parse_fai.hpp"
-#include "save_redundant_kmers.hpp"
+#include "convert_rep_to_2bit.hpp"
 using namespace dna_to_2bit_hpp;
-using namespace parse_fai_hpp;
 
 typedef unsigned long long ull;
 const char FASTA_HEADER_START = '>';
 
 
-bool contains_nonATGC(std::string& seq) {
+inline bool contains_nonATGC(std::string& seq) {
     for (char c : seq) {
         if (c != 'A' && c != 'T' && c != 'G' && c != 'C') {
             return true;
