@@ -8,9 +8,10 @@ See file LICENSE for details.
 '''
 
 
-import os
+import os,shutil,log,traceback,logging
 from Bio.Blast.Applications import NcbiblastnCommandline
-import log,traceback
+import ctypes as ct
+import utils
 
 
 def retrieve_mapped_seq(params, filenames):
@@ -83,12 +84,34 @@ def retrieve_mapped_seq(params, filenames):
                 seqs[max_lens[id][1][1]] += h +';'
 
         # output fasta
-        with open(filenames.mapped_fa_select, 'w') as outfile:
+        with open(filenames.mapped_fa_select0, 'w') as outfile:
             for seq in seqs:
                 tmp=seqs[seq] +'\n'+ seq +'\n'
                 outfile.write(tmp)
             outfile.flush()
             os.fdatasync(outfile.fileno())
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
+def remove_multimap(args, params, filenames, init_base):
+    log.logger.debug('started')
+    try:
+        if args.mk is None:
+            log.logger.debug('-mk was not specified. Copying %s to %s' % (filenames.mapped_fa_select0, filenames.mapped_fa_select))
+            shutil.move(filenames.mapped_fa_select0, filenames.mapped_fa_select)
+        else:
+            def char_p(char):
+                return ct.c_char_p(char.encode('utf-8'))
+            stdout=os.dup(1)  # copy stdout stream
+            os.dup2(logging._handlerList[2]().stream.fileno(), 1)  # change stdout stream to logger
+            so='%s/cpp/remove_multimapping_reads_from_fa.so' % init_base
+            cpp=ct.CDLL(so)
+            res=cpp.remove_multimapping(char_p(args.mk), char_p(args.mi), char_p(filenames.mapped_fa_select0), char_p(filenames.mapped_fa_select))
+            os.dup2(stdout, 1)  # reset stdout stream
+            log.logger.debug('exit status of cpp.remove_multimapping: %s' % res)
+            utils.gzip_or_del(args, params, filenames.mapped_fa_select0)
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)

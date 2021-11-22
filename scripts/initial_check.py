@@ -64,6 +64,20 @@ def check(args, argv):
             else:
                 log.logger.debug('%s found.' % f_check)
         
+        # check .mk and .mi files
+        if args.mk is None:
+            log.logger.warning('"-mk" flag was not specified. MEGAnE will use slow-analysis mode. Please consider building MEGAnE k-mer set by step 0 and specify .mk file with the "-mk" flag.')
+        else:
+            if os.path.exists(args.mk) is False:
+                log.logger.error('%s was not found.' % args.mk)
+                exit(1)
+            log.logger.debug('%s found.' % args.mk)
+            args.mi= args.mk[:-1] + 'i'
+            if os.path.exists(args.mi) is False:
+                log.logger.error('%s was not found.' % args.mi)
+                exit(1)
+            log.logger.debug('%s found.' % args.mi)
+        
         import pysam
         if args.c is not None:
             if os.path.exists(args.c) is False:

@@ -189,10 +189,11 @@ def limit(args, params, filenames, data):
             slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len + 1, False)
         else:
             slopbed=generate_slopbed(args, params, filenames, data, tsd_flank_len + 1, params.abs_flank_len_for_precall + 1, True)
+        # multi-threading of samtools depth requires samtools 1.13 or later.
         if args.b is not None:
-            cmd='samtools depth %s -a -b %s -o %s' % (filenames.limited_b, slopbed.fn, filenames.depth)
+            cmd='samtools depth %s -a -b %s -o %s -@ %s' % (filenames.limited_b, slopbed.fn, filenames.depth, args.p - 1)
         else:
-            cmd='samtools depth %s --reference %s -a -b %s -o %s' % (filenames.limited_c, args.fa, slopbed.fn, filenames.depth)
+            cmd='samtools depth %s --reference %s -a -b %s -o %s -@ %s' % (filenames.limited_c, args.fa, slopbed.fn, filenames.depth, args.p - 1)
         log.logger.debug('samtools depth command = `'+ cmd +'`')
         out=subprocess.run(cmd, shell=True, stderr=subprocess.PIPE)
         log.logger.debug('\n'+ '\n'.join([ l.decode() for l in out.stderr.splitlines() ]))

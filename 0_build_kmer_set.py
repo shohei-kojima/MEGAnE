@@ -58,10 +58,12 @@ os.dup2(logging._handlerList[2]().stream.fileno(), 1)  # change stdout stream to
 so='%s/cpp/save_redundant_kmers.so' % init.base
 cpp=ct.CDLL(so)
 
-def to_char_p(char):
+def char_p(char):
     return ct.c_char_p(char.encode('utf-8'))
 
-res=cpp.find_and_save_red_kmers(to_char_p(args.fa), to_char_p(args.fa + '.fai'), to_char_p(filenames.mk), to_char_p(filenames.mi))
+log.logger.info('Started to make MEGAnE k-mer set. This will take several minutes.')
+res=cpp.find_and_save_red_kmers(char_p(args.fa), char_p(args.fa + '.fai'), char_p(filenames.mk), char_p(filenames.mi))
 os.dup2(stdout, 1)  # reset stdout stream
 log.logger.debug('exit status of cpp.find_and_save_red_kmers: %s' % res)
+log.logger.info('Finished to make MEGAnE k-mer set. ".mk" file can be found at %s' % filenames.mk)
 

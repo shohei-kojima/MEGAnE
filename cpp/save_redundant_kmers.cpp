@@ -51,6 +51,7 @@ int find_and_save_red_kmers(char* fa, char* f_fai, char* out_mk, char* out_mi) {
         fai_info* chr_info=fai.get_chr_info(chr);
         genome_total_len += chr_info->chr_len;
     }
+    std::cout << "Genome length: " << genome_total_len << std::endl;
     
     // open fa
     std::FILE* infile=fopen(fa, "r");
@@ -83,17 +84,17 @@ int find_and_save_red_kmers(char* fa, char* f_fai, char* out_mk, char* out_mi) {
                 n_char_read++;
             }
         }
-        std::cout << "chr" << chr << " loaded" << std::endl;
         
         // 2bit conversion
         dna_to_2bit_bidirectional_64(seq, chr_info->chr_len, window_size, v);
-        std::cout << v.size() << std::endl;
         delete seq;
     }
+    std::cout << chr_num << " chrs loaded" << std::endl;
     
     // sort
+    std::cout << "Sorting vector... (k-mers loaded = " << v.size() << ")" << std::endl;
     std::sort(v.begin(), v.end());
-    std::cout << "sorted" << std::endl;
+    std::cout << "Sorting finished" << std::endl;
     
     // save redundant k-mers in output_prefix.mk
     std::ofstream outfile;
@@ -120,6 +121,7 @@ int find_and_save_red_kmers(char* fa, char* f_fai, char* out_mk, char* out_mi) {
         outfile.write((char*)&v[veclen - 1], type_size);
         num_saved++;
     }
+    std::cout << num_saved << " redundant k-mers found" << std::endl;
     
     // save redundant k-mers in output_prefix.mi
     std::ofstream outfile2;
@@ -184,10 +186,10 @@ int main(int argc, char* argv[]) {
     if (! outfile.is_open()) { return 1; }
     outfile.close();
     
-//    std::cout << fa << std::endl;
-//    std::cout << f_fai << std::endl;
-//    std::cout << out_mk << std::endl;
-//    std::cout << out_mi << std::endl;
+    std::cout << "in.fa: " << fa << std::endl;
+    std::cout << "in.fa.fai: " << f_fai << std::endl;
+    std::cout << "out.mk: " << out_mk << std::endl;
+    std::cout << "out.mi: " << out_mi << std::endl;
     
     // process find_and_save_red_kmers()
     int ret=find_and_save_red_kmers(fa, f_fai, out_mk, out_mi);

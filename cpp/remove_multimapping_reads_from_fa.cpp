@@ -6,6 +6,7 @@
     This script takes output files from `save_redundant_kmers`.
  Compile:
     g++ -o remove_multimapping_reads_from_fa remove_multimapping_reads_from_fa.cpp -O2
+    g++ -shared -fPIC -o remove_multimapping_reads_from_fa.so remove_multimapping_reads_from_fa.cpp -O2
  Usage:
     ./prog input_prefix input.fa output.fa
     (input_prefix should be the `output_prefix` specified when running `save_redundant_kmers`)
@@ -23,6 +24,7 @@
 #include <cassert>
 #include <algorithm>
 #include "dna_to_2bit.hpp"
+#include "remove_multimapping_reads_from_fa.hpp"
 using namespace dna_to_2bit_hpp;
 
 typedef unsigned long long ull;
@@ -218,10 +220,10 @@ int main(int argc, char* argv[]) {
     if (! outfile.is_open()) { return 1; }
     outfile.close();
     
-//    std::cout << in_mk << std::endl;
-//    std::cout << in_mi << std::endl;
-//    std::cout << in_fa << std::endl;
-//    std::cout << out_fa << std::endl;
+    std::cout << ".mk: " << in_mk << std::endl;
+    std::cout << ".mi: " << in_mi << std::endl;
+    std::cout << "in.fa: " << in_fa << std::endl;
+    std::cout << "out.fa: " << out_fa << std::endl;
     
     // process find_and_save_red_kmers()
     int ret=remove_multimapping(in_mk, in_mi, in_fa, out_fa);
