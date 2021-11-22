@@ -22,6 +22,15 @@ def blastn(args, params, q_path, db_path, outfpath):
         exit(1)
 
 
+def blastn_culling(args, params, q_path, db_path, outfpath, culling_limit):
+    log.logger.debug('started')
+    try:
+        NcbiblastnCommandline(db=db_path, query=q_path, evalue=params.blastn_evalue, perc_identity=params.blastn_ident, word_size=params.blastn_word_size, num_threads=args.p, outfmt=6, out=outfpath, culling_limit=culling_limit)()
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
 def blastn_single_thread(args, params, q_path, db_path, outfpath):
     log.logger.debug('started')
     try:
