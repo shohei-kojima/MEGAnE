@@ -30,6 +30,9 @@ typedef unsigned long long ull;
 const char FASTA_HEADER_START = '>';
 
 
+/*
+ Check whether the sequence contains non-ATGC character(s)
+ */
 inline bool contains_nonATGC(std::string& seq) {
     for (char c : seq) {
         if (c != 'A' && c != 'T' && c != 'G' && c != 'C') {
@@ -39,6 +42,10 @@ inline bool contains_nonATGC(std::string& seq) {
     return false;
 }
 
+
+/*
+ Convert non-ATGC characters to any one char.
+ */
 inline const char* convert_nonATGC_to_any(std::string& seq, char any) {
     std::string converted;
     for (char c : seq) {
