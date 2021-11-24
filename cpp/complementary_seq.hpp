@@ -12,7 +12,7 @@ namespace complementary_seq_hpp {
 
 typedef unsigned long long ull;
 
-static char complement[256];
+static char complement[128]={'N'};
 
 void comp_init() {
     complement['A']='T'; complement['a']='T';
