@@ -34,6 +34,77 @@ const char ATGC[]="ATGC";
 
 
 
+/*
+ Struct to keep file streams during threading
+ */
+struct fstr {
+    std::FILE* ofs_pA;
+    bool is_occupied;
+    
+    fstr(std::FILE* ofs_pA, bool is_occupied) {
+        this->ofs_pA=ofs_pA;
+        this->is_occupied=is_occupied;
+    }
+};
+
+
+/*
+ Manage file streams during threading.
+ This will be accessed from multiple threads - do mutex when occupy() and release().
+ */
+class cfstrs {
+    std::mutex _mutex;
+    std::vector<fstr*> vec;  // stores fstr objects
+public:
+    void push_back_new(std::FILE* ofs_pA) {
+        fstr* fstrp = new fstr(ofs_pA, false);
+        this->vec.push_back(fstrp);
+    }
+    
+    fstr* occupy() { 
+        std::unique_lock<std::mutex> lock(this->_mutex);  // need mutex
+        fstr* fstrp=nullptr;
+        for (fstr* t : this->vec) {
+            if (t->is_occupied == false) {  // if not the ofstream is used by the threads
+                t->is_occupied=true;  // take this ofstream by a thread
+                fstrp=t;
+            }
+        }
+        if (fstrp == nullptr) {  // this happens if the num of ofstream object was fewer than the thread num.
+            std::cerr << "ERR: no available ofstream found." << std::endl;
+            std::exit(1);
+        }
+        return fstrp;
+    }
+    
+    void release(fstr* fstrp) {
+        std::unique_lock<std::mutex> lock(this->_mutex);  // need mutex
+        fstrp->is_occupied=false;  // release this ofstream from a thread
+    }
+    
+    void close_fileobjs() {
+        for (fstr* t : this->vec) {
+            fclose(t->ofs_pA);
+        }
+    }
+    
+    ~cfstrs() {
+        for (fstr* t : this->vec) {
+            delete t;
+        }
+    }
+};
+
+
+/*
+ Class cfstrs that will be accessed from multiple threads
+ */
+static cfstrs fstrs;
+
+
+/*
+ Stores info of clipped reads, SA tags, XA tags.
+ */
 struct softclip_info {
     char*    chr=nullptr;
     int64_t  pos;
@@ -371,7 +442,7 @@ inline void output_overhang(std::vector<softclip_info>& softclips, char* chr,
                             std::unordered_map<std::string, std::string>& um1,
                             std::unordered_map<std::string, std::string>& um2,
                             std::unordered_map<std::string, std::string>& um3,
-                            char* tmp_buf) {
+                            char* tmp_buf, fstr* fs) {
     for (softclip_info s : softclips) {
         if ((s.l_clip_len >= DISCORDANT_READS_CLIP_LEN) || (s.r_clip_len >= DISCORDANT_READS_CLIP_LEN)) {
             tmp_str.clear();  // seq of read
@@ -399,16 +470,17 @@ inline void output_overhang(std::vector<softclip_info>& softclips, char* chr,
                         if (c == 'T') { Acount++; }
                     }
                 }
-                sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", chr, s.pos, (s.pos + s.rlen), s.breakpoint, qname, (is_read2 + 1), strand);
+                std::sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", chr, s.pos, (s.pos + s.rlen), s.breakpoint, qname, (is_read2 + 1), strand);
                 tmp_str3.clear();  // header name
                 tmp_str3=tmp_buf;
                 if (((double) Acount / (s.clipend - s.clipstart)) > POLYA_OVERHANG_THRESHOLD) {
-                    std::cout << tmp_buf << '\t' << (s.clipend - s.clipstart) << '\n';  // output pA reads
-                    um1.emplace(tmp_str1, tmp_str3);  // (std::string, std::string) = (mapped seq, header)
+//                    *(fs->ofs_pA) << tmp_buf << '\t' << (s.clipend - s.clipstart) << '\n';  // output pA reads
+                    std::fprintf(fs->ofs_pA, "%s\t%ld\n", tmp_buf, (s.clipend - s.clipstart));
+//                    um1.emplace(tmp_str1, tmp_str3);  // (std::string, std::string) = (mapped seq, header)
                 } else {
                     // to do: check existence, and string to string
-                    um1.emplace(tmp_str1, tmp_str3);  // (std::string, std::string) = (mapped seq, header)
-                    um2.emplace(tmp_str2, tmp_str3);  // (std::string, std::string) = (clipped seq, header)
+//                    um1.emplace(tmp_str1, tmp_str3);  // (std::string, std::string) = (mapped seq, header)
+//                    um2.emplace(tmp_str2, tmp_str3);  // (std::string, std::string) = (clipped seq, header)
                 }
             }
         }
@@ -430,7 +502,8 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
                         std::unordered_map<std::string, std::string>& um1,
                         std::unordered_map<std::string, std::string>& um2,
                         std::unordered_map<std::string, std::string>& um3,
-                        char* tmp_buf) {
+                        char* tmp_buf,
+                        fstr* fs) {
     // remove 1) supplementary alignments, 2) single-end reads, 3) unmapped reads
     uint16_t& flag = b->core.flag;
     if (((flag & BAM_FSUPPLEMENTARY) > 0) == true) { return; }
@@ -534,7 +607,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
         if (! contains_H) {
             output_overhang(softclips_xa, chr, fseq, rseq, start, end, qname, l_qseq,
                             is_read2, is_reverse, strand, tmp_str, tmp_str1, tmp_str2, tmp_str3,
-                            um1, um2, um3, tmp_buf);
+                            um1, um2, um3, tmp_buf, fs);
         }
     }
 }
@@ -542,6 +615,9 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
 
 
 int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid) {
+    // take ofstream
+    fstr* fs=fstrs.occupy();
+    
     // open bam
     htsFile *fp=hts_open(f, "r");
     sam_hdr_t *h=sam_hdr_read(fp);
@@ -583,13 +659,15 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid) {
     kstring_t aux={0, 0, NULL};
     while ((ret = sam_itr_next(fp, iter, b)) >= 0) {
         process_aln(fp, h, b, cigar_arr, softclips_sa, softclips_xa, tmp_str, cig_buf, cig_m, fseq, rseq,
-                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, tmp_buf);
+                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, tmp_buf,
+                    fs);
 //        if (++processed_cnt >= 1) {
 //            break;
 //        }
     }
     
     // finish up
+    fstrs.release(fs);  // always release!!!
     delete tmp_buf;
     hts_itr_destroy(iter);
     return 0;
@@ -620,8 +698,16 @@ int extract_discordant(int argc, char *argv[]) {
     sam_close(fp);
     
     // threading
-    ThreadPool pool(1);
+    const int thread_n=1;
+    ThreadPool pool(thread_n);
     std::vector<std::future<int>> results;
+    
+    // ofstreams (using C fopen)
+    for (int i=0; i < thread_n; i++) {
+        std::FILE* ofs_pA=fopen("_tmp_pA.fa", "w");
+        if (ofs_pA == nullptr) { return 1; }
+        fstrs.push_back_new(ofs_pA);
+    }
     
     // per chr processing
     comp_init();
@@ -629,7 +715,7 @@ int extract_discordant(int argc, char *argv[]) {
     for (int tid : sorted_chr) {
         results.emplace_back(
             pool.enqueue([=] {
-                return extract_discordant_per_chr(f, idx, 0 /*tid*/);
+                return extract_discordant_per_chr(f, idx, 21 /*tid*/);  // core func
             })
         );
         i++;
@@ -641,6 +727,9 @@ int extract_discordant(int argc, char *argv[]) {
     for (auto && result: results) {
         result.get();
     }
+    
+    // close all file obj
+    fstrs.close_fileobjs();
     
     return 0;
 }
