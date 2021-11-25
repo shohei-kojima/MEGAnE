@@ -18,7 +18,8 @@ using namespace complementary_seq_hpp;
 #define READ_PAIR_GAP_LEN 2000
 #define MAX_SEQ_LEN 512
 #define DISCORDANT_READS_CLIP_LEN 20
-#define REP_KMER_LEN 8
+#define REP_KMER_SIZE 11
+#define SHIFT_16_TO_11 10
 #define MAPPED_REGION_LOW_COMPLEX_THRESHOLD 0.7
 #define POLYA_OVERHANG_THRESHOLD 0.7
 
@@ -457,7 +458,7 @@ inline bool is_simple_repeat(const std::string& seq, int32_t seqlen) {
 /*
  This is a custom binary search similar to std::lower_bound
  */
-inline ull custom_binary_search(const std::vector<uint16_t>& vec, const ull& vec_size, uint16_t& key) {
+inline ull custom_binary_search(const std::vector<uint32_t>& vec, const ull& vec_size, uint32_t& key) {
     if (vec[vec_size-1] < key) {
         return vec_size;
     }
@@ -471,23 +472,23 @@ inline ull custom_binary_search(const std::vector<uint16_t>& vec, const ull& vec
 
 
 /*
- This converts DNA to 8-nt 2bit and judges whether the 8-mer is repeat-derived.
+ This converts DNA to 11-nt 2bit and judges whether the 11-mer is repeat-derived.
  Args:
     1) seq
     2) length of the seq
     3) vector containing repeat k-mer set
     4) vector size
  */
-inline bool is_rep_overhang(std::string seq, uint64_t clip_len, const std::vector<uint16_t>& crepkmer, const ull& num_kmer) {
+inline bool is_rep_overhang(std::string seq, uint64_t clip_len, const std::vector<uint32_t>& crepkmer, const ull& num_kmer) {
     ull pos=0;
-    // first window_size (window_size = REP_KMER_LEN)
-    uint16_t bit2f=0;
+    // first window_size (window_size = REP_KMER_SIZE)
+    uint32_t bit2f=0;
     int nn=0;
-    for (int i=0; i < REP_KMER_LEN; i++) {
+    for (int i=0; i < REP_KMER_SIZE; i++) {
         bit2f <<= 2;
-        bit2f |= dna_to_2bitf_16[seq[i]];
+        bit2f |= dna_to_2bitf_32[seq[i]];
         if (seq[i] == 'N' || seq[i] == 'n') {  // ignore when N or n appears
-            nn= REP_KMER_LEN - 1;
+            nn= REP_KMER_SIZE - 1;
         } else if (nn > 0) {  // within window_size-nt from N or n
             nn--;
         }
@@ -496,11 +497,13 @@ inline bool is_rep_overhang(std::string seq, uint64_t clip_len, const std::vecto
     if (crepkmer[pos] == bit2f) { return true; }
     
     // rolling calc.
-    for (int i=REP_KMER_LEN; i < clip_len; i++) {
+    for (int i=REP_KMER_SIZE; i < clip_len; i++) {
         bit2f <<= 2;
-        bit2f |= dna_to_2bitf_16[seq[i]];
+        bit2f |= dna_to_2bitf_32[seq[i]];
+        bit2f <<= SHIFT_16_TO_11;
+        bit2f >>= SHIFT_16_TO_11;
         if (seq[i] == 'N' || seq[i] == 'n') {  // ignore when N or n appears
-            nn= REP_KMER_LEN - 1;
+            nn= REP_KMER_SIZE - 1;
         } else if (nn > 0) {  // within window_size-nt from N or n
             nn--;
         } else {
@@ -515,7 +518,7 @@ inline bool is_rep_overhang(std::string seq, uint64_t clip_len, const std::vecto
 /*
  This 1) output pA and 2) stores overhang info and mapped seq to unordered_maps
  */
-inline void output_pA(std::vector<softclip_info>& softclips, const std::vector<uint16_t>& crepkmer, const ull& num_kmer,
+inline void output_pA(std::vector<softclip_info>& softclips, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
                      char* chr, std::string& fseq, std::string& rseq, int64_t& start, int64_t& end,
                      char* qname, int32_t& l_qseq, bool& is_read2, bool& is_reverse, char& strand,
                      std::string& tmp_str, std::string& tmp_str1, std::string& tmp_str2, std::string& tmp_str3,
@@ -587,7 +590,7 @@ inline void output_pA(std::vector<softclip_info>& softclips, const std::vector<u
 /*
  Core function to judge discordant reads.
  */
-inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<uint16_t>& crepkmer, const ull& num_kmer,
+inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
                         std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
                         std::vector<softclip_info>& softclips_sa,
                         std::vector<softclip_info>& softclips_xa,
@@ -731,7 +734,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
 }
 
 
-int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vector<uint16_t>& crepkmer, const ull& num_kmer) {
+int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vector<uint32_t>& crepkmer, const ull& num_kmer) {
     // take ofstream
     fstr* fs=fstrs.occupy();
     
@@ -810,13 +813,13 @@ int extract_discordant(int argc, char *argv[]) {
     // load .mk
     infile.open(f_mk, std::ios::binary);
     if (! infile.is_open()) { return 1; }
-    std::vector<uint16_t> repkmer;
+    std::vector<uint32_t> repkmer;
     repkmer.resize(num_kmer);
-    infile.read((char*)&repkmer[0], sizeof(uint16_t) * num_kmer);
+    infile.read((char*)&repkmer[0], sizeof(uint32_t) * num_kmer);
     infile.close();
-    const std::vector<uint16_t>& crepkmer=repkmer;
+    const std::vector<uint32_t>& crepkmer=repkmer;
     // for 2bit conversion
-    const int window_size=init_dna_to_2bit_16();
+    const int window_size=init_dna_to_2bit_32();
     
     // open bam
     char *f=argv[1];
