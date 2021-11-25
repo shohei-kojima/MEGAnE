@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <vector>
+#include <tuple>
 #include <unordered_map>
 #include <algorithm>
 #include <functional>
@@ -20,6 +21,7 @@ using namespace complementary_seq_hpp;
 #define DISCORDANT_READS_CLIP_LEN 20
 #define REP_KMER_SIZE 11
 #define SHIFT_16_TO_11 10
+#define ABS_MAX_DIST 20000
 #define MAPPED_REGION_LOW_COMPLEX_THRESHOLD 0.7
 #define POLYA_OVERHANG_THRESHOLD 0.7
 
@@ -168,8 +170,8 @@ struct softclip_info {
  Stores absent read info
  */
 struct abs_info {
-    std::vector<std::pair<std::string, std::string>> R;
-    std::vector<std::pair<std::string, std::string>> L;
+    std::vector<softclip_info*> R;
+    std::vector<softclip_info*> L;
     int R_num;
     int L_num;
     
@@ -202,8 +204,14 @@ public:
     
     void clean_up_by_chr(char* chr) {
         for (int i=0; i < 4; i++) {
-            if (this->ums[i][chr]->R_num > 0) { this->ums[i][chr]->R.clear(); }
-            if (this->ums[i][chr]->L_num > 0) { this->ums[i][chr]->L.clear(); }
+            if (this->ums[i][chr]->R_num > 0) {
+                this->ums[i][chr]->R.clear();
+                this->ums[i][chr]->R_num = 0;
+            }
+            if (this->ums[i][chr]->L_num > 0) {
+                this->ums[i][chr]->L.clear();
+                this->ums[i][chr]->L_num = 0;
+            }
         }
     }
     
@@ -632,9 +640,29 @@ inline void output_pA(std::vector<softclip_info>& softclips, const std::vector<u
 
 
 /*
+ Output absent reads
+ */
+inline void output_abs(char* _chr, std::unordered_map<char*, abs_info*>& umr, std::unordered_map<char*, abs_info*>& uml,
+                       fstr* fs, char* qname, int32_t& l_qseq, bool& is_read2) {
+    if ((umr[_chr]->R_num > 0) && (uml[_chr]->L_num > 0)) {
+        for (softclip_info* p1 : umr[_chr]->R) {
+            for (softclip_info* p2 : uml[_chr]->L) {
+                if (((p2->pos - (p1->pos + p1->rlen)) <= ABS_MAX_DIST) || ((p2->pos - (p1->pos + p1->rlen)) <= ABS_MAX_DIST)) {
+                    std::fprintf(fs->ofs_abs, "%s/%d\t%s\t%ld\t%ld\t%s:%ld-%ld\t%s:%ld-%ld\t%d-%d\t%d-%d\n",
+                                 qname, (is_read2 + 1), _chr, (p1->pos + p1->rlen), p2->pos,
+                                 _chr, p1->pos, (p1->pos + p1->rlen), _chr, p2->pos, (p2->pos + p2->rlen),
+                                 p1->l_clip_len, (l_qseq - p1->r_clip_len), p2->l_clip_len, (l_qseq - p2->r_clip_len));
+                }
+            }
+        }
+    }
+}
+
+
+/*
  Core function to judge discordant reads.
  */
-inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, bool& is_main_chr,
+inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<char*>& mainchrs, bool& is_main_chr,
                         const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
                         std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
                         std::vector<softclip_info>& softclips_sa,
@@ -648,7 +676,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, bool& is_main_chr,
                         std::unordered_map<std::string, std::string>& um3,
                         std::unordered_map<std::string, std::string>::iterator& it1,
                         char* tmp_buf,
-                        fstr* fs) {
+                        fstr* fs, abs_info_manager& abs) {
     // remove 1) supplementary alignments, 2) single-end reads, 3) unmapped reads
     uint16_t& flag = b->core.flag;
     if (((flag & BAM_FSUPPLEMENTARY) > 0) == true) { return; }
@@ -815,13 +843,58 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, bool& is_main_chr,
         }
     }
     
-    // output absent reads
+    // summarize absent reads
     if (! contains_SA) { return; }
-    
+    if (contains_SA && (! contains_H)) {
+        for (softclip_info s : softclips_sa) {
+            if (s.breakpoint == 'N') { continue; }
+            if ((s.clipend - s.clipstart) < DISCORDANT_READS_CLIP_LEN) { continue; }
+            if (s.is_reverse && (s.breakpoint == 'R')) {
+                abs.sa_m[chr]->R.push_back(&s);
+                abs.sa_m[chr]->R_num++;
+            } else if (s.is_reverse && (s.breakpoint == 'L')) {
+                abs.sa_m[chr]->L.push_back(&s);
+                abs.sa_m[chr]->L_num++;
+            } else if (s.breakpoint == 'R') {
+                abs.sa_p[chr]->R.push_back(&s);
+                abs.sa_p[chr]->R_num++;
+            } else {
+                abs.sa_p[chr]->L.push_back(&s);
+                abs.sa_p[chr]->L_num++;
+            }
+        }
+    }
+    if (contains_XA) {
+        for (softclip_info s : softclips_xa) {
+            if (s.breakpoint == 'N') { continue; }
+            if ((s.clipend - s.clipstart) < DISCORDANT_READS_CLIP_LEN) { continue; }
+            if (s.is_reverse && (s.breakpoint == 'R')) {
+                abs.xa_m[chr]->R.push_back(&s);
+                abs.xa_m[chr]->R_num++;
+            } else if (s.is_reverse && (s.breakpoint == 'L')) {
+                abs.xa_m[chr]->L.push_back(&s);
+                abs.xa_m[chr]->L_num++;
+            } else if (s.breakpoint == 'R') {
+                abs.xa_p[chr]->R.push_back(&s);
+                abs.xa_p[chr]->R_num++;
+            } else {
+                abs.xa_p[chr]->L.push_back(&s);
+                abs.xa_p[chr]->L_num++;
+            }
+        }
+    }
+    // output absent reads, positive strand
+    for (char* _chr : mainchrs) {
+        output_abs(_chr, abs.sa_p, abs.xa_p, fs, qname, l_qseq, is_read2);
+        output_abs(_chr, abs.xa_p, abs.sa_p, fs, qname, l_qseq, is_read2);
+        output_abs(_chr, abs.sa_m, abs.xa_m, fs, qname, l_qseq, is_read2);
+        output_abs(_chr, abs.xa_m, abs.sa_m, fs, qname, l_qseq, is_read2);
+        abs.clean_up_by_chr(_chr);  // clean up for next
+    }
 }
 
 
-int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vector<uint32_t>& crepkmer, const ull& num_kmer) {
+int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vector<uint32_t>& crepkmer, const ull& num_kmer, const std::vector<char*>& mainchrs) {
     // take ofstream
     fstr* fs=fstrs.occupy();
     
@@ -870,9 +943,9 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vect
     int processed_cnt=0;
     kstring_t aux={0, 0, NULL};
     while ((ret = sam_itr_next(fp, iter, b)) >= 0) {
-        process_aln(fp, h, b, is_main_chr, crepkmer, num_kmer, cigar_arr, softclips_sa, softclips_xa,
+        process_aln(fp, h, b, mainchrs, is_main_chr, crepkmer, num_kmer, cigar_arr, softclips_sa, softclips_xa,
                     tmp_str, cig_buf, cig_m, fseq, rseq,
-                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, it1, tmp_buf, fs);
+                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, it1, tmp_buf, fs, abs);
 //        if (++processed_cnt >= 1) {
 //            break;
 //        }
@@ -890,6 +963,9 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vect
  read bam or cram
  */
 int extract_discordant(int argc, char *argv[]) {
+    // read mainchrs
+    std::vector<char*> mainchrs;  // to do: read mainchrs, need to be const
+    
     // load repeat .mk
     const char* f_mk="/home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mk";
     const char* f_mi="/home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mi";
@@ -961,7 +1037,7 @@ int extract_discordant(int argc, char *argv[]) {
     for (int tid : sorted_chr) {
         results.emplace_back(
             pool.enqueue([=] {
-                return extract_discordant_per_chr(f, idx, 21 /*tid*/, crepkmer, num_kmer);  // core func
+                return extract_discordant_per_chr(f, idx, 21 /*tid*/, crepkmer, num_kmer, mainchrs);  // core func
             })
         );
         i++;
