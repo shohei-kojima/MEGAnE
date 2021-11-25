@@ -860,6 +860,7 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vect
     std::unordered_map<std::string, std::string> um3;
     std::unordered_map<std::string, std::string>::iterator it1;
     char* tmp_buf= new char[TMP_BUF_SIZE];
+    abs_info_manager abs;  // to do: emplace_chrs()
     
     // judge whether main chr
     bool is_main_chr=true;  // to be implemented
