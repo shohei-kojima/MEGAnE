@@ -119,7 +119,7 @@ int remove_multimapping(char* in_mk, char* in_mi, char* in_fa, char* out_fa) {
     if (! getline(infile, line)) { return 1; }
     ull num_kmer=std::stoull(line);
     infile.close();
-    std::cout << "Number of k-mers loaded from " << in_mk << ": " << num_kmer << std::endl;
+    std::cout << "Number of k-mers loading from " << in_mk << ": " << num_kmer << std::endl;
     
     // load .mk
     infile.open(in_mk, std::ios::binary);

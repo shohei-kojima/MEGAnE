@@ -7,17 +7,19 @@
 #include <algorithm>
 #include <functional>
 #include "htslib/sam.h"
+#include "dna_to_2bit.hpp"
 #include "complementary_seq.hpp"
 #include "ThreadPool.h"
+using namespace dna_to_2bit_hpp;
 using namespace complementary_seq_hpp;
 
 #define MAX_CIGAR_LEN 128
-#define TMP_BUF_SIZE  1024
-#define N_SA_INFO 6
+#define TMP_BUF_SIZE  131072
 #define READ_PAIR_GAP_LEN 2000
 #define MAX_SEQ_LEN 512
-#define MAPPED_REGION_LOW_COMPLEX_THRESHOLD 0.7
 #define DISCORDANT_READS_CLIP_LEN 20
+#define REP_KMER_LEN 8
+#define MAPPED_REGION_LOW_COMPLEX_THRESHOLD 0.7
 #define POLYA_OVERHANG_THRESHOLD 0.7
 
 typedef unsigned long ul;
@@ -39,10 +41,23 @@ const char ATGC[]="ATGC";
  */
 struct fstr {
     std::FILE* ofs_pA;
+    std::FILE* ofs_overhang;
+    std::FILE* ofs_distant;
+    std::FILE* ofs_mapped;
+    std::FILE* ofs_unmapped;
+    std::FILE* ofs_abs;
+    std::FILE* ofs_stat;
     bool is_occupied;
     
-    fstr(std::FILE* ofs_pA, bool is_occupied) {
+    fstr(std::FILE* ofs_pA, std::FILE* ofs_overhang, std::FILE* ofs_distant, std::FILE* ofs_mapped,
+         std::FILE* ofs_unmapped, std::FILE* ofs_abs, std::FILE* ofs_stat, bool is_occupied) {
         this->ofs_pA=ofs_pA;
+        this->ofs_overhang=ofs_overhang;
+        this->ofs_distant=ofs_distant;
+        this->ofs_mapped=ofs_mapped;
+        this->ofs_unmapped=ofs_unmapped;
+        this->ofs_abs=ofs_abs;
+        this->ofs_stat=ofs_stat;
         this->is_occupied=is_occupied;
     }
 };
@@ -56,8 +71,10 @@ class cfstrs {
     std::mutex _mutex;
     std::vector<fstr*> vec;  // stores fstr objects
 public:
-    void push_back_new(std::FILE* ofs_pA) {
-        fstr* fstrp = new fstr(ofs_pA, false);
+    void push_back_new(std::FILE* ofs_pA, std::FILE* ofs_overhang, std::FILE* ofs_distant, std::FILE* ofs_mapped,
+                       std::FILE* ofs_unmapped, std::FILE* ofs_abs, std::FILE* ofs_stat) {
+        fstr* fstrp = new fstr(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped,
+                               ofs_unmapped, ofs_abs, ofs_stat, false);
         this->vec.push_back(fstrp);
     }
     
@@ -85,6 +102,12 @@ public:
     void close_fileobjs() {
         for (fstr* t : this->vec) {
             fclose(t->ofs_pA);
+            fclose(t->ofs_overhang);
+            fclose(t->ofs_distant);
+            fclose(t->ofs_mapped);
+            fclose(t->ofs_unmapped);
+            fclose(t->ofs_abs);
+            fclose(t->ofs_stat);
         }
     }
     
@@ -432,17 +455,73 @@ inline bool is_simple_repeat(const std::string& seq, int32_t seqlen) {
 
 
 /*
- output overhang from std::vector<softclip_info>
+ This is a custom binary search similar to std::lower_bound
  */
-inline void output_overhang(std::vector<softclip_info>& softclips, char* chr,
-                            std::string& fseq, std::string& rseq,
-                            int64_t& start, int64_t& end,
-                            char* qname, int32_t& l_qseq, bool& is_read2, bool& is_reverse, char& strand,
-                            std::string& tmp_str, std::string& tmp_str1, std::string& tmp_str2, std::string& tmp_str3,
-                            std::unordered_map<std::string, std::string>& um1,
-                            std::unordered_map<std::string, std::string>& um2,
-                            std::unordered_map<std::string, std::string>& um3,
-                            char* tmp_buf, fstr* fs) {
+inline ull custom_binary_search(const std::vector<uint16_t>& vec, const ull& vec_size, uint16_t& key) {
+    if (vec[vec_size-1] < key) {
+        return vec_size;
+    }
+    ull step= 1 << (63 - __builtin_clz(vec_size-1));
+    ull pos= vec[step - 1] < key ? vec_size - step - 1 : -1;
+    while ((step >>= 1) > 0) {
+        pos= (vec[pos + step] < key ? pos + step : pos);
+    }
+    return pos + 1;
+}
+
+
+/*
+ This converts DNA to 8-nt 2bit and judges whether the 8-mer is repeat-derived.
+ Args:
+    1) seq
+    2) length of the seq
+    3) vector containing repeat k-mer set
+    4) vector size
+ */
+inline bool is_rep_overhang(std::string seq, uint64_t clip_len, const std::vector<uint16_t>& crepkmer, const ull& num_kmer) {
+    ull pos=0;
+    // first window_size (window_size = REP_KMER_LEN)
+    uint16_t bit2f=0;
+    int nn=0;
+    for (int i=0; i < REP_KMER_LEN; i++) {
+        bit2f <<= 2;
+        bit2f |= dna_to_2bitf_16[seq[i]];
+        if (seq[i] == 'N' || seq[i] == 'n') {  // ignore when N or n appears
+            nn= REP_KMER_LEN - 1;
+        } else if (nn > 0) {  // within window_size-nt from N or n
+            nn--;
+        }
+    }
+    pos=custom_binary_search(crepkmer, num_kmer, bit2f);
+    if (crepkmer[pos] == bit2f) { return true; }
+    
+    // rolling calc.
+    for (int i=REP_KMER_LEN; i < clip_len; i++) {
+        bit2f <<= 2;
+        bit2f |= dna_to_2bitf_16[seq[i]];
+        if (seq[i] == 'N' || seq[i] == 'n') {  // ignore when N or n appears
+            nn= REP_KMER_LEN - 1;
+        } else if (nn > 0) {  // within window_size-nt from N or n
+            nn--;
+        } else {
+            pos=custom_binary_search(crepkmer, num_kmer, bit2f);
+            if (crepkmer[pos] == bit2f) { return true; }
+        }
+    }
+    return false;
+}
+
+
+/*
+ This 1) output pA and 2) stores overhang info and mapped seq to unordered_maps
+ */
+inline void output_pA(std::vector<softclip_info>& softclips, const std::vector<uint16_t>& crepkmer, const ull& num_kmer,
+                     char* chr, std::string& fseq, std::string& rseq, int64_t& start, int64_t& end,
+                     char* qname, int32_t& l_qseq, bool& is_read2, bool& is_reverse, char& strand,
+                     std::string& tmp_str, std::string& tmp_str1, std::string& tmp_str2, std::string& tmp_str3,
+                     std::unordered_map<std::string, std::string>& um1,
+                     std::unordered_map<std::string, std::string>& um2,
+                     char* tmp_buf, fstr* fs) {
     for (softclip_info s : softclips) {
         if ((s.l_clip_len >= DISCORDANT_READS_CLIP_LEN) || (s.r_clip_len >= DISCORDANT_READS_CLIP_LEN)) {
             tmp_str.clear();  // seq of read
@@ -470,17 +549,34 @@ inline void output_overhang(std::vector<softclip_info>& softclips, char* chr,
                         if (c == 'T') { Acount++; }
                     }
                 }
-                std::sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", chr, s.pos, (s.pos + s.rlen), s.breakpoint, qname, (is_read2 + 1), strand);
-                tmp_str3.clear();  // header name
-                tmp_str3=tmp_buf;
+                // judge whether either pA read or ME overhang
+                bool pA=false;
+                bool ME_overhang=false;
                 if (((double) Acount / (s.clipend - s.clipstart)) > POLYA_OVERHANG_THRESHOLD) {
-//                    *(fs->ofs_pA) << tmp_buf << '\t' << (s.clipend - s.clipstart) << '\n';  // output pA reads
-                    std::fprintf(fs->ofs_pA, "%s\t%ld\n", tmp_buf, (s.clipend - s.clipstart));
-//                    um1.emplace(tmp_str1, tmp_str3);  // (std::string, std::string) = (mapped seq, header)
-                } else {
-                    // to do: check existence, and string to string
-//                    um1.emplace(tmp_str1, tmp_str3);  // (std::string, std::string) = (mapped seq, header)
-//                    um2.emplace(tmp_str2, tmp_str3);  // (std::string, std::string) = (clipped seq, header)
+                    pA=true;
+                } else if (is_rep_overhang(tmp_str2, (s.clipend - s.clipstart), crepkmer, num_kmer)) {  // proceed if repeat overhang
+                    ME_overhang=true;
+                }
+                if (pA || ME_overhang) {
+                    std::sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", chr, s.pos, (s.pos + s.rlen), s.breakpoint, qname, (is_read2 + 1), strand);
+                    tmp_str3.clear();  // header name
+                    tmp_str3=tmp_buf;
+                    if (pA) {
+                        std::fprintf(fs->ofs_pA, "%s\t%ld\n", tmp_buf, (s.clipend - s.clipstart));
+                    } else {
+                        auto itr=um2.find(tmp_str2);  // um2 = (std::string, std::string) = (clipped seq, header)
+                        if (itr == um2.end()) {
+                            um2.emplace(tmp_str2, tmp_str3);
+                        } else {
+                            itr->second = itr->second + tmp_str3;
+                        }
+                    }
+                    auto itr=um1.find(tmp_str1);  // um1 = (std::string, std::string) = (mapped seq, header)
+                    if (itr == um1.end()) {
+                        um1.emplace(tmp_str1, tmp_str3);
+                    } else {
+                        itr->second = itr->second + tmp_str3;
+                    }
                 }
             }
         }
@@ -491,7 +587,7 @@ inline void output_overhang(std::vector<softclip_info>& softclips, char* chr,
 /*
  Core function to judge discordant reads.
  */
-inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
+inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<uint16_t>& crepkmer, const ull& num_kmer,
                         std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
                         std::vector<softclip_info>& softclips_sa,
                         std::vector<softclip_info>& softclips_xa,
@@ -502,6 +598,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
                         std::unordered_map<std::string, std::string>& um1,
                         std::unordered_map<std::string, std::string>& um2,
                         std::unordered_map<std::string, std::string>& um3,
+                        std::unordered_map<std::string, std::string>::iterator& it1,
                         char* tmp_buf,
                         fstr* fs) {
     // remove 1) supplementary alignments, 2) single-end reads, 3) unmapped reads
@@ -590,9 +687,9 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
     for (int i=0; i < l_qseq; i++) {
         nt=seq_nt16_str[bam_seqi(seq_p, i)];
         fseq += nt;
-        rseq += complement[nt];
+        rseq += complement[nt];  // just complement, do not reverse
     }
-    std::reverse(rseq.begin(), rseq.end());
+    std::reverse(rseq.begin(), rseq.end());  // do reverse
 //    std::cout << fseq << std::endl;
 //    std::cout << rseq << std::endl;
     int64_t end   = bam_endpos(b);            // read mapping end, 0-based
@@ -603,18 +700,38 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
     else { strand='+'; }
     
     // output overhangs
-    if (contains_S || contains_SA || contains_XA) {
-        if (! contains_H) {
-            output_overhang(softclips_xa, chr, fseq, rseq, start, end, qname, l_qseq,
-                            is_read2, is_reverse, strand, tmp_str, tmp_str1, tmp_str2, tmp_str3,
-                            um1, um2, um3, tmp_buf, fs);
+    um1.clear();
+    um2.clear();
+    if (! contains_H) {
+        if (contains_S || contains_XA) {
+            output_pA(softclips_xa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
+                      tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs);
+        }
+        if (contains_SA) {
+            output_pA(softclips_sa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
+                      tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs);
+        }
+    }
+    
+    // output mapped seq and overhangs
+    if (! um1.empty()) {  // um1 = (std::string, std::string) = (mapped seq, header)
+        it1=um1.begin();
+        while (it1 != um1.end()) {
+            std::fprintf(fs->ofs_mapped, "%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
+            it1++;
+        }
+    }
+    if (! um2.empty()) {  // um1 = (std::string, std::string) = (clipped seq, header)
+        it1=um2.begin();
+        while (it1 != um2.end()) {
+            std::fprintf(fs->ofs_overhang, "%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
+            it1++;
         }
     }
 }
 
 
-
-int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid) {
+int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vector<uint16_t>& crepkmer, const ull& num_kmer) {
     // take ofstream
     fstr* fs=fstrs.occupy();
     
@@ -651,6 +768,7 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid) {
     std::unordered_map<std::string, std::string> um1;
     std::unordered_map<std::string, std::string> um2;
     std::unordered_map<std::string, std::string> um3;
+    std::unordered_map<std::string, std::string>::iterator it1;
     char* tmp_buf= new char[TMP_BUF_SIZE];
     
     // read bam or cram
@@ -658,8 +776,8 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid) {
     int processed_cnt=0;
     kstring_t aux={0, 0, NULL};
     while ((ret = sam_itr_next(fp, iter, b)) >= 0) {
-        process_aln(fp, h, b, cigar_arr, softclips_sa, softclips_xa, tmp_str, cig_buf, cig_m, fseq, rseq,
-                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, tmp_buf,
+        process_aln(fp, h, b, crepkmer, num_kmer, cigar_arr, softclips_sa, softclips_xa, tmp_str, cig_buf, cig_m, fseq, rseq,
+                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, it1, tmp_buf,
                     fs);
 //        if (++processed_cnt >= 1) {
 //            break;
@@ -674,11 +792,32 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid) {
 }
 
 
-
 /*
  read bam or cram
  */
 int extract_discordant(int argc, char *argv[]) {
+    // load repeat .mk
+    const char* f_mk="/home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mk";
+    const char* f_mi="/home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mi";
+    std::ifstream infile;
+    std::string line;
+    infile.open(f_mi);
+    if (! infile.is_open()) { return 1; }
+    if (! getline(infile, line)) { return 1; }
+    ull num_kmer=std::stoull(line);
+    infile.close();
+    std::cout << "Number of k-mers loading from " << f_mk << ": " << num_kmer << std::endl;
+    // load .mk
+    infile.open(f_mk, std::ios::binary);
+    if (! infile.is_open()) { return 1; }
+    std::vector<uint16_t> repkmer;
+    repkmer.resize(num_kmer);
+    infile.read((char*)&repkmer[0], sizeof(uint16_t) * num_kmer);
+    infile.close();
+    const std::vector<uint16_t>& crepkmer=repkmer;
+    // for 2bit conversion
+    const int window_size=init_dna_to_2bit_16();
+    
     // open bam
     char *f=argv[1];
     htsFile *fp=hts_open(f, "r");
@@ -702,20 +841,33 @@ int extract_discordant(int argc, char *argv[]) {
     ThreadPool pool(thread_n);
     std::vector<std::future<int>> results;
     
-    // ofstreams (using C fopen)
+    // ofstreams (C fopen)
     for (int i=0; i < thread_n; i++) {
-        std::FILE* ofs_pA=fopen("_tmp_pA.fa", "w");
-        if (ofs_pA == nullptr) { return 1; }
-        fstrs.push_back_new(ofs_pA);
+        std::FILE* ofs_pA       =fopen("_tmp_pA.txt", "w");
+        std::FILE* ofs_overhang =fopen("_tmp_overhang.txt", "w");
+        std::FILE* ofs_distant  =fopen("_tmp_distant.txt", "w");
+        std::FILE* ofs_mapped   =fopen("_tmp_mapped.txt", "w");
+        std::FILE* ofs_unmapped =fopen("_tmp_unmapped.txt", "w");
+        std::FILE* ofs_abs      =fopen("_tmp_abs.txt", "w");
+        std::FILE* ofs_stat     =fopen("_tmp_stat.txt", "w");
+        if (ofs_pA       == nullptr) { return 1; }
+        if (ofs_overhang == nullptr) { return 1; }
+        if (ofs_distant  == nullptr) { return 1; }
+        if (ofs_mapped   == nullptr) { return 1; }
+        if (ofs_unmapped == nullptr) { return 1; }
+        if (ofs_abs      == nullptr) { return 1; }
+        if (ofs_stat     == nullptr) { return 1; }
+        fstrs.push_back_new(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped,
+                            ofs_unmapped, ofs_abs, ofs_stat);
     }
     
     // per chr processing
-    comp_init();
+    comp_init();  // make complementary table
     int i=0;
     for (int tid : sorted_chr) {
         results.emplace_back(
             pool.enqueue([=] {
-                return extract_discordant_per_chr(f, idx, 21 /*tid*/);  // core func
+                return extract_discordant_per_chr(f, idx, 21 /*tid*/, crepkmer, num_kmer);  // core func
             })
         );
         i++;
@@ -733,7 +885,6 @@ int extract_discordant(int argc, char *argv[]) {
     
     return 0;
 }
-
 
 
 /*
