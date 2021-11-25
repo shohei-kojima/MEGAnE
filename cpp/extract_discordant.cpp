@@ -1,7 +1,9 @@
+#include <fstream>
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
 #include <vector>
+#include <unordered_map>
 #include <algorithm>
 #include <functional>
 #include "htslib/sam.h"
@@ -10,12 +12,18 @@
 using namespace complementary_seq_hpp;
 
 #define MAX_CIGAR_LEN 128
+#define TMP_BUF_SIZE  1024
 #define N_SA_INFO 6
 #define READ_PAIR_GAP_LEN 2000
 #define MAX_SEQ_LEN 512
+#define MAPPED_REGION_LOW_COMPLEX_THRESHOLD 0.7
+#define DISCORDANT_READS_CLIP_LEN 20
+#define POLYA_OVERHANG_THRESHOLD 0.7
 
 typedef unsigned long ul;
 typedef unsigned long long ull;
+
+const char ATGC[]="ATGC";
 
 
 /*
@@ -35,9 +43,10 @@ struct softclip_info {
     int32_t  r_clip_len;
     uint64_t clipstart;
     uint64_t clipend;
+    uint64_t rlen;
     
     softclip_info(char* chr, int64_t pos, bool is_reverse, char breakpoint,
-                  int32_t l_clip_len, int32_t r_clip_len, uint64_t clipstart, uint64_t clipend) {
+                  int32_t l_clip_len, int32_t r_clip_len, uint64_t clipstart, uint64_t clipend, uint64_t rlen) {
         this->chr        = chr;
         this->pos        = pos;
         this->is_reverse = is_reverse;
@@ -46,6 +55,7 @@ struct softclip_info {
         this->r_clip_len = r_clip_len;
         this->clipstart  = clipstart;
         this->clipend    = clipend;
+        this->rlen       = rlen;
     };
     
     // for debug, just a print function
@@ -53,7 +63,8 @@ struct softclip_info {
         std::cout << chr << " " << pos << " "
         << is_reverse << " " << breakpoint << " "
         << l_clip_len << " " << r_clip_len << " "
-        << clipstart << " " << clipend << std::endl;
+        << clipstart << " " << clipend << " "
+        << rlen << std::endl;
     }
 };
 
@@ -157,17 +168,17 @@ inline void define_breakpoint(std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_L
 /*
  Parse one SA entry in an SA tag.
  */
-inline void parse_one_SA(std::string& tmp_sa,
+inline void parse_one_SA(std::string& tmp_str,
                          std::vector<softclip_info>& softclips,
                          std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
-                         uint32_t* cig_buf, size_t& cig_m,
+                         uint32_t*& cig_buf, size_t& cig_m,
                          char& breakpoint, int32_t& l_clip_len, int32_t& r_clip_len,
                          int64_t& clipstart, int64_t& clipend,
                          int32_t& l_qseq, bool& is_reverse) {
     // split SA info by ','
     int comma1=0,comma2=0,comma3=0,comma4=0;
     int n=0, pos=0;
-    for (char c : tmp_sa) {
+    for (char c : tmp_str) {
         if (c == ',') {
             if (n == 0) {
                 comma1=pos;
@@ -186,27 +197,28 @@ inline void parse_one_SA(std::string& tmp_sa,
     
     // parse cigar
     cig_m=0;
-    uint32_t _n_cigar=sam_parse_cigar((const char*)(tmp_sa.substr(comma3 + 1, comma4 - comma3 - 1)).c_str(),
+    uint32_t _n_cigar = sam_parse_cigar((const char*)(tmp_str.substr(comma3 + 1, comma4 - comma3 - 1)).c_str(),
                                       nullptr, &cig_buf, &cig_m);
+    int64_t _rlen     = bam_cigar2rlen(_n_cigar, cig_buf);
     parse_cigar(cig_buf, _n_cigar, cigar_arr);
     
     // save breakpoint info
     define_breakpoint(cigar_arr, _n_cigar, breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq);
-    std::string _chr=tmp_sa.substr(0, comma1);
-    int64_t _pos=std::stoll(tmp_sa.substr(comma1 + 1, comma2 - comma1 - 1)) - 1;  // 0-based
-    char strand=tmp_sa[comma2 + 1];
+    std::string _chr=tmp_str.substr(0, comma1);
+    int64_t _pos=std::stoll(tmp_str.substr(comma1 + 1, comma2 - comma1 - 1)) - 1;  // 0-based
+    char _strand=tmp_str[comma2 + 1];
     bool _is_reverse;
-    if ((is_reverse == false) && (strand == '+')) {
+    if ((is_reverse == false) && (_strand == '+')) {
         _is_reverse=false;
-    } else if ((is_reverse == false) && (strand == '-')) {
+    } else if ((is_reverse == false) && (_strand == '-')) {
         _is_reverse=true;
-    } else if ((is_reverse == true) && (strand == '+')) {
+    } else if ((is_reverse == true) && (_strand == '+')) {
         _is_reverse=true;
     } else {
         _is_reverse=false;
     }
     softclips.push_back(softclip_info((char*)_chr.c_str(), _pos, _is_reverse, breakpoint,
-                                      l_clip_len, r_clip_len, clipstart, clipend));
+                                      l_clip_len, r_clip_len, clipstart, clipend, _rlen));
 //    for (softclip_info s : softclips) {
 //        s.print();
 //    }
@@ -217,10 +229,10 @@ inline void parse_one_SA(std::string& tmp_sa,
 /*
  Parses char SA tag and stores in std::vector<softclip_info>
  */
-inline void SA_parser(char* sa_tag, std::string& tmp_sa,
+inline void SA_parser(char* sa_tag, std::string& tmp_str,
                       std::vector<softclip_info>& softclips,
                       std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
-                      uint32_t* cig_buf, size_t& cig_m,
+                      uint32_t*& cig_buf, size_t& cig_m,
                       char& breakpoint, int32_t& l_clip_len, int32_t& r_clip_len,
                       int64_t& clipstart, int64_t& clipend,
                       int32_t& l_qseq, bool& is_reverse) {
@@ -228,14 +240,14 @@ inline void SA_parser(char* sa_tag, std::string& tmp_sa,
     // count SA entires
     int n_entry=0;
     int sa_len=0;
-    tmp_sa.clear();
+    tmp_str.clear();
     while (sa_tag[sa_len]) {
         if (sa_tag[sa_len] == ';') {
-            parse_one_SA(tmp_sa, softclips, cigar_arr, cig_buf, cig_m,
+            parse_one_SA(tmp_str, softclips, cigar_arr, cig_buf, cig_m,
                          breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq, is_reverse);
-            tmp_sa.clear();
+            tmp_str.clear();
         } else {
-            tmp_sa += sa_tag[sa_len];
+            tmp_str += sa_tag[sa_len];
         }
         sa_len++;
     }
@@ -245,17 +257,17 @@ inline void SA_parser(char* sa_tag, std::string& tmp_sa,
 /*
  Parse one XA entry in an XA tag.
  */
-inline void parse_one_XA(std::string& tmp_sa,
+inline void parse_one_XA(std::string& tmp_str,
                          std::vector<softclip_info>& softclips,
                          std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
-                         uint32_t* cig_buf, size_t& cig_m,
+                         uint32_t*& cig_buf, size_t& cig_m,
                          char& breakpoint, int32_t& l_clip_len, int32_t& r_clip_len,
                          int64_t& clipstart, int64_t& clipend,
                          int32_t& l_qseq, bool& is_reverse) {
-    // split SA info by ','
+    // split XA info by ','
     int comma1=0,comma2=0,comma3=0;
     int n=0, pos=0;
-    for (char c : tmp_sa) {
+    for (char c : tmp_str) {
         if (c == ',') {
             if (n == 0) {
                 comma1=pos;
@@ -263,6 +275,7 @@ inline void parse_one_XA(std::string& tmp_sa,
                 comma2=pos;
             } else {
                 comma3=pos;
+                break;
             }
             n++;
         }
@@ -271,41 +284,43 @@ inline void parse_one_XA(std::string& tmp_sa,
     
     // parse cigar
     cig_m=0;
-    uint32_t _n_cigar=sam_parse_cigar((const char*)(tmp_sa.substr(comma2 + 1, comma3 - comma2 - 1)).c_str(),
-                                      nullptr, &cig_buf, &cig_m);
+    uint32_t _n_cigar = sam_parse_cigar((const char*)(tmp_str.substr(comma2 + 1, comma3 - comma2 - 1)).c_str(),
+                                        nullptr, &cig_buf, &cig_m);
+    int64_t _rlen     = bam_cigar2rlen(_n_cigar, cig_buf);
     parse_cigar(cig_buf, _n_cigar, cigar_arr);
     
     // save breakpoint info
     define_breakpoint(cigar_arr, _n_cigar, breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq);
-    std::string _chr=tmp_sa.substr(0, comma1);
-    int64_t _pos=std::stoll(tmp_sa.substr(comma1 + 2, comma2 - comma1 - 2)) - 1;  // 0-based
-    char strand=tmp_sa[comma1 + 1];
+    std::string _chr=tmp_str.substr(0, comma1);
+    int64_t _pos=std::stoll(tmp_str.substr(comma1 + 2, comma2 - comma1 - 2)) - 1;  // 0-based
+    char _strand=tmp_str[comma1 + 1];
     bool _is_reverse;
-    if ((is_reverse == false) && (strand == '+')) {
+    if ((is_reverse == false) && (_strand == '+')) {
         _is_reverse=false;
-    } else if ((is_reverse == false) && (strand == '-')) {
+    } else if ((is_reverse == false) && (_strand == '-')) {
         _is_reverse=true;
-    } else if ((is_reverse == true) && (strand == '+')) {
+    } else if ((is_reverse == true) && (_strand == '+')) {
         _is_reverse=true;
     } else {
         _is_reverse=false;
     }
     softclips.push_back(softclip_info((char*)_chr.c_str(), _pos, _is_reverse, breakpoint,
-                                      l_clip_len, r_clip_len, clipstart, clipend));
+                                      l_clip_len, r_clip_len, clipstart, clipend, _rlen));
 //    for (softclip_info s : softclips) {
 //        s.print();
 //    }
 //    std::exit(0);
+//    std::cout << softclips.size() << std::endl;
 }
 
 
 /*
  Parses char XA tag and stores in std::vector<softclip_info>
  */
-inline void XA_parser(char* sa_tag, std::string& tmp_sa,
+inline void XA_parser(char* sa_tag, std::string& tmp_str,
                       std::vector<softclip_info>& softclips,
                       std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
-                      uint32_t* cig_buf, size_t& cig_m,
+                      uint32_t*& cig_buf, size_t& cig_m,
                       char& breakpoint, int32_t& l_clip_len, int32_t& r_clip_len,
                       int64_t& clipstart, int64_t& clipend,
                       int32_t& l_qseq, bool& is_reverse) {
@@ -313,16 +328,90 @@ inline void XA_parser(char* sa_tag, std::string& tmp_sa,
     // count SA entires
     int n_entry=0;
     int sa_len=0;
-    tmp_sa.clear();
+    tmp_str.clear();
     while (sa_tag[sa_len]) {
         if (sa_tag[sa_len] == ';') {
-            parse_one_XA(tmp_sa, softclips, cigar_arr, cig_buf, cig_m,
+            parse_one_XA(tmp_str, softclips, cigar_arr, cig_buf, cig_m,
                          breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq, is_reverse);
-            tmp_sa.clear();
+            tmp_str.clear();
         } else {
-            tmp_sa += sa_tag[sa_len];
+            tmp_str += sa_tag[sa_len];
         }
         sa_len++;
+    }
+}
+
+
+/*
+ Simple repeat checker.
+ */
+inline bool is_simple_repeat(const std::string& seq, int32_t seqlen) {
+    int32_t count=0;
+    for (char c: ATGC) {
+        for (int32_t i=0; i < seqlen; i++) {
+            if (seq[i] == c) { count++; }
+        }
+        if (((double) count / seqlen) >= MAPPED_REGION_LOW_COMPLEX_THRESHOLD) {
+            return true;
+        }
+        count=0;
+    }
+    return false;
+}
+
+
+/*
+ output overhang from std::vector<softclip_info>
+ */
+inline void output_overhang(std::vector<softclip_info>& softclips, char* chr,
+                            std::string& fseq, std::string& rseq,
+                            int64_t& start, int64_t& end,
+                            char* qname, int32_t& l_qseq, bool& is_read2, bool& is_reverse, char& strand,
+                            std::string& tmp_str, std::string& tmp_str1, std::string& tmp_str2, std::string& tmp_str3,
+                            std::unordered_map<std::string, std::string>& um1,
+                            std::unordered_map<std::string, std::string>& um2,
+                            std::unordered_map<std::string, std::string>& um3,
+                            char* tmp_buf) {
+    for (softclip_info s : softclips) {
+        if ((s.l_clip_len >= DISCORDANT_READS_CLIP_LEN) || (s.r_clip_len >= DISCORDANT_READS_CLIP_LEN)) {
+            tmp_str.clear();  // seq of read
+            if (s.is_reverse && is_reverse) {
+                tmp_str=fseq;
+            } else if ((! s.is_reverse) && (! is_reverse)) {
+                tmp_str=fseq;
+            } else {
+                tmp_str=rseq;
+            }
+            int32_t mapped_len= l_qseq - s.l_clip_len - s.r_clip_len;
+            tmp_str1.clear();  // mapped seq
+            tmp_str1=tmp_str.substr(s.l_clip_len, mapped_len);
+            if (! is_simple_repeat(tmp_str1, mapped_len)) {
+                tmp_str2.clear();  // clipped seq
+                int32_t Acount=0;
+                if (s.breakpoint == 'L') {
+                    tmp_str2=tmp_str.substr(s.clipstart, s.clipend);
+                    for (char c: tmp_str2) {
+                        if (c == 'A') { Acount++; }
+                    }
+                } else {
+                    tmp_str2=tmp_str.substr(s.clipstart);
+                    for (char c: tmp_str2) {
+                        if (c == 'T') { Acount++; }
+                    }
+                }
+                sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", chr, s.pos, (s.pos + s.rlen), s.breakpoint, qname, (is_read2 + 1), strand);
+                tmp_str3.clear();  // header name
+                tmp_str3=tmp_buf;
+                if (((double) Acount / (s.clipend - s.clipstart)) > POLYA_OVERHANG_THRESHOLD) {
+                    std::cout << tmp_buf << '\t' << (s.clipend - s.clipstart) << '\n';  // output pA reads
+                    um1.emplace(tmp_str1, tmp_str3);  // (std::string, std::string) = (mapped seq, header)
+                } else {
+                    // to do: check existence, and string to string
+                    um1.emplace(tmp_str1, tmp_str3);  // (std::string, std::string) = (mapped seq, header)
+                    um2.emplace(tmp_str2, tmp_str3);  // (std::string, std::string) = (clipped seq, header)
+                }
+            }
+        }
     }
 }
 
@@ -334,9 +423,14 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
                         std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
                         std::vector<softclip_info>& softclips_sa,
                         std::vector<softclip_info>& softclips_xa,
-                        std::string& tmp_sa,
-                        uint32_t* cig_buf, size_t& cig_m,
-                        char* fseq, char* rseq) {
+                        std::string& tmp_str,
+                        uint32_t*& cig_buf, size_t& cig_m,
+                        std::string& fseq, std::string& rseq,
+                        std::string& tmp_str1, std::string& tmp_str2, std::string& tmp_str3,
+                        std::unordered_map<std::string, std::string>& um1,
+                        std::unordered_map<std::string, std::string>& um2,
+                        std::unordered_map<std::string, std::string>& um3,
+                        char* tmp_buf) {
     // remove 1) supplementary alignments, 2) single-end reads, 3) unmapped reads
     uint16_t& flag = b->core.flag;
     if (((flag & BAM_FSUPPLEMENTARY) > 0) == true) { return; }
@@ -374,10 +468,17 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
     char breakpoint;
     int ret;  // return
     
+    int64_t& start = b->core.pos;  // read mapping start, 0-based
+    int64_t  rlen  = bam_cigar2rlen(n_cigar, cigar);
+    
+    softclips_sa.clear();
+    softclips_xa.clear();
+    
     // detect chimeric, softclip -> save as XA tag
     if (contains_S) {
         define_breakpoint(cigar_arr, n_cigar, breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq);
-        softclips_xa.push_back(softclip_info(chr, b->core.pos, is_reverse, breakpoint, l_clip_len, r_clip_len, clipstart, clipend));
+        softclips_xa.push_back(softclip_info(chr, start, is_reverse, breakpoint,
+                                             l_clip_len, r_clip_len, clipstart, clipend, rlen));
     }
     
     // detect chimeric, SA-tag
@@ -385,7 +486,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
     if (contains_SA) {
         *sa_p++;
         char* sa_tag=(char*)sa_p;  // simpler version of `char *bam_aux2Z(const uint8_t *s)` in htslib sam.c
-        SA_parser(sa_tag, tmp_sa, softclips_sa, cigar_arr, cig_buf, cig_m,
+        SA_parser(sa_tag, tmp_str, softclips_sa, cigar_arr, cig_buf, cig_m,
                   breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq, is_reverse);
         int vec_size=softclips_sa.size();
         // stop when short deletion rather than insertion
@@ -403,33 +504,39 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b,
     if (contains_XA) {
         *xa_p++;
         char* xa_tag=(char*)xa_p;  // simpler version of `char *bam_aux2Z(const uint8_t *s)` in htslib sam.c
-        XA_parser(xa_tag, tmp_sa, softclips_xa, cigar_arr, cig_buf, cig_m,
+        XA_parser(xa_tag, tmp_str, softclips_xa, cigar_arr, cig_buf, cig_m,
                   breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq, is_reverse);
     }
 //    std::cout << softclips_sa.size() << " " << softclips_xa.size() << std::endl;
     
     // prep seq
     char nt;
-    uint8_t* seq_p = bam_get_seq(b);                 // seq of read, nt16
+    fseq.clear();
+    rseq.clear();
+    uint8_t* seq_p = bam_get_seq(b);
     for (int i=0; i < l_qseq; i++) {
         nt=seq_nt16_str[bam_seqi(seq_p, i)];
-        fseq[i]=nt;        // get nucleotide id and convert into IUPAC id
-        rseq[l_qseq - i - 1]= complement[nt];
+        fseq += nt;
+        rseq += complement[nt];
     }
-    fseq[l_qseq]='\0';
-    rseq[l_qseq]='\0';
-    
-    std::cout << fseq << std::endl;
-    std::cout << rseq << std::endl;
-    std::exit(0);
+    std::reverse(rseq.begin(), rseq.end());
+//    std::cout << fseq << std::endl;
+//    std::cout << rseq << std::endl;
+    int64_t end   = bam_endpos(b);            // read mapping end, 0-based
+    char*   qname = bam_get_qname(b);   // read name
+    bool is_read2 = (flag & BAM_FREAD2) > 0;
+    char strand;
+    if (is_reverse) { strand='-'; }
+    else { strand='+'; }
     
     // output overhangs
     if (contains_S || contains_SA || contains_XA) {
         if (! contains_H) {
-            
+            output_overhang(softclips_xa, chr, fseq, rseq, start, end, qname, l_qseq,
+                            is_read2, is_reverse, strand, tmp_str, tmp_str1, tmp_str2, tmp_str3,
+                            um1, um2, um3, tmp_buf);
         }
     }
-    
 }
 
 
@@ -457,24 +564,33 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid) {
     std::vector<softclip_info> softclips_xa;
     softclips_sa.reserve(256);
     softclips_xa.reserve(256);
-    std::string tmp_sa;
     uint32_t* cig_buf = nullptr;
     size_t cig_m=0;
-    char* fseq= new char[MAX_SEQ_LEN];   // seq of read, ATGCN
-    char* rseq= new char[MAX_SEQ_LEN];   // seq of read, ATGCN
+    std::string fseq;   // seq of read, ATGCN
+    std::string rseq;   // seq of read, ATGCN
+    std::string tmp_str;
+    std::string tmp_str1;
+    std::string tmp_str2;
+    std::string tmp_str3;
+    std::unordered_map<std::string, std::string> um1;
+    std::unordered_map<std::string, std::string> um2;
+    std::unordered_map<std::string, std::string> um3;
+    char* tmp_buf= new char[TMP_BUF_SIZE];
     
     // read bam or cram
     int ret;
     int processed_cnt=0;
     kstring_t aux={0, 0, NULL};
     while ((ret = sam_itr_next(fp, iter, b)) >= 0) {
-        process_aln(fp, h, b, cigar_arr, softclips_sa, softclips_xa, tmp_sa, cig_buf, cig_m, fseq, rseq);
-        softclips_sa.clear();
-        softclips_xa.clear();
+        process_aln(fp, h, b, cigar_arr, softclips_sa, softclips_xa, tmp_str, cig_buf, cig_m, fseq, rseq,
+                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, tmp_buf);
 //        if (++processed_cnt >= 1) {
 //            break;
 //        }
     }
+    
+    // finish up
+    delete tmp_buf;
     hts_itr_destroy(iter);
     return 0;
 }
@@ -513,13 +629,13 @@ int extract_discordant(int argc, char *argv[]) {
     for (int tid : sorted_chr) {
         results.emplace_back(
             pool.enqueue([=] {
-                return extract_discordant_per_chr(f, idx, tid);
+                return extract_discordant_per_chr(f, idx, 0 /*tid*/);
             })
         );
-//        i++;
-//        if (i >= 1) {
-//            break;
-//        }
+        i++;
+        if (i >= 1) {
+            break;
+        }
     }
     
     for (auto && result: results) {
