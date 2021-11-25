@@ -79,7 +79,7 @@ public:
         this->vec.push_back(fstrp);
     }
     
-    fstr* occupy() { 
+    fstr* occupy() {
         std::unique_lock<std::mutex> lock(this->_mutex);  // need mutex
         fstr* fstrp=nullptr;
         for (fstr* t : this->vec) {
@@ -160,6 +160,62 @@ struct softclip_info {
         << l_clip_len << " " << r_clip_len << " "
         << clipstart << " " << clipend << " "
         << rlen << std::endl;
+    }
+};
+
+
+/*
+ Stores absent read info
+ */
+struct abs_info {
+    std::vector<std::pair<std::string, std::string>> R;
+    std::vector<std::pair<std::string, std::string>> L;
+    int R_num;
+    int L_num;
+    
+    abs_info() {
+        this->R_num=0;
+        this->L_num=0;
+    }
+};
+
+
+/*
+ Manages abs_info
+ */
+class abs_info_manager {
+public:
+    std::unordered_map<char*, abs_info*> sa_p;
+    std::unordered_map<char*, abs_info*> sa_m;
+    std::unordered_map<char*, abs_info*> xa_p;
+    std::unordered_map<char*, abs_info*> xa_m;
+    std::unordered_map<char*, abs_info*> ums[4]={this->sa_p, this->sa_m, this->xa_p, this->xa_m};
+    
+    void emplace_chrs(std::vector<char*> main_chrs) {
+        for (int i=0; i < 4; i++) {
+            for (char* chr : main_chrs){
+                abs_info* _abs_info = new abs_info();
+                this->ums[i].emplace(chr, _abs_info);
+            }
+        }
+    }
+    
+    void clean_up_by_chr(char* chr) {
+        for (int i=0; i < 4; i++) {
+            if (this->ums[i][chr]->R_num > 0) { this->ums[i][chr]->R.clear(); }
+            if (this->ums[i][chr]->L_num > 0) { this->ums[i][chr]->L.clear(); }
+        }
+    }
+    
+    ~abs_info_manager() {
+        std::unordered_map<char*, abs_info*>::iterator it;
+        for (int i=0; i < 4; i++) {
+            it=this->ums[i].begin();
+            while (it != this->ums[i].end()) {
+                delete it->second;
+                it++;
+            }
+        }
     }
 };
 
