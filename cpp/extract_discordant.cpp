@@ -208,20 +208,6 @@ public:
         this->ums[3]=&(this->xa_m);
     }
     
-//    void emplace_chrs(const std::vector<std::string>& main_chrs) {
-//        for (std::string chr : main_chrs){
-//            abs_info* _abs_info;
-//            _abs_info= new abs_info();
-//            this->sa_p.emplace(chr, _abs_info);
-//            _abs_info= new abs_info();
-//            this->sa_m.emplace(chr, _abs_info);
-//            _abs_info= new abs_info();
-//            this->xa_p.emplace(chr, _abs_info);
-//            _abs_info= new abs_info();
-//            this->xa_m.emplace(chr, _abs_info);
-//        }
-//    }
-    
     void emplace_chrs(const std::vector<std::string>& main_chrs) {
         abs_info* _abs_info;
         for (int i=0; i < 4; i++) {
@@ -231,18 +217,6 @@ public:
             }
         }
     }
-    
-//    void emplace_chr(std::string& chr) {
-//        abs_info* _abs_info;
-//        _abs_info= new abs_info();
-//        this->sa_p.emplace(chr, _abs_info);
-//        _abs_info= new abs_info();
-//        this->sa_m.emplace(chr, _abs_info);
-//        _abs_info= new abs_info();
-//        this->xa_p.emplace(chr, _abs_info);
-//        _abs_info= new abs_info();
-//        this->xa_m.emplace(chr, _abs_info);
-//    }
     
     void clean_up_by_chr(const std::string& chr) {
         for (int i=0; i < 4; i++) {
