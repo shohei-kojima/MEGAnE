@@ -3,8 +3,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <vector>
-#include <tuple>
 #include <unordered_map>
+#include <set>
 #include <algorithm>
 #include <functional>
 #include "htslib/sam.h"
@@ -21,6 +21,7 @@ using namespace complementary_seq_hpp;
 #define DISCORDANT_READS_CLIP_LEN 20
 #define REP_KMER_SIZE 11
 #define SHIFT_16_TO_11 10
+#define ABS_MIN_DIST 50
 #define ABS_MAX_DIST 20000
 #define MAPPED_REGION_LOW_COMPLEX_THRESHOLD 0.7
 #define POLYA_OVERHANG_THRESHOLD 0.7
@@ -35,6 +36,13 @@ const char ATGC[]="ATGC";
  g++ -o extract_discordant -I /home/kooojiii/Desktop/htslib/htslib-1.13 -L /home/kooojiii/Desktop/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/kooojiii/Desktop/htslib/htslib-1.13
  time ./extract_discordant /home/kooojiii/Documents/testdata/bams/1kgp/GRCh38DH/NA12878.final.bam
+ 
+ to do: implement cram reader; CRAM_OPT_REFERENCE;
+ if (hts_set_opt(out, CRAM_OPT_REFERENCE, outref) < 0) {
+     fail("setting reference %s for %s", outref, outfname);
+     goto err;
+ }
+https://github.com/samtools/htslib/blob/9672589346459d675d62851d5b7b5f2e5c919076/test/sam.c
  */
 
 
@@ -132,17 +140,17 @@ static cfstrs fstrs;
  Stores info of clipped reads, SA tags, XA tags.
  */
 struct softclip_info {
-    char*    chr=nullptr;
-    int64_t  pos;
-    bool     is_reverse;
-    char     breakpoint;
-    int32_t  l_clip_len;
-    int32_t  r_clip_len;
-    uint64_t clipstart;
-    uint64_t clipend;
-    uint64_t rlen;
+    std::string chr;
+    int64_t     pos;
+    bool        is_reverse;
+    char        breakpoint;
+    int32_t     l_clip_len;
+    int32_t     r_clip_len;
+    uint64_t    clipstart;
+    uint64_t    clipend;
+    uint64_t    rlen;
     
-    softclip_info(char* chr, int64_t pos, bool is_reverse, char breakpoint,
+    softclip_info(std::string chr, int64_t pos, bool is_reverse, char breakpoint,
                   int32_t l_clip_len, int32_t r_clip_len, uint64_t clipstart, uint64_t clipend, uint64_t rlen) {
         this->chr        = chr;
         this->pos        = pos;
@@ -157,11 +165,11 @@ struct softclip_info {
     
     // for debug, just a print function
     void print() {
-        std::cout << chr << " " << pos << " "
-        << is_reverse << " " << breakpoint << " "
-        << l_clip_len << " " << r_clip_len << " "
-        << clipstart << " " << clipend << " "
-        << rlen << std::endl;
+        std::cout << this->chr << " " << this->pos << " "
+        << this->is_reverse << " " << this->breakpoint << " "
+        << this->l_clip_len << " " << this->r_clip_len << " "
+        << this->clipstart << " " << this->clipend << " "
+        << this->rlen << std::endl;
     }
 };
 
@@ -187,39 +195,73 @@ struct abs_info {
  */
 class abs_info_manager {
 public:
-    std::unordered_map<char*, abs_info*> sa_p;
-    std::unordered_map<char*, abs_info*> sa_m;
-    std::unordered_map<char*, abs_info*> xa_p;
-    std::unordered_map<char*, abs_info*> xa_m;
-    std::unordered_map<char*, abs_info*> ums[4]={this->sa_p, this->sa_m, this->xa_p, this->xa_m};
+    std::unordered_map<std::string, abs_info*> sa_p;
+    std::unordered_map<std::string, abs_info*> sa_m;
+    std::unordered_map<std::string, abs_info*> xa_p;
+    std::unordered_map<std::string, abs_info*> xa_m;
+    std::unordered_map<std::string, abs_info*>* ums[4];
     
-    void emplace_chrs(std::vector<char*> main_chrs) {
+    void init() {
+        this->ums[0]=&(this->sa_p);
+        this->ums[1]=&(this->sa_m);
+        this->ums[2]=&(this->xa_p);
+        this->ums[3]=&(this->xa_m);
+    }
+    
+//    void emplace_chrs(const std::vector<std::string>& main_chrs) {
+//        for (std::string chr : main_chrs){
+//            abs_info* _abs_info;
+//            _abs_info= new abs_info();
+//            this->sa_p.emplace(chr, _abs_info);
+//            _abs_info= new abs_info();
+//            this->sa_m.emplace(chr, _abs_info);
+//            _abs_info= new abs_info();
+//            this->xa_p.emplace(chr, _abs_info);
+//            _abs_info= new abs_info();
+//            this->xa_m.emplace(chr, _abs_info);
+//        }
+//    }
+    
+    void emplace_chrs(const std::vector<std::string>& main_chrs) {
+        abs_info* _abs_info;
         for (int i=0; i < 4; i++) {
-            for (char* chr : main_chrs){
-                abs_info* _abs_info = new abs_info();
-                this->ums[i].emplace(chr, _abs_info);
+            for (std::string chr : main_chrs){
+                _abs_info = new abs_info();
+                (*(this->ums[i])).emplace(chr, _abs_info);
             }
         }
     }
     
-    void clean_up_by_chr(char* chr) {
+//    void emplace_chr(std::string& chr) {
+//        abs_info* _abs_info;
+//        _abs_info= new abs_info();
+//        this->sa_p.emplace(chr, _abs_info);
+//        _abs_info= new abs_info();
+//        this->sa_m.emplace(chr, _abs_info);
+//        _abs_info= new abs_info();
+//        this->xa_p.emplace(chr, _abs_info);
+//        _abs_info= new abs_info();
+//        this->xa_m.emplace(chr, _abs_info);
+//    }
+    
+    void clean_up_by_chr(const std::string& chr) {
         for (int i=0; i < 4; i++) {
-            if (this->ums[i][chr]->R_num > 0) {
-                this->ums[i][chr]->R.clear();
-                this->ums[i][chr]->R_num = 0;
+            if (this->ums[i]->at(chr)->R_num > 0) {
+                this->ums[i]->at(chr)->R.clear();
+                this->ums[i]->at(chr)->R_num = 0;
             }
-            if (this->ums[i][chr]->L_num > 0) {
-                this->ums[i][chr]->L.clear();
-                this->ums[i][chr]->L_num = 0;
+            if (this->ums[i]->at(chr)->L_num > 0) {
+                this->ums[i]->at(chr)->L.clear();
+                this->ums[i]->at(chr)->L_num = 0;
             }
         }
     }
     
     ~abs_info_manager() {
-        std::unordered_map<char*, abs_info*>::iterator it;
+        std::unordered_map<std::string, abs_info*>::iterator it;
         for (int i=0; i < 4; i++) {
-            it=this->ums[i].begin();
-            while (it != this->ums[i].end()) {
+            it=this->ums[i]->begin();
+            while (it != this->ums[i]->end()) {
                 delete it->second;
                 it++;
             }
@@ -355,8 +397,8 @@ inline void parse_one_SA(std::string& tmp_str,
     
     // parse cigar
     cig_m=0;
-    uint32_t _n_cigar = sam_parse_cigar((const char*)(tmp_str.substr(comma3 + 1, comma4 - comma3 - 1)).c_str(),
-                                      nullptr, &cig_buf, &cig_m);
+    uint32_t _n_cigar = sam_parse_cigar((tmp_str.substr(comma3 + 1, comma4 - comma3 - 1)).c_str(),
+                                        nullptr, &cig_buf, &cig_m);
     int64_t _rlen     = bam_cigar2rlen(_n_cigar, cig_buf);
     parse_cigar(cig_buf, _n_cigar, cigar_arr);
     
@@ -371,7 +413,7 @@ inline void parse_one_SA(std::string& tmp_str,
     } else {
         _is_reverse=true;
     }
-    softclips.push_back(softclip_info((char*)_chr.c_str(), _pos, _is_reverse, breakpoint,
+    softclips.push_back(softclip_info(_chr, _pos, _is_reverse, breakpoint,
                                       l_clip_len, r_clip_len, clipstart, clipend, _rlen));
 //    for (softclip_info s : softclips) {
 //        s.print();
@@ -436,7 +478,7 @@ inline void parse_one_XA(std::string& tmp_str,
     
     // parse cigar
     cig_m=0;
-    uint32_t _n_cigar = sam_parse_cigar((const char*)(tmp_str.substr(comma2 + 1, comma3 - comma2 - 1)).c_str(),
+    uint32_t _n_cigar = sam_parse_cigar((tmp_str.substr(comma2 + 1, comma3 - comma2 - 1)).c_str(),
                                         nullptr, &cig_buf, &cig_m);
     int64_t _rlen     = bam_cigar2rlen(_n_cigar, cig_buf);
     parse_cigar(cig_buf, _n_cigar, cigar_arr);
@@ -452,13 +494,8 @@ inline void parse_one_XA(std::string& tmp_str,
     } else {
         _is_reverse=true;
     }
-    softclips.push_back(softclip_info((char*)_chr.c_str(), _pos, _is_reverse, breakpoint,
+    softclips.push_back(softclip_info(_chr, _pos, _is_reverse, breakpoint,
                                       l_clip_len, r_clip_len, clipstart, clipend, _rlen));
-//    for (softclip_info s : softclips) {
-//        s.print();
-//    }
-//    std::exit(0);
-//    std::cout << softclips.size() << std::endl;
 }
 
 
@@ -471,7 +508,6 @@ inline void XA_parser(char* sa_tag, std::string& tmp_str,
                       uint32_t*& cig_buf, size_t& cig_m,
                       char& breakpoint, int32_t& l_clip_len, int32_t& r_clip_len,
                       int64_t& clipstart, int64_t& clipend, int32_t& l_qseq) {
-//    std::cout << sa_tag << std::endl;
     // count SA entires
     int n_entry=0;
     int sa_len=0;
@@ -486,6 +522,9 @@ inline void XA_parser(char* sa_tag, std::string& tmp_str,
         }
         sa_len++;
     }
+//    for (softclip_info s : softclips) {
+//        s.print();
+//    }
 }
 
 
@@ -640,17 +679,53 @@ inline void output_pA(std::vector<softclip_info>& softclips, const std::vector<u
 
 
 /*
+ Summarize absent reads
+ */
+inline void summarize_abs(std::vector<softclip_info>& softclips,
+                          std::unordered_map<std::string, abs_info*>& ump,
+                          std::unordered_map<std::string, abs_info*>& umm,
+                          const std::unordered_map<std::string, bool>& is_mainchr,
+                          std::set<std::string>& tmp_set, std::string& tmp_str) {
+    int v_size=softclips.size();
+    softclip_info* s;
+    for (int i=0; i < v_size; i++) {
+        s=&(softclips[i]);
+        if (s->breakpoint == 'N') { continue; }
+        if ((s->clipend - s->clipstart) < DISCORDANT_READS_CLIP_LEN) { continue; }
+        if (! is_mainchr.at(s->chr)) { continue; }
+        if (s->is_reverse && (s->breakpoint == 'R')) {
+            umm.at(s->chr)->R.push_back(s);
+            umm.at(s->chr)->R_num++;
+        } else if (s->is_reverse && (s->breakpoint == 'L')) {
+            umm.at(s->chr)->L.push_back(s);
+            umm.at(s->chr)->L_num++;
+        } else if (s->breakpoint == 'R') {
+            ump.at(s->chr)->R.push_back(s);
+            ump.at(s->chr)->R_num++;
+        } else {
+            ump.at(s->chr)->L.push_back(s);
+            ump.at(s->chr)->L_num++;
+        }
+        tmp_set.insert(s->chr);
+    }
+}
+
+
+/*
  Output absent reads
  */
-inline void output_abs(char* _chr, std::unordered_map<char*, abs_info*>& umr, std::unordered_map<char*, abs_info*>& uml,
+inline void output_abs(std::string _chr, std::unordered_map<std::string, abs_info*>& umr, std::unordered_map<std::string, abs_info*>& uml,
                        fstr* fs, char* qname, int32_t& l_qseq, bool& is_read2) {
-    if ((umr[_chr]->R_num > 0) && (uml[_chr]->L_num > 0)) {
-        for (softclip_info* p1 : umr[_chr]->R) {
-            for (softclip_info* p2 : uml[_chr]->L) {
-                if (((p2->pos - (p1->pos + p1->rlen)) <= ABS_MAX_DIST) || ((p2->pos - (p1->pos + p1->rlen)) <= ABS_MAX_DIST)) {
+    int64_t leng;
+    if ((umr.at(_chr)->R_num > 0) && (uml.at(_chr)->L_num > 0)) {
+        for (softclip_info* p1 : umr.at(_chr)->R) {
+            for (softclip_info* p2 : uml.at(_chr)->L) {
+                leng= ((int64_t)(p2->pos) - ((int64_t)(p1->pos) + (int64_t)(p1->rlen)));
+                if ((leng >= ABS_MIN_DIST) && (leng <= ABS_MAX_DIST)) {
+                    const char* _chrp= _chr.c_str();
                     std::fprintf(fs->ofs_abs, "%s/%d\t%s\t%ld\t%ld\t%s:%ld-%ld\t%s:%ld-%ld\t%d-%d\t%d-%d\n",
-                                 qname, (is_read2 + 1), _chr, (p1->pos + p1->rlen), p2->pos,
-                                 _chr, p1->pos, (p1->pos + p1->rlen), _chr, p2->pos, (p2->pos + p2->rlen),
+                                 qname, (is_read2 + 1), _chrp, (p1->pos + p1->rlen), p2->pos,
+                                 _chrp, p1->pos, (p1->pos + p1->rlen), _chrp, p2->pos, (p2->pos + p2->rlen),
                                  p1->l_clip_len, (l_qseq - p1->r_clip_len), p2->l_clip_len, (l_qseq - p2->r_clip_len));
                 }
             }
@@ -662,7 +737,8 @@ inline void output_abs(char* _chr, std::unordered_map<char*, abs_info*>& umr, st
 /*
  Core function to judge discordant reads.
  */
-inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<char*>& mainchrs, bool& is_main_chr,
+inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<std::string>& mainchrs,
+                        const std::unordered_map<std::string, bool>& is_mainchr,
                         const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
                         std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
                         std::vector<softclip_info>& softclips_sa,
@@ -675,7 +751,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
                         std::unordered_map<std::string, std::string>& um2,
                         std::unordered_map<std::string, std::string>& um3,
                         std::unordered_map<std::string, std::string>::iterator& it1,
-                        char* tmp_buf,
+                        char* tmp_buf, std::set<std::string>& tmp_set, std::set<std::string>::iterator& it2,
                         fstr* fs, abs_info_manager& abs) {
     // remove 1) supplementary alignments, 2) single-end reads, 3) unmapped reads
     uint16_t& flag = b->core.flag;
@@ -725,7 +801,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     // detect chimeric, softclip -> save as XA tag
     if (contains_S) {
         define_breakpoint(cigar_arr, n_cigar, breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq);
-        softclips_xa.push_back(softclip_info(chr, start, is_reverse, breakpoint,
+        softclips_xa.push_back(softclip_info(std::string(chr), start, is_reverse, breakpoint,
                                              l_clip_len, r_clip_len, clipstart, clipend, rlen));
     }
     
@@ -739,7 +815,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
         int vec_size=softclips_sa.size();
         // stop when short deletion rather than insertion
         for (int i=1; i < vec_size; i++) {
-            if (*(softclips_xa[0].chr) == *(softclips_sa[i].chr)) {
+            if (softclips_xa[0].chr == softclips_sa[i].chr) {
                 if ((-50 < (softclips_xa[0].pos - softclips_sa[i].pos)) && ((softclips_xa[0].pos - softclips_sa[i].pos) < 50)) {
                     is_short_deletion=true;
                     break;
@@ -755,7 +831,6 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
         XA_parser(xa_tag, tmp_str, softclips_xa, cigar_arr, cig_buf, cig_m,
                   breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq);
     }
-//    std::cout << softclips_sa.size() << " " << softclips_xa.size() << std::endl;
     
     // prep seq
     char nt;
@@ -768,8 +843,6 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
         rseq += complement[nt];  // just complement, do not reverse
     }
     std::reverse(rseq.begin(), rseq.end());  // do reverse
-//    std::cout << fseq << std::endl;
-//    std::cout << rseq << std::endl;
     int64_t end   = bam_endpos(b);            // read mapping end, 0-based
     char*   qname = bam_get_qname(b);   // read name
     bool is_read2 = (flag & BAM_FREAD2) > 0;
@@ -820,7 +893,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     }
     if (proceed_next) {
         tmp_str.clear();  // distant read info
-        if (is_main_chr) {
+        if (is_mainchr.at(std::string(chr))) {
             std::sprintf(tmp_buf, "%s:%ld-%ld/%c;", chr, softclips_xa[0].pos, (softclips_xa[0].pos + softclips_xa[0].rlen), strand);
             tmp_str=tmp_buf;
         }
@@ -830,7 +903,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
                 if ((s.breakpoint == 'N') || ((s.clipend - s.clipstart) < DISCORDANT_READS_CLIP_LEN)) {
                     if (s.is_reverse) { _strand='-'; }
                     else { _strand='+'; }
-                    std::sprintf(tmp_buf, "%s:%ld-%ld/%c;", s.chr, s.pos, (s.pos + s.rlen), _strand);
+                    std::sprintf(tmp_buf, "%s:%ld-%ld/%c;", (s.chr).c_str(), s.pos, (s.pos + s.rlen), _strand);
                     tmp_str1.clear();  // distant read info
                     tmp_str1=tmp_buf;
                     tmp_str += tmp_str1;
@@ -843,58 +916,24 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
         }
     }
     
-    // summarize absent reads
+    // summarize and output absent reads
     if (! contains_SA) { return; }
-    if (contains_SA && (! contains_H)) {
-        for (softclip_info s : softclips_sa) {
-            if (s.breakpoint == 'N') { continue; }
-            if ((s.clipend - s.clipstart) < DISCORDANT_READS_CLIP_LEN) { continue; }
-            if (s.is_reverse && (s.breakpoint == 'R')) {
-                abs.sa_m[chr]->R.push_back(&s);
-                abs.sa_m[chr]->R_num++;
-            } else if (s.is_reverse && (s.breakpoint == 'L')) {
-                abs.sa_m[chr]->L.push_back(&s);
-                abs.sa_m[chr]->L_num++;
-            } else if (s.breakpoint == 'R') {
-                abs.sa_p[chr]->R.push_back(&s);
-                abs.sa_p[chr]->R_num++;
-            } else {
-                abs.sa_p[chr]->L.push_back(&s);
-                abs.sa_p[chr]->L_num++;
-            }
-        }
-    }
-    if (contains_XA) {
-        for (softclip_info s : softclips_xa) {
-            if (s.breakpoint == 'N') { continue; }
-            if ((s.clipend - s.clipstart) < DISCORDANT_READS_CLIP_LEN) { continue; }
-            if (s.is_reverse && (s.breakpoint == 'R')) {
-                abs.xa_m[chr]->R.push_back(&s);
-                abs.xa_m[chr]->R_num++;
-            } else if (s.is_reverse && (s.breakpoint == 'L')) {
-                abs.xa_m[chr]->L.push_back(&s);
-                abs.xa_m[chr]->L_num++;
-            } else if (s.breakpoint == 'R') {
-                abs.xa_p[chr]->R.push_back(&s);
-                abs.xa_p[chr]->R_num++;
-            } else {
-                abs.xa_p[chr]->L.push_back(&s);
-                abs.xa_p[chr]->L_num++;
-            }
-        }
-    }
-    // output absent reads, positive strand
-    for (char* _chr : mainchrs) {
-        output_abs(_chr, abs.sa_p, abs.xa_p, fs, qname, l_qseq, is_read2);
-        output_abs(_chr, abs.xa_p, abs.sa_p, fs, qname, l_qseq, is_read2);
-        output_abs(_chr, abs.sa_m, abs.xa_m, fs, qname, l_qseq, is_read2);
-        output_abs(_chr, abs.xa_m, abs.sa_m, fs, qname, l_qseq, is_read2);
-        abs.clean_up_by_chr(_chr);  // clean up for next
+    if (! contains_XA) { return; }
+    tmp_set.clear();
+    summarize_abs(softclips_sa, abs.sa_p, abs.sa_m, is_mainchr, tmp_set, tmp_str);
+    summarize_abs(softclips_xa, abs.xa_p, abs.xa_m, is_mainchr, tmp_set, tmp_str);
+    for (it2=tmp_set.begin(); it2 != tmp_set.end(); it2++) {
+        output_abs(*it2, abs.sa_p, abs.xa_p, fs, qname, l_qseq, is_read2);
+        output_abs(*it2, abs.xa_p, abs.sa_p, fs, qname, l_qseq, is_read2);
+        output_abs(*it2, abs.sa_m, abs.xa_m, fs, qname, l_qseq, is_read2);
+        output_abs(*it2, abs.xa_m, abs.sa_m, fs, qname, l_qseq, is_read2);
+        abs.clean_up_by_chr(*it2);  // clean up for next
     }
 }
 
 
-int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vector<uint32_t>& crepkmer, const ull& num_kmer, const std::vector<char*>& mainchrs) {
+int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
+                               const std::vector<std::string>& mainchrs, const std::unordered_map<std::string, bool>& is_mainchr) {
     // take ofstream
     fstr* fs=fstrs.occupy();
     
@@ -932,20 +971,21 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vect
     std::unordered_map<std::string, std::string> um2;
     std::unordered_map<std::string, std::string> um3;
     std::unordered_map<std::string, std::string>::iterator it1;
+    std::set<std::string> tmp_set;
+    std::set<std::string>::iterator it2;
     char* tmp_buf= new char[TMP_BUF_SIZE];
-    abs_info_manager abs;  // to do: emplace_chrs()
-    
-    // judge whether main chr
-    bool is_main_chr=true;  // to be implemented
+    abs_info_manager abs;
+    abs.init();
+    abs.emplace_chrs(mainchrs);
     
     // read bam or cram
     int ret;
     int processed_cnt=0;
     kstring_t aux={0, 0, NULL};
     while ((ret = sam_itr_next(fp, iter, b)) >= 0) {
-        process_aln(fp, h, b, mainchrs, is_main_chr, crepkmer, num_kmer, cigar_arr, softclips_sa, softclips_xa,
+        process_aln(fp, h, b, mainchrs, is_mainchr, crepkmer, num_kmer, cigar_arr, softclips_sa, softclips_xa,
                     tmp_str, cig_buf, cig_m, fseq, rseq,
-                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, it1, tmp_buf, fs, abs);
+                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, it1, tmp_buf, tmp_set, it2, fs, abs);
 //        if (++processed_cnt >= 1) {
 //            break;
 //        }
@@ -955,6 +995,9 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vect
     fstrs.release(fs);  // always release!!!
     delete tmp_buf;
     hts_itr_destroy(iter);
+    sam_hdr_destroy(h);
+    sam_close(fp);
+    bam_destroy1(b);
     return 0;
 }
 
@@ -963,17 +1006,16 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vect
  read bam or cram
  */
 int extract_discordant(int argc, char *argv[]) {
-    // read mainchrs
-    std::vector<char*> mainchrs;  // to do: read mainchrs, need to be const
-    
+    // prep to read file
+    std::ifstream infile;
+    std::string line;
+        
     // load repeat .mk
     const char* f_mk="/home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mk";
     const char* f_mi="/home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mi";
-    std::ifstream infile;
-    std::string line;
     infile.open(f_mi);
     if (! infile.is_open()) { return 1; }
-    if (! getline(infile, line)) { return 1; }
+    if (! std::getline(infile, line)) { return 1; }
     ull num_kmer=std::stoull(line);
     infile.close();
     std::cout << "Number of k-mers loading from " << f_mk << ": " << num_kmer << std::endl;
@@ -992,6 +1034,7 @@ int extract_discordant(int argc, char *argv[]) {
     char *f=argv[1];
     htsFile *fp=hts_open(f, "r");
     sam_hdr_t *h=sam_hdr_read(fp);
+    bam1_t *b= bam_init1();
     
     // open bai
     hts_idx_t *idx = NULL;
@@ -1001,10 +1044,42 @@ int extract_discordant(int argc, char *argv[]) {
     std::vector<int> sorted_chr;
     sort_chr_order(idx, h, sorted_chr);
     std::cout << "n = " << sorted_chr.size() << " chrs will be scanned." << std::endl;
+        
+    // read mainchrs
+    const char* f_mainchr="/home/kooojiii/results/2021/prog_develop/MEGAnE/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt";
+    std::vector<std::string> mainchrs;
+    std::set<std::string> mainchrs_set;
+    infile.open(f_mainchr);
+    if (! infile.is_open()) { return 1; }
+    while (std::getline(infile, line)) {
+        mainchrs.push_back(line);
+        mainchrs_set.insert(line);
+    }
+    infile.close();
+    // judge whether mainchrs
+    std::unordered_map<std::string, bool> is_mainchr;
+    int nseq = hts_idx_nseq(idx);    // number of chrs
+    for (int tid=0; tid < nseq; tid++) {
+        std::string _chr=h->target_name[tid];
+        if (mainchrs_set.find(_chr) != mainchrs_set.end()) {
+            is_mainchr.emplace(_chr, true);
+        } else {
+            is_mainchr.emplace(_chr, false);
+        }
+    }
     
     // close bam, keep bai
     sam_hdr_destroy(h);
     sam_close(fp);
+    bam_destroy1(b);
+    
+//    for (std::string chr : mainchrs) {
+//        if (mainchrs_set.find(chr) != mainchrs_set.end()) {
+//            is_mainchr.emplace(chr, true);
+//        } else {
+//            is_mainchr.emplace(chr, false);
+//        }
+//    }
     
     // threading
     const int thread_n=1;
@@ -1037,7 +1112,9 @@ int extract_discordant(int argc, char *argv[]) {
     for (int tid : sorted_chr) {
         results.emplace_back(
             pool.enqueue([=] {
-                return extract_discordant_per_chr(f, idx, 21 /*tid*/, crepkmer, num_kmer, mainchrs);  // core func
+                return extract_discordant_per_chr(f, idx, 21 /*tid*/, crepkmer, num_kmer,
+                                                  (const std::vector<std::string>)mainchrs,
+                                                  (const std::unordered_map<std::string, bool>)is_mainchr);  // core func
             })
         );
         i++;
