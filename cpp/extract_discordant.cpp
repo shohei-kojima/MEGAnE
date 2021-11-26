@@ -1,3 +1,39 @@
+/*
+ Author: Shohei Kojima @ RIKEN
+ Description:
+    This reads a BAM or CRAM file and extracts discordantly mapped reads
+    based on cigar, SA tag, and XA tag.
+    Discordantly mapped reads are:
+        1) chimeric reads derived from ME insertions
+        2) chimeric reads derived from absent MEs
+        3) hybrid reads derived from ME insertions
+    This also exports the number of discordantly mapped reads.
+ Compile:
+    g++ -o extract_discordant -I /path/to/htslib/htslib-1.13 -L /path/to/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
+    g++ -shared -fPIC -o extract_discordant -I /path/to/htslib/htslib-1.13 -L /path/to/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
+ Usage:
+    usage: %prog input.bam/cram main_chrs.txt input.mk output_dir n_thread [reference.fa]
+    (When CRAM file, it requires the reference fasta file.)
+ Input:
+    1) input.bam/cram : this must have an index file (.bai or .crai).
+    2) main_chrs.txt : file containing the names of main chrs.
+    3) input.mk : Repeat k-mer file. MEGAnE automatically generates this file.
+    4) output_dir : This dir must be present.
+    5) n_thread : 1 or more.
+    6) (optional) reference.fa : must be specified when CRAM input.
+ Output:
+    1) overhang_pA.txt[thread_id] : pA reads
+    2) overhang.fa[thread_id] : all chimeric reads
+    3) mapped.fa[thread_id] : mapped regions of pA and chimeric reads
+    4) distant.txt[thread_id] : hybrid reads
+    5) absent.txt[thread_id] : chimeric reads coming from absence
+    6) stats.txt[thread_id] : discordant read stats
+ Misc info:
+    This requires ~2 GB RAM in total.
+    This depends on external C++ library, htslib. This program is compatible with at least htslib-1.13.
+    This program is the complete re-write of `extract_discordant.py` which was used until MEGAnE v0.1.1.
+ */
+
 #include <fstream>
 #include <iostream>
 #include <cstring>
@@ -10,6 +46,7 @@
 #include "htslib/sam.h"
 #include "dna_to_2bit.hpp"
 #include "complementary_seq.hpp"
+#include "extract_discordant.hpp"
 #include "ThreadPool.h"
 using namespace dna_to_2bit_hpp;
 using namespace complementary_seq_hpp;
@@ -33,11 +70,6 @@ const char ATGC[]="ATGC";
 
 
 /*
- g++ -o extract_discordant -I /home/kooojiii/Desktop/htslib/htslib-1.13 -L /home/kooojiii/Desktop/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
- export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/kooojiii/Desktop/htslib/htslib-1.13
- time ./extract_discordant /home/kooojiii/Documents/testdata/bams/1kgp/GRCh38DH/NA12878.final.bam
- time /home/kooojiii/results/2021/prog_develop/MEGAnE/cpp/extract_discordant /home/kooojiii/Documents/testdata/bams/1kgp/GRCh38DH/NA12878.final.bam /home/kooojiii/results/2021/prog_develop/MEGAnE/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt /home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mk ./test 1
- 
  to do: implement cram reader; CRAM_OPT_REFERENCE;
  if (hts_set_opt(out, CRAM_OPT_REFERENCE, outref) < 0) {
      fail("setting reference %s for %s", outref, outfname);
@@ -48,7 +80,7 @@ https://github.com/samtools/htslib/blob/9672589346459d675d62851d5b7b5f2e5c919076
 
 
 /*
- Input files and options
+ Input files and options.
  */
 struct options {
     std::string bam;
@@ -75,7 +107,18 @@ struct options {
 
 
 /*
- Struct to keep file streams during threading
+ Struct to keep track of read stats.
+ */
+struct read_stats {
+    int64_t pA=0;
+    int64_t chimeric=0;
+    int64_t distant=0;
+    int64_t absent=0;
+};
+
+
+/*
+ Struct to keep file streams during threading.
  */
 struct fstr {
     std::FILE* ofs_pA;
@@ -155,7 +198,7 @@ public:
 
 
 /*
- Class cfstrs that will be accessed from multiple threads
+ Class cfstrs that will be accessed from multiple threads.
  */
 static cfstrs fstrs;
 
@@ -199,7 +242,7 @@ struct softclip_info {
 
 
 /*
- Stores absent read info
+ Stores absent read info.
  */
 struct abs_info {
     std::vector<softclip_info*> R;
@@ -215,7 +258,7 @@ struct abs_info {
 
 
 /*
- Manages abs_info
+ Manages abs_info.
  */
 class abs_info_manager {
 public:
@@ -299,7 +342,7 @@ void sort_chr_order(hts_idx_t *idx, sam_hdr_t *h, std::vector<int> &sorted_chr) 
 
 /*
  Parses cigar and stores in an array. Also checks whether the cigar contains H and S.
- Array type is std::pair<char, uint32_t>, which is <cigar_opchr, bam_cigar_oplen>
+ Array type is std::pair<char, uint32_t>, which is <cigar_opchr, bam_cigar_oplen>.
  */
 inline void parse_cigar(uint32_t* cigar, uint32_t& n_cigar,
                         std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN],
@@ -315,7 +358,7 @@ inline void parse_cigar(uint32_t* cigar, uint32_t& n_cigar,
 
 /*
  Parses cigar and stores in an array.
- Array type is std::pair<char, uint32_t>, which is <cigar_opchr, bam_cigar_oplen>
+ Array type is std::pair<char, uint32_t>, which is <cigar_opchr, bam_cigar_oplen>.
  */
 inline void parse_cigar(uint32_t* cigar, uint32_t& n_cigar,
                         std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN]) {
@@ -327,9 +370,7 @@ inline void parse_cigar(uint32_t* cigar, uint32_t& n_cigar,
 
 
 /*
- Define breakpoint
- Returns 0 if breakpoint was determined.
- Returns 1 if breakpoint was not determined.
+ Defines breakpoint.
  */
 inline void define_breakpoint(std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_LEN], uint32_t& n_cigar,
                              char& breakpoint, int32_t& l_clip_len, int32_t& r_clip_len,
@@ -365,7 +406,7 @@ inline void define_breakpoint(std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_L
 
 
 /*
- Parse one SA entry in an SA tag.
+ Parses one SA entry in an SA tag.
  */
 inline void parse_one_SA(std::string& tmp_str,
                          std::vector<softclip_info>& softclips,
@@ -413,10 +454,6 @@ inline void parse_one_SA(std::string& tmp_str,
     }
     softclips.push_back(softclip_info(_chr, _pos, _is_reverse, breakpoint,
                                       l_clip_len, r_clip_len, clipstart, clipend, _rlen));
-//    for (softclip_info s : softclips) {
-//        s.print();
-//    }
-//    std::exit(0);
 }
 
 
@@ -448,7 +485,7 @@ inline void SA_parser(char* sa_tag, std::string& tmp_str,
 
 
 /*
- Parse one XA entry in an XA tag.
+ Parses one XA entry in an XA tag.
  */
 inline void parse_one_XA(std::string& tmp_str,
                          std::vector<softclip_info>& softclips,
@@ -520,9 +557,6 @@ inline void XA_parser(char* sa_tag, std::string& tmp_str,
         }
         sa_len++;
     }
-//    for (softclip_info s : softclips) {
-//        s.print();
-//    }
 }
 
 
@@ -605,17 +639,19 @@ inline bool is_rep_overhang(std::string seq, uint64_t clip_len, const std::vecto
 
 
 /*
- This 1) output pA and 2) stores overhang info and mapped seq to unordered_maps
+ This 1) output pA and 2) stores overhang info and mapped seq to unordered_maps.
  */
-inline void output_pA(std::vector<softclip_info>& softclips, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
+inline bool output_pA(std::vector<softclip_info>& softclips, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
                      char* chr, std::string& fseq, std::string& rseq, int64_t& start, int64_t& end,
                      char* qname, int32_t& l_qseq, bool& is_read2, bool& is_reverse, char& strand,
                      std::string& tmp_str, std::string& tmp_str1, std::string& tmp_str2, std::string& tmp_str3,
                      std::unordered_map<std::string, std::string>& um1,
                      std::unordered_map<std::string, std::string>& um2,
-                     char* tmp_buf, fstr* fs) {
+                     char* tmp_buf, fstr* fs, const std::unordered_map<std::string, bool>& is_mainchr) {
+    bool written=false;
     for (softclip_info s : softclips) {
         if (s.breakpoint == 'N') { continue; }
+        if (! is_mainchr.at(s.chr)) { continue; }
         if ((s.l_clip_len >= DISCORDANT_READS_CLIP_LEN) || (s.r_clip_len >= DISCORDANT_READS_CLIP_LEN)) {
             tmp_str.clear();  // seq of read
             if (s.is_reverse && is_reverse) {
@@ -656,6 +692,7 @@ inline void output_pA(std::vector<softclip_info>& softclips, const std::vector<u
                 tmp_str3=tmp_buf;
                 if (pA) {
                     std::fprintf(fs->ofs_pA, "%s\t%ld\n", tmp_buf, (s.clipend - s.clipstart));
+                    written=true;
                 } else {
                     auto itr=um2.find(tmp_str2);  // um2 = (std::string, std::string) = (clipped seq, header)
                     if (itr == um2.end()) {
@@ -673,11 +710,12 @@ inline void output_pA(std::vector<softclip_info>& softclips, const std::vector<u
             }
         }
     }
+    return written;
 }
 
 
 /*
- Summarize absent reads
+ Summarize absent reads.
  */
 inline void summarize_abs(std::vector<softclip_info>& softclips,
                           std::unordered_map<std::string, abs_info*>& ump,
@@ -710,11 +748,12 @@ inline void summarize_abs(std::vector<softclip_info>& softclips,
 
 
 /*
- Output absent reads
+ Output absent reads.
  */
-inline void output_abs(std::string _chr, std::unordered_map<std::string, abs_info*>& umr, std::unordered_map<std::string, abs_info*>& uml,
+inline bool output_abs(std::string _chr, std::unordered_map<std::string, abs_info*>& umr, std::unordered_map<std::string, abs_info*>& uml,
                        fstr* fs, char* qname, int32_t& l_qseq, bool& is_read2) {
     int64_t leng;
+    bool written=false;
     if ((umr.at(_chr)->R_num > 0) && (uml.at(_chr)->L_num > 0)) {
         for (softclip_info* p1 : umr.at(_chr)->R) {
             for (softclip_info* p2 : uml.at(_chr)->L) {
@@ -725,15 +764,21 @@ inline void output_abs(std::string _chr, std::unordered_map<std::string, abs_inf
                                  qname, (is_read2 + 1), _chrp, (p1->pos + p1->rlen), p2->pos,
                                  _chrp, p1->pos, (p1->pos + p1->rlen), _chrp, p2->pos, (p2->pos + p2->rlen),
                                  p1->l_clip_len, (l_qseq - p1->r_clip_len), p2->l_clip_len, (l_qseq - p2->r_clip_len));
+                    written=true;
                 }
             }
         }
     }
+    return written;
 }
 
 
 /*
- Core function to judge discordant reads.
+ This is the core function to retrieve discordantly mapped reads.
+ This:
+    1) reads one line of a bam file
+    2) parses cigar, SA-tag, and XA-tag
+    3) outputs information if the read is discordantly mapped.
  */
 inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<std::string>& mainchrs,
                         const std::unordered_map<std::string, bool>& is_mainchr,
@@ -750,7 +795,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
                         std::unordered_map<std::string, std::string>& um3,
                         std::unordered_map<std::string, std::string>::iterator& it1,
                         char* tmp_buf, std::set<std::string>& tmp_set, std::set<std::string>::iterator& it2,
-                        fstr* fs, abs_info_manager& abs) {
+                        fstr* fs, abs_info_manager& abs, read_stats& stats) {
     // remove 1) supplementary alignments, 2) single-end reads, 3) unmapped reads
     uint16_t& flag = b->core.flag;
     if (((flag & BAM_FSUPPLEMENTARY) > 0) == true) { return; }
@@ -851,16 +896,18 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     // output overhangs
     um1.clear();
     um2.clear();
-    if (! contains_H) {
-        if (contains_S || contains_XA) {
-            output_pA(softclips_xa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
-                      tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs);
-        }
-        if (contains_SA) {
-            output_pA(softclips_sa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
-                      tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs);
-        }
+    bool written;
+    if (contains_S || contains_XA) {
+        bool ret=output_pA(softclips_xa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
+                           tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs, is_mainchr);
+        if (ret) { written=true; }
     }
+    if (contains_SA) {
+        bool ret=output_pA(softclips_sa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
+                           tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs, is_mainchr);
+        if (ret) { written=true; }
+    }
+    if (written) { stats.pA++; }
     
     // output mapped seq and overhangs
     if (! um1.empty()) {  // um1 = (std::string, std::string) = (mapped seq, header)
@@ -876,6 +923,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
             std::fprintf(fs->ofs_overhang, "%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
             it1++;
         }
+        stats.chimeric++;
     }
     
     // output distant reads
@@ -911,6 +959,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
         if (! tmp_str.empty()) {
             tmp_str.pop_back();  // delete last ';'
             std::fprintf(fs->ofs_distant, "%s/%d\t%s\n", qname, (is_read2 + 1), tmp_str.c_str());
+            stats.distant++;
         }
     }
     
@@ -920,16 +969,25 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     tmp_set.clear();
     summarize_abs(softclips_sa, abs.sa_p, abs.sa_m, is_mainchr, tmp_set, tmp_str);
     summarize_abs(softclips_xa, abs.xa_p, abs.xa_m, is_mainchr, tmp_set, tmp_str);
+    written=false;
     for (it2=tmp_set.begin(); it2 != tmp_set.end(); it2++) {
-        output_abs(*it2, abs.sa_p, abs.xa_p, fs, qname, l_qseq, is_read2);
-        output_abs(*it2, abs.xa_p, abs.sa_p, fs, qname, l_qseq, is_read2);
-        output_abs(*it2, abs.sa_m, abs.xa_m, fs, qname, l_qseq, is_read2);
-        output_abs(*it2, abs.xa_m, abs.sa_m, fs, qname, l_qseq, is_read2);
+        if (output_abs(*it2, abs.sa_p, abs.xa_p, fs, qname, l_qseq, is_read2)) { written=true; }
+        if (output_abs(*it2, abs.xa_p, abs.sa_p, fs, qname, l_qseq, is_read2)) { written=true; }
+        if (output_abs(*it2, abs.sa_m, abs.xa_m, fs, qname, l_qseq, is_read2)) { written=true; }
+        if (output_abs(*it2, abs.xa_m, abs.sa_m, fs, qname, l_qseq, is_read2)) { written=true; }
         abs.clean_up_by_chr(*it2);  // clean up for next
     }
+    if (written) { stats.absent++; }
 }
 
 
+/*
+ This is a core function to manage file streams during threading.
+    Before processing alignments, this catches available file streams generated in extract_discordant().
+    After finishing processing of all reads in a chromosome, it releases the file streams so the next job can catch it.
+ This is a wrapper of process_aln() that extract discordantly mapped reads.
+ This reads one chr and processes all alignment by process_aln().
+ */
 int extract_discordant_per_chr(const char* f, hts_idx_t *idx, int tid, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
                                const std::vector<std::string>& mainchrs, const std::unordered_map<std::string, bool>& is_mainchr) {
     // take ofstream
@@ -975,6 +1033,7 @@ int extract_discordant_per_chr(const char* f, hts_idx_t *idx, int tid, const std
     abs_info_manager abs;
     abs.init();
     abs.emplace_chrs(mainchrs);
+    read_stats stats;
     
     // read bam or cram
     int ret;
@@ -983,11 +1042,15 @@ int extract_discordant_per_chr(const char* f, hts_idx_t *idx, int tid, const std
     while ((ret = sam_itr_next(fp, iter, b)) >= 0) {
         process_aln(fp, h, b, mainchrs, is_mainchr, crepkmer, num_kmer, cigar_arr, softclips_sa, softclips_xa,
                     tmp_str, cig_buf, cig_m, fseq, rseq,
-                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, it1, tmp_buf, tmp_set, it2, fs, abs);
+                    tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, it1, tmp_buf, tmp_set, it2, fs, abs, stats);
 //        if (++processed_cnt >= 1) {
 //            break;
 //        }
     }
+    
+    // output read stats
+    std::fprintf(fs->ofs_stat, "%s\t%ld\t%ld\t%ld\t%ld\n", h->target_name[tid],
+                 stats.pA, stats.chimeric, stats.distant, stats.absent);
     
     // finish up
     fstrs.release(fs);  // always release!!!
@@ -1001,7 +1064,11 @@ int extract_discordant_per_chr(const char* f, hts_idx_t *idx, int tid, const std
 
 
 /*
- read bam or cram
+ This is a de facto main function and a core function to manage threading.
+    This generates multiple threads and throws jobs in the threads.
+    This also generates multiple file streams for threading.
+    One thread will process one chromosome during one job.
+    After finishing the job, it proceeds to the next chromosome.
  */
 int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, std::string mi, std::string ref_fa,
                        std::string ourdir, int n_thread, bool is_cram) {
@@ -1117,7 +1184,7 @@ int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, s
 
 
 /*
- main func for direct use
+ This is a main func for direct use.
  usage: %prog input.bam/cram main_chrs.txt input.mk output_dir n_thread [reference.fa]
  */
 int main(int argc, char *argv[]) {
@@ -1156,4 +1223,5 @@ int main(int argc, char *argv[]) {
     std::cout << "is_cram " << is_cram << std::endl;
     
     int ret = extract_discordant(bam, f_mainchr, mk, mi, ref_fa, outdir, n_thread, is_cram);
+    return ret;
 }
