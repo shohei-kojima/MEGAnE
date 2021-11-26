@@ -11,6 +11,8 @@
 #include <functional>
 #include <stdexcept>
 
+namespace megane_thread_pool {
+
 class ThreadPool {
 public:
     ThreadPool(size_t);
@@ -35,7 +37,7 @@ inline ThreadPool::ThreadPool(size_t threads)
     :   stop(false)
 {
     for(size_t i = 0;i<threads;++i)
-        workers.emplace_back(
+        this->workers.emplace_back(
             [this]
             {
                 for(;;)
@@ -79,7 +81,7 @@ auto ThreadPool::enqueue(F&& f, Args&&... args)
 
         tasks.emplace([task](){ (*task)(); });
     }
-    condition.notify_one();
+    this->condition.notify_one();
     return res;
 }
 
@@ -94,5 +96,7 @@ inline ThreadPool::~ThreadPool()
     for(std::thread &worker: workers)
         worker.join();
 }
+
+}  // namespace
 
 #endif

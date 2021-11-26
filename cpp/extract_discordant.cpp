@@ -43,6 +43,7 @@
 #include <set>
 #include <algorithm>
 #include <functional>
+#include <unistd.h>
 #include "htslib/sam.h"
 #include "dna_to_2bit.hpp"
 #include "complementary_seq.hpp"
@@ -312,16 +313,18 @@ public:
 
 
 /*
- Returns chr names with at least one read.
+ Returns chr names (tid) with at least one read.
  Chr names are in vector sorted by number of reads with descending manner.
+ This is only available for BAM.
  */
 void sort_chr_order(hts_idx_t *idx, sam_hdr_t *h, std::vector<int> &sorted_chr) {
     // retrieve mapped read counts from bam index
     int nseq = hts_idx_nseq(idx);    // number of chrs
     uint64_t mapped,umapped;
-    std::vector<std::pair<int, int>> mapped_counts;  // pair<mapped_read_num, tid>
+    std::vector<std::pair<int64_t, int32_t>> mapped_counts;  // pair<mapped_read_num, tid>
     mapped_counts.reserve(nseq);
-    for (int tid=0; tid < nseq; tid++) {
+    std::cout << nseq << " chrs found." << std::endl;
+    for (int32_t tid=0; tid < nseq; tid++) {
         hts_idx_get_stat(idx, tid, &mapped, &umapped);  // return can be -1 when no read on chr
         if (mapped >= 1) {
             mapped_counts.push_back(std::make_pair(mapped, tid));
@@ -336,6 +339,33 @@ void sort_chr_order(hts_idx_t *idx, sam_hdr_t *h, std::vector<int> &sorted_chr) 
     sorted_chr.reserve(vec_size);
     for (int i= vec_size - 1; i >= 0; i--) {
         sorted_chr.push_back(mapped_counts[i].second);
+    }
+}
+
+
+/*
+ Returns chr names (tid).
+ Chr names are in vector sorted by the lengths of chrs.
+ This is available for CRAM.
+ */
+void sort_chr_order(sam_hdr_t *h, std::vector<int> &sorted_chr) {
+    // retrieve mapped read counts from bam index
+    int32_t nseq = h->n_targets;    // number of chrs
+    std::cout << nseq << " chrs found." << std::endl;
+    std::vector<std::pair<int64_t, int32_t>> ref_lens;  // pair<ref_len, tid>
+    ref_lens.reserve(nseq);
+    for (int32_t tid=0; tid < nseq; tid++) {
+        ref_lens.push_back(std::make_pair(h->target_len[tid], tid));
+    }
+    
+    // ascending by mapped read counts
+    std::sort(ref_lens.begin(), ref_lens.end());
+    int vec_size=ref_lens.size();
+    
+    // convert to desceding order
+    sorted_chr.reserve(vec_size);
+    for (int i= vec_size - 1; i >= 0; i--) {
+        sorted_chr.push_back(ref_lens[i].second);
     }
 }
 
@@ -894,36 +924,38 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     else { strand='+'; }
     
     // output overhangs
-    um1.clear();
-    um2.clear();
     bool written;
-    if (contains_S || contains_XA) {
-        bool ret=output_pA(softclips_xa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
-                           tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs, is_mainchr);
-        if (ret) { written=true; }
-    }
-    if (contains_SA) {
-        bool ret=output_pA(softclips_sa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
-                           tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs, is_mainchr);
-        if (ret) { written=true; }
-    }
-    if (written) { stats.pA++; }
-    
-    // output mapped seq and overhangs
-    if (! um1.empty()) {  // um1 = (std::string, std::string) = (mapped seq, header)
-        it1=um1.begin();
-        while (it1 != um1.end()) {
-            std::fprintf(fs->ofs_mapped, "%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
-            it1++;
+    if (! is_short_deletion) {
+        um1.clear();
+        um2.clear();
+        if (contains_S || contains_XA) {
+            bool ret=output_pA(softclips_xa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
+                               tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs, is_mainchr);
+            if (ret) { written=true; }
         }
-    }
-    if (! um2.empty()) {  // um1 = (std::string, std::string) = (clipped seq, header)
-        it1=um2.begin();
-        while (it1 != um2.end()) {
-            std::fprintf(fs->ofs_overhang, "%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
-            it1++;
+        if (contains_SA) {
+            bool ret=output_pA(softclips_sa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
+                               tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs, is_mainchr);
+            if (ret) { written=true; }
         }
-        stats.chimeric++;
+        if (written) { stats.pA++; }
+        
+        // output mapped seq and overhangs
+        if (! um1.empty()) {  // um1 = (std::string, std::string) = (mapped seq, header)
+            it1=um1.begin();
+            while (it1 != um1.end()) {
+                std::fprintf(fs->ofs_mapped, "%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
+                it1++;
+            }
+        }
+        if (! um2.empty()) {  // um1 = (std::string, std::string) = (clipped seq, header)
+            it1=um2.begin();
+            while (it1 != um2.end()) {
+                std::fprintf(fs->ofs_overhang, "%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
+                it1++;
+            }
+            stats.chimeric++;
+        }
     }
     
     // output distant reads
@@ -988,24 +1020,28 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
  This is a wrapper of process_aln() that extract discordantly mapped reads.
  This reads one chr and processes all alignment by process_aln().
  */
-int extract_discordant_per_chr(const char* f, hts_idx_t *idx, int tid, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
+int extract_discordant_per_chr(const char* f, int tid, const options& opts,
+                               const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
                                const std::vector<std::string>& mainchrs, const std::unordered_map<std::string, bool>& is_mainchr) {
     // take ofstream
     fstr* fs=fstrs.occupy();
     
     // open bam
     htsFile *fp=hts_open(f, "r");
+    if (opts.is_cram) {
+        hts_set_opt(fp, CRAM_OPT_REFERENCE, (opts.ref_fa).c_str());
+    }
     sam_hdr_t *h=sam_hdr_read(fp);
     bam1_t *b= bam_init1();
-    
-//    std::cout << "processing " << h->target_name[tid] << " ..." << std::endl;
-    
+    hts_idx_t *idx = nullptr;
+    idx=sam_index_load(fp, f);
+        
     // determine iter region
     const hts_pos_t beg = 0;  // chr start pos
     hts_pos_t end = h->target_len[tid];  // chr end pos
     hts_itr_t *iter = sam_itr_queryi(idx, tid, beg, end);
     if (iter == NULL) {   // region invalid or reference name not found
-        std::cout << "ERROR" << std::endl;
+        std::cout << "ERROR at sam_itr_queryi(idx, tid, beg, end)" << std::endl;
         return -1;
     }
     
@@ -1035,6 +1071,8 @@ int extract_discordant_per_chr(const char* f, hts_idx_t *idx, int tid, const std
     abs.emplace_chrs(mainchrs);
     read_stats stats;
     
+//    std::cout << "processing " << h->target_name[tid] << " ..." << std::endl;
+    
     // read bam or cram
     int ret;
     int processed_cnt=0;
@@ -1043,9 +1081,6 @@ int extract_discordant_per_chr(const char* f, hts_idx_t *idx, int tid, const std
         process_aln(fp, h, b, mainchrs, is_mainchr, crepkmer, num_kmer, cigar_arr, softclips_sa, softclips_xa,
                     tmp_str, cig_buf, cig_m, fseq, rseq,
                     tmp_str1, tmp_str2, tmp_str3, um1, um2, um3, it1, tmp_buf, tmp_set, it2, fs, abs, stats);
-//        if (++processed_cnt >= 1) {
-//            break;
-//        }
     }
     
     // output read stats
@@ -1073,7 +1108,7 @@ int extract_discordant_per_chr(const char* f, hts_idx_t *idx, int tid, const std
 int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, std::string mi, std::string ref_fa,
                        std::string ourdir, int n_thread, bool is_cram) {
     // parse args and options
-    options opts(bam, f_mainchr, mk, mi, ref_fa, ourdir, n_thread, is_cram);
+    const options opts(bam, f_mainchr, mk, mi, ref_fa, ourdir, n_thread, is_cram);
     
     // prep to read file
     std::ifstream infile;
@@ -1100,18 +1135,25 @@ int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, s
     // open bam
     const char *f= (opts.bam).c_str();
     htsFile *fp=hts_open(f, "r");
+    if (opts.is_cram) {
+        hts_set_opt(fp, CRAM_OPT_REFERENCE, (opts.ref_fa).c_str());
+    }
     sam_hdr_t *h=sam_hdr_read(fp);
     bam1_t *b= bam_init1();
     
     // open bai
-    hts_idx_t *idx = NULL;
+    hts_idx_t *idx = nullptr;
     idx=sam_index_load(fp, f);
     
     // sort chr for multiprocessing
     std::vector<int> sorted_chr;
-    sort_chr_order(idx, h, sorted_chr);
+    if (! opts.is_cram) {
+        sort_chr_order(idx, h, sorted_chr);  // bam
+    } else {
+        sort_chr_order(h, sorted_chr);  // cram
+    }
     std::cout << "n = " << sorted_chr.size() << " chrs will be scanned." << std::endl;
-        
+    
     // read mainchrs
     std::vector<std::string> mainchrs;
     std::set<std::string> mainchrs_set;
@@ -1124,7 +1166,7 @@ int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, s
     infile.close();
     // judge whether mainchrs
     std::unordered_map<std::string, bool> is_mainchr;
-    int nseq = hts_idx_nseq(idx);    // number of chrs
+    int32_t nseq = h->n_targets;    // number of chrs, cannot use idx info, because .crai does not hold this info
     for (int tid=0; tid < nseq; tid++) {
         std::string _chr=h->target_name[tid];
         if (mainchrs_set.find(_chr) != mainchrs_set.end()) {
@@ -1140,7 +1182,7 @@ int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, s
     bam_destroy1(b);
         
     // threading
-    ThreadPool pool(opts.n_thread);
+    megane_thread_pool::ThreadPool mpool(opts.n_thread);
     std::vector<std::future<int>> results;
     
     // ofstreams (C fopen)
@@ -1164,8 +1206,8 @@ int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, s
     comp_init();  // make complementary table
     for (int tid : sorted_chr) {
         results.emplace_back(
-            pool.enqueue([=] {
-                return extract_discordant_per_chr(f, idx, tid, crepkmer, num_kmer,
+            mpool.enqueue([=] {
+                return extract_discordant_per_chr(f, tid, opts, crepkmer, num_kmer,
                                                   (const std::vector<std::string>)mainchrs,
                                                   (const std::unordered_map<std::string, bool>)is_mainchr);  // core func
             })
