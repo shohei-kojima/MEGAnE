@@ -10,7 +10,7 @@
     This also exports the number of discordantly mapped reads.
  Compile:
     g++ -o extract_discordant -I /path/to/htslib/htslib-1.13 -L /path/to/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
-    g++ -shared -fPIC -o extract_discordant -I /path/to/htslib/htslib-1.13 -L /path/to/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
+    g++ -shared -fPIC -o extract_discordant.so -I /path/to/htslib/htslib-1.13 -L /path/to/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
  Usage:
     usage: %prog input.bam/cram main_chrs.txt input.mk output_dir n_thread [reference.fa]
     (When CRAM file, it requires the reference fasta file.)
