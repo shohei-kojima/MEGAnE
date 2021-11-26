@@ -36,6 +36,7 @@ const char ATGC[]="ATGC";
  g++ -o extract_discordant -I /home/kooojiii/Desktop/htslib/htslib-1.13 -L /home/kooojiii/Desktop/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/kooojiii/Desktop/htslib/htslib-1.13
  time ./extract_discordant /home/kooojiii/Documents/testdata/bams/1kgp/GRCh38DH/NA12878.final.bam
+ time /home/kooojiii/results/2021/prog_develop/MEGAnE/cpp/extract_discordant /home/kooojiii/Documents/testdata/bams/1kgp/GRCh38DH/NA12878.final.bam /home/kooojiii/results/2021/prog_develop/MEGAnE/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt /home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mk ./test 1
  
  to do: implement cram reader; CRAM_OPT_REFERENCE;
  if (hts_set_opt(out, CRAM_OPT_REFERENCE, outref) < 0) {
@@ -46,6 +47,32 @@ https://github.com/samtools/htslib/blob/9672589346459d675d62851d5b7b5f2e5c919076
  */
 
 
+/*
+ Input files and options
+ */
+struct options {
+    std::string bam;
+    std::string f_mainchr;
+    std::string mk;
+    std::string mi;
+    std::string outdir;
+    std::string ref_fa;
+    int n_thread;
+    bool is_cram;
+    
+    options(std::string bam, std::string f_mainchr, std::string mk, std::string mi, std::string ref_fa,
+            std::string outdir, int n_thread, bool is_cram) {
+        this->bam           = bam;
+        this->f_mainchr     = f_mainchr;
+        this->mk            = mk;
+        this->mi            = mi;
+        this->outdir        = outdir;
+        this->ref_fa        = ref_fa;
+        this->n_thread      = n_thread;
+        this->is_cram       = is_cram;
+    }
+};
+
 
 /*
  Struct to keep file streams during threading
@@ -55,18 +82,16 @@ struct fstr {
     std::FILE* ofs_overhang;
     std::FILE* ofs_distant;
     std::FILE* ofs_mapped;
-    std::FILE* ofs_unmapped;
     std::FILE* ofs_abs;
     std::FILE* ofs_stat;
     bool is_occupied;
     
     fstr(std::FILE* ofs_pA, std::FILE* ofs_overhang, std::FILE* ofs_distant, std::FILE* ofs_mapped,
-         std::FILE* ofs_unmapped, std::FILE* ofs_abs, std::FILE* ofs_stat, bool is_occupied) {
+         std::FILE* ofs_abs, std::FILE* ofs_stat, bool is_occupied) {
         this->ofs_pA=ofs_pA;
         this->ofs_overhang=ofs_overhang;
         this->ofs_distant=ofs_distant;
         this->ofs_mapped=ofs_mapped;
-        this->ofs_unmapped=ofs_unmapped;
         this->ofs_abs=ofs_abs;
         this->ofs_stat=ofs_stat;
         this->is_occupied=is_occupied;
@@ -83,9 +108,8 @@ class cfstrs {
     std::vector<fstr*> vec;  // stores fstr objects
 public:
     void push_back_new(std::FILE* ofs_pA, std::FILE* ofs_overhang, std::FILE* ofs_distant, std::FILE* ofs_mapped,
-                       std::FILE* ofs_unmapped, std::FILE* ofs_abs, std::FILE* ofs_stat) {
-        fstr* fstrp = new fstr(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped,
-                               ofs_unmapped, ofs_abs, ofs_stat, false);
+                       std::FILE* ofs_abs, std::FILE* ofs_stat) {
+        fstr* fstrp = new fstr(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped, ofs_abs, ofs_stat, false);
         this->vec.push_back(fstrp);
     }
     
@@ -96,6 +120,7 @@ public:
             if (t->is_occupied == false) {  // if not the ofstream is used by the threads
                 t->is_occupied=true;  // take this ofstream by a thread
                 fstrp=t;
+                break;
             }
         }
         if (fstrp == nullptr) {  // this happens if the num of ofstream object was fewer than the thread num.
@@ -116,7 +141,6 @@ public:
             fclose(t->ofs_overhang);
             fclose(t->ofs_distant);
             fclose(t->ofs_mapped);
-            fclose(t->ofs_unmapped);
             fclose(t->ofs_abs);
             fclose(t->ofs_stat);
         }
@@ -906,7 +930,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
 }
 
 
-int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
+int extract_discordant_per_chr(const char* f, hts_idx_t *idx, int tid, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
                                const std::vector<std::string>& mainchrs, const std::unordered_map<std::string, bool>& is_mainchr) {
     // take ofstream
     fstr* fs=fstrs.occupy();
@@ -916,7 +940,7 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vect
     sam_hdr_t *h=sam_hdr_read(fp);
     bam1_t *b= bam_init1();
     
-    std::cout << "processing " << h->target_name[tid] << " ..." << std::endl;
+//    std::cout << "processing " << h->target_name[tid] << " ..." << std::endl;
     
     // determine iter region
     const hts_pos_t beg = 0;  // chr start pos
@@ -979,22 +1003,24 @@ int extract_discordant_per_chr(char* f, hts_idx_t *idx, int tid, const std::vect
 /*
  read bam or cram
  */
-int extract_discordant(int argc, char *argv[]) {
+int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, std::string mi, std::string ref_fa,
+                       std::string ourdir, int n_thread, bool is_cram) {
+    // parse args and options
+    options opts(bam, f_mainchr, mk, mi, ref_fa, ourdir, n_thread, is_cram);
+    
     // prep to read file
     std::ifstream infile;
     std::string line;
-        
+    
     // load repeat .mk
-    const char* f_mk="/home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mk";
-    const char* f_mi="/home/kooojiii/results/2021/misc/MEGAnE_test/211122_1/reshaped_repbase.mi";
-    infile.open(f_mi);
+    infile.open((opts.mi).c_str());
     if (! infile.is_open()) { return 1; }
     if (! std::getline(infile, line)) { return 1; }
     ull num_kmer=std::stoull(line);
     infile.close();
-    std::cout << "Number of k-mers loading from " << f_mk << ": " << num_kmer << std::endl;
+    std::cout << "Number of k-mers loading from " << opts.mk << ": " << num_kmer << std::endl;
     // load .mk
-    infile.open(f_mk, std::ios::binary);
+    infile.open((opts.mk).c_str(), std::ios::binary);
     if (! infile.is_open()) { return 1; }
     std::vector<uint32_t> repkmer;
     repkmer.resize(num_kmer);
@@ -1005,7 +1031,7 @@ int extract_discordant(int argc, char *argv[]) {
     const int window_size=init_dna_to_2bit_32();
     
     // open bam
-    char *f=argv[1];
+    const char *f= (opts.bam).c_str();
     htsFile *fp=hts_open(f, "r");
     sam_hdr_t *h=sam_hdr_read(fp);
     bam1_t *b= bam_init1();
@@ -1020,10 +1046,9 @@ int extract_discordant(int argc, char *argv[]) {
     std::cout << "n = " << sorted_chr.size() << " chrs will be scanned." << std::endl;
         
     // read mainchrs
-    const char* f_mainchr="/home/kooojiii/results/2021/prog_develop/MEGAnE/lib/GRCh38DH_primary_plus_alt_ucsc_style.txt";
     std::vector<std::string> mainchrs;
     std::set<std::string> mainchrs_set;
-    infile.open(f_mainchr);
+    infile.open((opts.f_mainchr).c_str());
     if (! infile.is_open()) { return 1; }
     while (std::getline(infile, line)) {
         mainchrs.push_back(line);
@@ -1046,55 +1071,38 @@ int extract_discordant(int argc, char *argv[]) {
     sam_hdr_destroy(h);
     sam_close(fp);
     bam_destroy1(b);
-    
-//    for (std::string chr : mainchrs) {
-//        if (mainchrs_set.find(chr) != mainchrs_set.end()) {
-//            is_mainchr.emplace(chr, true);
-//        } else {
-//            is_mainchr.emplace(chr, false);
-//        }
-//    }
-    
+        
     // threading
-    const int thread_n=1;
-    ThreadPool pool(thread_n);
+    ThreadPool pool(opts.n_thread);
     std::vector<std::future<int>> results;
     
     // ofstreams (C fopen)
-    for (int i=0; i < thread_n; i++) {
-        std::FILE* ofs_pA       =fopen("_tmp_pA.txt", "w");
-        std::FILE* ofs_overhang =fopen("_tmp_overhang.txt", "w");
-        std::FILE* ofs_distant  =fopen("_tmp_distant.txt", "w");
-        std::FILE* ofs_mapped   =fopen("_tmp_mapped.txt", "w");
-        std::FILE* ofs_unmapped =fopen("_tmp_unmapped.txt", "w");
-        std::FILE* ofs_abs      =fopen("_tmp_abs.txt", "w");
-        std::FILE* ofs_stat     =fopen("_tmp_stat.txt", "w");
+    for (int i=0; i < opts.n_thread; i++) {
+        std::FILE* ofs_pA       =fopen((opts.outdir + std::string("/overhang_pA.txt") + std::to_string(i)).c_str(), "w");
+        std::FILE* ofs_overhang =fopen((opts.outdir + std::string("/overhang.fa") + std::to_string(i)).c_str(), "w");
+        std::FILE* ofs_distant  =fopen((opts.outdir + std::string("/distant.txt") + std::to_string(i)).c_str(), "w");
+        std::FILE* ofs_mapped   =fopen((opts.outdir + std::string("/mapped.fa") + std::to_string(i)).c_str(), "w");
+        std::FILE* ofs_abs      =fopen((opts.outdir + std::string("/absent.txt") + std::to_string(i)).c_str(), "w");
+        std::FILE* ofs_stat     =fopen((opts.outdir + std::string("/stats.txt") + std::to_string(i)).c_str(), "w");
         if (ofs_pA       == nullptr) { return 1; }
         if (ofs_overhang == nullptr) { return 1; }
         if (ofs_distant  == nullptr) { return 1; }
         if (ofs_mapped   == nullptr) { return 1; }
-        if (ofs_unmapped == nullptr) { return 1; }
         if (ofs_abs      == nullptr) { return 1; }
         if (ofs_stat     == nullptr) { return 1; }
-        fstrs.push_back_new(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped,
-                            ofs_unmapped, ofs_abs, ofs_stat);
+        fstrs.push_back_new(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped, ofs_abs, ofs_stat);
     }
     
     // per chr processing
     comp_init();  // make complementary table
-    int i=0;
     for (int tid : sorted_chr) {
         results.emplace_back(
             pool.enqueue([=] {
-                return extract_discordant_per_chr(f, idx, 21 /*tid*/, crepkmer, num_kmer,
+                return extract_discordant_per_chr(f, idx, tid, crepkmer, num_kmer,
                                                   (const std::vector<std::string>)mainchrs,
                                                   (const std::unordered_map<std::string, bool>)is_mainchr);  // core func
             })
         );
-        i++;
-        if (i >= 1) {
-            break;
-        }
     }
     
     for (auto && result: results) {
@@ -1110,8 +1118,42 @@ int extract_discordant(int argc, char *argv[]) {
 
 /*
  main func for direct use
- usage: %prog input.bam
+ usage: %prog input.bam/cram main_chrs.txt input.mk output_dir n_thread [reference.fa]
  */
 int main(int argc, char *argv[]) {
-    int ret = extract_discordant(argc, argv);
+    // file check (not decent)
+    bool is_cram=false;
+    if (argc == 6) {
+        // bam
+    } else if (argc == 7) {
+        // cram
+        is_cram=true;
+    } else {
+        std::cerr << "Please specify required files." << std::endl;
+        return 1;
+    }
+    
+    std::string bam=argv[1];
+    std::string f_mainchr=argv[2];
+    std::string mk=argv[3];
+    std::string mi=argv[3];
+    mi.pop_back();
+    mi += 'i';
+    std::string outdir=argv[4];
+    int n_thread= atoi(argv[5]);
+    std::string ref_fa="";
+    if (argc == 7) {
+        ref_fa=argv[6];
+    }
+    
+    std::cout << "bam " << bam << std::endl;
+    std::cout << "f_mainchr " << f_mainchr << std::endl;
+    std::cout << "mk " << mk << std::endl;
+    std::cout << "mi " << mi << std::endl;
+    std::cout << "outdir " << outdir << std::endl;
+    std::cout << "n_thread " << n_thread << std::endl;
+    std::cout << "ref_fa " << ref_fa << std::endl;
+    std::cout << "is_cram " << is_cram << std::endl;
+    
+    int ret = extract_discordant(bam, f_mainchr, mk, mi, ref_fa, outdir, n_thread, is_cram);
 }
