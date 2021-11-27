@@ -997,7 +997,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     
     // summarize and output absent reads
     if (! contains_SA) { return; }
-    if (! contains_XA) { return; }
+    if (! (contains_S || contains_XA)) { return; }
     tmp_set.clear();
     summarize_abs(softclips_sa, abs.sa_p, abs.sa_m, is_mainchr, tmp_set, tmp_str);
     summarize_abs(softclips_xa, abs.xa_p, abs.xa_m, is_mainchr, tmp_set, tmp_str);
