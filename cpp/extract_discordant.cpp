@@ -9,8 +9,8 @@
         3) hybrid reads derived from ME insertions
     This also exports the number of discordantly mapped reads.
  Compile:
-    g++ -o extract_discordant -I /path/to/htslib/htslib-1.13 -L /path/to/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
-    g++ -shared -fPIC -o extract_discordant.so -I /path/to/htslib/htslib-1.13 -L /path/to/htslib/htslib-1.13 extract_discordant.cpp -lhts -pthread -O2
+    g++ -o extract_discordant -I /path/to/htslib -L /path/to/htslib extract_discordant.cpp -lhts -pthread -O2
+    g++ -shared -fPIC -o extract_discordant.so -I /path/to/htslib -L /path/to/htslib extract_discordant.cpp -pthread -O2
  Usage:
     usage: %prog input.bam/cram main_chrs.txt input.mk output_dir n_thread [reference.fa]
     (When CRAM file, it requires the reference fasta file.)
@@ -29,8 +29,8 @@
     5) absent.txt[thread_id] : chimeric reads coming from absence
     6) stats.txt[thread_id] : discordant read stats
  Misc info:
-    This requires ~2 GB RAM in total.
-    This depends on external C++ library, htslib. This program is compatible with at least htslib-1.13.
+    This requires ~1 GB RAM (for io buffering) in total.
+    This depends on external C++ library, htslib. This program is compatible with at least htslib-1.14.
     This program is the complete re-write of `extract_discordant.py` which was used until MEGAnE v0.1.1.
  */
 
@@ -69,15 +69,6 @@ typedef unsigned long long ull;
 
 const char ATGC[]="ATGC";
 
-
-/*
- to do: implement cram reader; CRAM_OPT_REFERENCE;
- if (hts_set_opt(out, CRAM_OPT_REFERENCE, outref) < 0) {
-     fail("setting reference %s for %s", outref, outfname);
-     goto err;
- }
-https://github.com/samtools/htslib/blob/9672589346459d675d62851d5b7b5f2e5c919076/test/sam.c
- */
 
 
 /*
