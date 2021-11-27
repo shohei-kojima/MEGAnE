@@ -5,9 +5,5 @@ result_out/
 test_data/
 deprecated/
 test/
-cpp/
-!cpp/*.cpp
-!cpp/*.hpp
-!cpp/*.c
-!cpp/*.h
+cpp/*.so
 !.gitignore
