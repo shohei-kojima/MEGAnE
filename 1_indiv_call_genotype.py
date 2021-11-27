@@ -55,6 +55,7 @@ parser.add_argument('-only_geno_precall', action='store_true', help=argparse.SUP
 parser.add_argument('-skip_unmapped', action='store_true', help=argparse.SUPPRESS)
 parser.add_argument('-make_sex_auto', action='store_true', help=argparse.SUPPRESS)
 parser.add_argument('-no_pdf', action='store_true', help=argparse.SUPPRESS)
+parser.add_argument('-v0', action='store_true', help=argparse.SUPPRESS)
 args=parser.parse_args()
 args.version=version
 
@@ -177,6 +178,7 @@ if args.only_geno is False:
     log.logger.info('Preprocessing started.')
     reshape_rep.reshape_repout_to_bed(args, filenames)
     reshape_rep.reshape(args, params, filenames)
+    reshape_rep.save_kmer(args, params, filenames, init.base)
     if do_ins is True:
         blastn.makeblastdb(filenames.reshaped_rep, filenames.repdb)
         reshape_rep.slide_rep_file(args, params, filenames)
@@ -189,20 +191,25 @@ if args.only_geno is False:
     # 1. process unmapped overhangs
     import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
     log.logger.info('Discordant read search started.')
-    if args.p >= 2:
-        from multiprocessing import Pool
-        def extract_discordant_exe(n):
-            tmp=extract_discordant_c.main(args, params, filenames, n)  ### c
-            return tmp
-        with Pool(args.p) as p:
-            res=p.map(extract_discordant_exe, range(args.p))
-        read_cnts=extract_discordant.summarize(res)
-        if args.cov in args.auto or args.sex in args.auto:
-            auto_setting.estimate_depth_sex(args, params, args.auto, read_cnts)
-        if do_abs is True:
-            extract_discordant.concat_for_abs(args, filenames)
+    if (args.unsorted is True) or (args.v0 is True):
+        if args.p >= 2:
+            from multiprocessing import Pool
+            def extract_discordant_exe(n):
+                tmp=extract_discordant_c.main(args, params, filenames, n)  ### c
+                return tmp
+            with Pool(args.p) as p:
+                res=p.map(extract_discordant_exe, range(args.p))
+            read_cnts=extract_discordant.summarize(res)
+            if args.cov in args.auto or args.sex in args.auto:
+                auto_setting.estimate_depth_sex(args, params, args.auto, read_cnts)
+            if do_abs is True:
+                extract_discordant.concat_for_abs(args, filenames)
+        else:
+            extract_discordant_c.main(args, params, filenames, None)  ### c
     else:
-        extract_discordant_c.main(args, params, filenames, None)  ### c
+        import exec_extract_discordant_cpp
+        exec_extract_discordant_cpp.extract_discordant(args, params, filenames, init_base)
+        exec_extract_discordant_cpp.extract_unmapped(args, params, filenames, init_base)
     if do_ins is True:
         log.logger.info('Clipped read processing started.')
         if args.p >= 2:
