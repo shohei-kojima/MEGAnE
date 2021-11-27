@@ -1,15 +1,14 @@
 /*
  Author: Shohei Kojima @ RIKEN
  Description:
-    This reads a BAM or CRAM file and extracts discordantly mapped reads
-    based on cigar, SA tag, and XA tag.
+    This reads a BAM or CRAM file and extracts discordantly mapped reads based on cigar, SA tag, and XA tag.
     Discordantly mapped reads are:
         1) chimeric reads derived from ME insertions
         2) chimeric reads derived from absent MEs
         3) hybrid reads derived from ME insertions
     This also exports the number of discordantly mapped reads.
  Compile:
-    g++ -o extract_discordant -I /path/to/htslib -L /path/to/htslib extract_discordant.cpp -lhts -pthread -O2
+    g++ -o extract_discordant -I /path/to/htslib -L /path/to/htslib extract_discordant.cpp -pthread -O2 -lhts
     g++ -shared -fPIC -o extract_discordant.so -I /path/to/htslib -L /path/to/htslib extract_discordant.cpp -pthread -O2
  Usage:
     usage: %prog input.bam/cram main_chrs.txt input.mk output_dir n_thread [reference.fa]
@@ -708,7 +707,7 @@ inline bool output_pA(std::vector<softclip_info>& softclips, const std::vector<u
                 ME_overhang=true;
             }
             if (pA || ME_overhang) {
-                std::sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", chr, s.pos, (s.pos + s.rlen), s.breakpoint, qname, (is_read2 + 1), strand);
+                std::sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", chr, s.pos, (s.pos + s.rlen), s.breakpoint, qname, ((int)is_read2 + 1), strand);
                 tmp_str3.clear();  // header name
                 tmp_str3=tmp_buf;
                 if (pA) {
@@ -782,7 +781,7 @@ inline bool output_abs(std::string _chr, std::unordered_map<std::string, abs_inf
                 if ((leng >= ABS_MIN_DIST) && (leng <= ABS_MAX_DIST)) {
                     const char* _chrp= _chr.c_str();
                     std::fprintf(fs->ofs_abs, "%s/%d\t%s\t%ld\t%ld\t%s:%ld-%ld\t%s:%ld-%ld\t%d-%d\t%d-%d\n",
-                                 qname, (is_read2 + 1), _chrp, (p1->pos + p1->rlen), p2->pos,
+                                 qname, ((int)is_read2 + 1), _chrp, (p1->pos + p1->rlen), p2->pos,
                                  _chrp, p1->pos, (p1->pos + p1->rlen), _chrp, p2->pos, (p2->pos + p2->rlen),
                                  p1->l_clip_len, (l_qseq - p1->r_clip_len), p2->l_clip_len, (l_qseq - p2->r_clip_len));
                     written=true;
@@ -981,7 +980,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
         }
         if (! tmp_str.empty()) {
             tmp_str.pop_back();  // delete last ';'
-            std::fprintf(fs->ofs_distant, "%s/%d\t%s\n", qname, (is_read2 + 1), tmp_str.c_str());
+            std::fprintf(fs->ofs_distant, "%s/%d\t%s\n", qname, ((int)is_read2 + 1), tmp_str.c_str());
             stats.distant++;
         }
     }
@@ -1097,9 +1096,9 @@ int extract_discordant_per_chr(const char* f, int tid, const options& opts,
     After finishing the job, it proceeds to the next chromosome.
  */
 int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, std::string mi, std::string ref_fa,
-                       std::string ourdir, int n_thread, bool is_cram) {
+                       std::string outdir, int n_thread, bool is_cram) {
     // parse args and options
-    const options opts(bam, f_mainchr, mk, mi, ref_fa, ourdir, n_thread, is_cram);
+    const options opts(bam, f_mainchr, mk, mi, ref_fa, outdir, n_thread, is_cram);
     
     // prep to read file
     std::ifstream infile;
