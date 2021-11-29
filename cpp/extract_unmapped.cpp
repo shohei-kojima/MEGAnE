@@ -17,7 +17,7 @@
     4) n_thread : 1 or more.
     5) (optional) reference.fa : must be specified when CRAM input.
  Output:
-    1) unmapped.fa : repeat-derived unmapped reads
+    1) unmapped.fa[n_thread] : repeat-derived unmapped reads
  Misc info:
     This requires ~1 GB RAM (for io buffering) in total.
     This depends on external C++ library, htslib. This program is compatible with at least htslib-1.14.
@@ -39,6 +39,7 @@ using namespace dna_to_2bit_hpp;
 #define MAX_READ_LEN 512
 #define REP_KMER_SIZE 11
 #define SHIFT_16_TO_11 10
+#define UNMAPPED_MIN_LEN 13
 
 typedef unsigned long ul;
 typedef unsigned long long ull;
@@ -85,7 +86,7 @@ inline bool is_rep(std::string seq, uint32_t clip_len, const std::vector<uint32_
     }
     pos=custom_binary_search(crepkmer, num_kmer, bit2f);
     if (crepkmer[pos] == bit2f) { return true; }
-    
+
     // rolling calc.
     for (int i=REP_KMER_SIZE; i < clip_len; i++) {
         bit2f <<= 2;
@@ -151,7 +152,7 @@ int extract_unmapped(std::string bam, std::string mk, std::string mi, std::strin
     hts_set_opt(fp, HTS_OPT_THREAD_POOL, &p);
     
     // ofstreams (C fopen)
-    std::FILE* ofs_unmapped = fopen((outdir + std::string("/unmapped.fa")).c_str(), "w");
+    std::FILE* ofs_unmapped = fopen((outdir + std::string("/unmapped.fa") + std::to_string(n_thread) + std::string(".txt")).c_str(), "w");
     if (ofs_unmapped == nullptr) { return 1; }
     
     // extract unmapped
@@ -159,6 +160,8 @@ int extract_unmapped(std::string bam, std::string mk, std::string mi, std::strin
     char* seq= new char[MAX_READ_LEN];    // seq of read, ATGCN
     std::string seqstr;
     int ret;
+    char nt;
+    int non_N_count=0;
     while ((ret = sam_itr_next(fp, iter, b)) >= 0) {    // end file = -1
         // get read seq
         char* qname=bam_get_qname(b);      // read name
@@ -166,15 +169,22 @@ int extract_unmapped(std::string bam, std::string mk, std::string mi, std::strin
         uint8_t *tmp_s  = bam_get_seq(b);  // seq of read, nt16
         uint16_t &flag  = b->core.flag;    // SAM flag
         bool is_read2   = (flag & BAM_FREAD2) > 0;
+        non_N_count=0;
         for (int i=0; i < l_qseq; i++) {
-            seq[i]=seq_nt16_str[bam_seqi(tmp_s, i)];  // get nucleotide id and convert into IUPAC id
+            nt=seq_nt16_str[bam_seqi(tmp_s, i)];
+            seq[i]=nt;  // get nucleotide id and convert into IUPAC id
+            if ((! (nt == 'N')) && (! (nt == 'n'))) {
+                non_N_count++;
+            }
         }
         seq[l_qseq]='\0';
-        seqstr=seq;
-        // check rep k-mer
-        if (is_rep(seqstr, l_qseq, crepkmer, num_kmer)) {
-            // output
-            std::fprintf(ofs_unmapped, "%s/%d\n%s\n", qname, ((int)is_read2 + 1), seq);
+        if (non_N_count >= UNMAPPED_MIN_LEN) {
+            seqstr=seq;
+            // check rep k-mer
+            if (is_rep(seqstr, l_qseq, crepkmer, num_kmer)) {
+                // output
+                std::fprintf(ofs_unmapped, ">%s/%d\n%s\n", qname, ((int)is_read2 + 1), seq);
+            }
         }
     }
     

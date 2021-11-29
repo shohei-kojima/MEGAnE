@@ -8,8 +8,9 @@ See file LICENSE for details.
 '''
 
 
-import os,sys,shutil
+import os,sys,shutil,logging
 import log,traceback
+import ctypes as ct
 
 def char_p(char):
     return ct.c_char_p(char.encode('utf-8'))
@@ -22,18 +23,22 @@ def extract_discordant(args, params, filenames, init_base):
         so='%s/cpp/extract_discordant.so' % init_base
         cpp=ct.CDLL(so)
         if args.b is not None:
-            res=cpp.main(char_p(args.b),
-                         char_p(args.mainchr),
-                         char_p(args.mk),
-                         char_p(args.outdir),
-                         char_p(args.p))
+            argv=(ct.c_char_p * 6)('dummy'.encode('utf-8'),
+                                   args.b.encode('utf-8'),
+                                   args.mainchr.encode('utf-8'),
+                                   filenames.reshaped_rep_mk.encode('utf-8'),
+                                   args.outdir.encode('utf-8'),
+                                   str(args.p).encode('utf-8'))
+            res=cpp.main(len(argv), argv)
         else:
-            res=cpp.main(char_p(args.c),
-                         char_p(args.mainchr),
-                         char_p(args.mk),
-                         char_p(args.outdir),
-                         char_p(args.p),
-                         char_p(args.fa))
+            argv=(ct.c_char_p * 7)('dummy'.encode('utf-8'),
+                                   args.b.encode('utf-8'),
+                                   args.mainchr.encode('utf-8'),
+                                   filenames.reshaped_rep_mk.encode('utf-8'),
+                                   args.outdir.encode('utf-8'),
+                                   str(args.p).encode('utf-8'),
+                                   args.fa.encode('utf-8'))
+            res=cpp.main(len(argv), argv)
         os.dup2(stdout, 1)  # reset stdout stream
         log.logger.debug('exit status of cpp.main: %s' % res)
     except:
@@ -49,16 +54,20 @@ def extract_unmapped(args, params, filenames, init_base):
         so='%s/cpp/extract_unmapped.so' % init_base
         cpp=ct.CDLL(so)
         if args.b is not None:
-            res=cpp.main(char_p(args.b),
-                         char_p(args.mk),
-                         char_p(args.outdir),
-                         char_p(args.p))
+            argv=(ct.c_char_p * 5)('dummy'.encode('utf-8'),
+                                   args.b.encode('utf-8'),
+                                   filenames.reshaped_rep_mk.encode('utf-8'),
+                                   args.outdir.encode('utf-8'),
+                                   str(args.p).encode('utf-8'))
+            res=cpp.main(len(argv), argv)
         else:
-            res=cpp.main(char_p(args.c),
-                         char_p(args.mk),
-                         char_p(args.outdir),
-                         char_p(args.p),
-                         char_p(args.fa))
+            argv=(ct.c_char_p * 6)('dummy'.encode('utf-8'),
+                                   args.b.encode('utf-8'),
+                                   filenames.reshaped_rep_mk.encode('utf-8'),
+                                   args.outdir.encode('utf-8'),
+                                   str(args.p).encode('utf-8'),
+                                   args.fa.encode('utf-8'))
+            res=cpp.main(len(argv), argv)
         os.dup2(stdout, 1)  # reset stdout stream
         log.logger.debug('exit status of cpp.main: %s' % res)
     except:

@@ -30,8 +30,8 @@ parser.add_argument('-mainchr', metavar='str', type=str, help='Required. Specify
 parser.add_argument('-cov', metavar='int or auto', type=str, help='Optional, but specify whenever possible. Specify mapping depth. If "auto" was specified, it estimate autosome depth. "auto" is only available for human samples. Default: auto', default='auto')
 parser.add_argument('-readlen', metavar='int or auto', type=str, help='Optional. Specify read length. If "auto" was specified, it estimate read length. Default: auto', default='auto')
 parser.add_argument('-sex', metavar='str', type=str, help='Optional, but specify whenever possible. Specify "female" or "male" or "auto" or "unknown". "auto" is only available for human samples. If "auto" is specified, it automatically estimate the sex. Default: auto', default='auto')
-parser.add_argument('-male_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the male-specific chromosome(s). Default: chrY,Y', default='chrY,Y')
-parser.add_argument('-female_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) that is diploid in female. Default: chrX,X', default='chrX,X')
+parser.add_argument('-male_sex_chr', metavar='str', type=str, help='Optional. Specify a name of the male-specific chromosome. Default: chrY and Y', default='chrY,Y')
+parser.add_argument('-female_sex_chr', metavar='str', type=str, help='Optional. Specify a name of the chromosome that is diploid in female. Default: chrX and X', default='chrX,X')
 parser.add_argument('-sample_name', metavar='str', type=str, help='Optional. Specify sample name which will be labeled in the VCF output. If not specified, BAM/CRAM filename will be output.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-homozygous', help='Optional. Specify if you use inbred mouse strains (i.e. homozygous at all loci).', action='store_true')
@@ -116,6 +116,7 @@ filenames.repout_bed        =os.path.join(args.outdir, 'repout.bed')
 filenames.rep_unknown_fa    =os.path.join(args.outdir, 'rep_unknown.fa')
 filenames.blast_tmp_res     =os.path.join(args.outdir, 'blastn_tmp.txt')
 filenames.reshaped_rep      =os.path.join(args.outdir, 'reshaped_repbase.fa')
+filenames.reshaped_rep_mk   =os.path.join(args.outdir, 'reshaped_repbase.fa.mk')
 filenames.rep_slide_file    =os.path.join(args.outdir, 'reshaped_repbase_slide.fa')
 filenames.blast0_res        =os.path.join(args.outdir, 'blastn_rep_slide.txt')
 filenames.similar_rep_list  =os.path.join(args.outdir, 'similar_rep_list.txt')
@@ -126,6 +127,7 @@ filenames.distant_txt       =os.path.join(args.outdir, 'distant.txt')
 filenames.unmapped_fa       =os.path.join(args.outdir, 'unmapped.fa')
 filenames.mapped_fa         =os.path.join(args.outdir, 'mapped.fa')
 filenames.abs_txt           =os.path.join(args.outdir, 'absent.txt')
+filenames.stats             =os.path.join(args.outdir, 'stats.txt')
 
 filenames.blast1_res        =os.path.join(args.outdir, 'blastn_out_overhang_to_rep.txt')
 filenames.overhang_MEI      =os.path.join(args.outdir, 'overhang_to_MEI_list.txt')
@@ -190,10 +192,10 @@ if args.only_geno is False:
     
     # 1. process unmapped overhangs
     import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
+    from multiprocessing import Pool
     log.logger.info('Discordant read search started.')
     if (args.unsorted is True) or (args.v0 is True):
         if args.p >= 2:
-            from multiprocessing import Pool
             def extract_discordant_exe(n):
                 tmp=extract_discordant_c.main(args, params, filenames, n)  ### c
                 return tmp
@@ -208,11 +210,18 @@ if args.only_geno is False:
             extract_discordant_c.main(args, params, filenames, None)  ### c
     else:
         import exec_extract_discordant_cpp
-        exec_extract_discordant_cpp.extract_discordant(args, params, filenames, init_base)
-        exec_extract_discordant_cpp.extract_unmapped(args, params, filenames, init_base)
+        exec_extract_discordant_cpp.extract_discordant(args, params, filenames, init.base)
+        exec_extract_discordant_cpp.extract_unmapped(args, params, filenames, init.base)
+        read_cnts=extract_discordant.summarize_from_cpp(args, filenames)
+        if args.cov in args.auto or args.sex in args.auto:
+            auto_setting.estimate_depth_sex(args, params, args.auto, read_cnts)
+        if do_abs is True:
+            extract_discordant.concat_for_abs(args, filenames)
     if do_ins is True:
         log.logger.info('Clipped read processing started.')
-        if args.p >= 2:
+        if ((args.unsorted is True) or (args.v0 is True)) and (args.p == 1):
+            blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
+        else:
             def blast_exe(n):
                 infpath =filenames.overhang_fa + str(n) + '.txt'
                 outfpath=filenames.blast1_res  + str(n) + '.txt'
@@ -220,8 +229,6 @@ if args.only_geno is False:
             with Pool(args.p) as p:
                 p.map(blast_exe, range(args.p))
             extract_discordant.concat_for_ins(args, params, filenames)
-        else:
-            blastn.blastn(args, params, filenames.overhang_fa, filenames.repdb, filenames.blast1_res)
         parse_blastn_result.parse(params, filenames.blast1_res, filenames.overhang_MEI)
         find_additional_pA.find(params, filenames.blast1_res, filenames.overhang_fa, filenames.additional_pA)
         # del files
@@ -250,14 +257,14 @@ if args.only_geno is False:
         process_distant_read.process_reads(args, params, filenames)
         # del files
         utils.gzip_file(params, filenames.distant_txt)
-
+        
         # 4. merge all results, identify MEI outside of similar MEs
         import pair_breakpoints
         log.logger.info('Integration junction search (outside of TEs) started.')
         pair_breakpoints.pairing(args, params, filenames)
         pair_breakpoints.add_TE_subclass(args, filenames, filenames.breakpoint_pairs, filenames.breakpoint_info)
         pair_breakpoints.remove_cand_inside_TE(args, params, filenames)
-
+        
         # 5. identify MEI nested in similar MEs
         import process_mapped_seq
         log.logger.info('Integration junction search (nested in TEs) started.')
@@ -334,6 +341,8 @@ if args.only_geno is False:
     # remove unnecessary files
     os.remove(filenames.repout_bed)
     os.remove(filenames.reshaped_rep)
+    os.remove(filenames.reshaped_rep_mk)
+    os.remove(filenames.reshaped_rep + '.mi')
     for ext in ['nhr', 'nin', 'nog', 'nsd', 'nsi', 'nsq']:
         f='%s.%s' % (filenames.repdb, ext)
         if os.path.exists(f) is True:

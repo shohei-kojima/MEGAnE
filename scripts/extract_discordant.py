@@ -48,26 +48,37 @@ def concat_for_ins(args, params, filenames):
                 outfile.flush()
                 os.fdatasync(outfile.fileno())
         # unmapped read, remove short seq
-        file_base=filenames.unmapped_fa
-        unmapped_min_len= params.blastn_word_size + 2
-        discarded=0
-        with open(file_base, 'w') as outfile:
-            for n in range(args.p):
-                with open(file_base + str(n) +'.txt') as infile:
-                    for line in infile:
-                        if line[0] == '>':
-                            tmp=line
-                        else:
-                            nonN_len=len(line.replace('N', ''))
-                            if nonN_len >= unmapped_min_len:
-                                tmp += line
-                                outfile.write(tmp)
+        if (args.unsorted is True) or (args.v0 is True):
+            file_base=filenames.unmapped_fa
+            unmapped_min_len= params.blastn_word_size + 2
+            discarded=0
+            with open(file_base, 'w') as outfile:
+                for n in range(args.p):
+                    with open(file_base + str(n) +'.txt') as infile:
+                        for line in infile:
+                            if line[0] == '>':
+                                tmp=line
                             else:
-                                discarded += 1
-                os.remove(file_base + str(n) +'.txt')
-            outfile.flush()
-            os.fdatasync(outfile.fileno())
-        log.logger.debug('%d unmapped reads discarded due to shorter than word size' % discarded)
+                                nonN_len=len(line.replace('N', ''))
+                                if nonN_len >= unmapped_min_len:
+                                    tmp += line
+                                    outfile.write(tmp)
+                                else:
+                                    discarded += 1
+                    os.remove(file_base + str(n) +'.txt')
+                outfile.flush()
+                os.fdatasync(outfile.fileno())
+            log.logger.debug('%d unmapped reads discarded due to shorter than word size' % discarded)
+        else:
+            file_base=filenames.unmapped_fa
+            shutil.move(file_base +'0.txt', file_base)
+            with open(file_base, 'a') as outfile:
+                for n in range(1, (args.p + 1)):
+                    with open(file_base + str(n) +'.txt') as infile:
+                        shutil.copyfileobj(infile, outfile)
+                    os.remove(file_base + str(n) +'.txt')
+                outfile.flush()
+                os.fdatasync(outfile.fileno())
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
@@ -105,6 +116,33 @@ def summarize(res):
             unmapped_n += unmapped
             absent_n   += absent
         log.logger.info('Screening results:nonXY_reads=%d,X_reads=%d,Y_reads=%s,chimeric_reads=%d,hybrid_reads=%d,pA_reads=%d,unmapped_reads=%d,absent_reads=%d' % (nonXY_n, X_n, Y_n, chimeric_n, hybrid_n, pA_n, unmapped_n, absent_n))
+        return [nonXY_n, X_n, Y_n]
+    except:
+        log.logger.error('\n'+ traceback.format_exc())
+        exit(1)
+
+
+def summarize_from_cpp(args, filenames):
+    log.logger.debug('started')
+    try:
+        chrX=args.female_sex_chr.split(',')
+        chrY=args.male_sex_chr.split(',')
+        nonXY_n,X_n,Y_n,chimeric_n,hybrid_n,pA_n,absent_n=0,0,0,0,0,0,0
+        for n in range(args.p):
+            with open(filenames.stats + str(n)) as infile:
+                for line in infile:
+                    ls=line.strip().split('\t')
+                    pA_n       += int(ls[1])
+                    chimeric_n += int(ls[2])
+                    hybrid_n   += int(ls[3])
+                    absent_n   += int(ls[4])
+                    if ls[0] in chrX:
+                        X_n        += int(ls[5])
+                    elif ls[0] in chrY:
+                        Y_n        += int(ls[5])
+                    elif ls[0] in args.main_chrs_set:
+                        nonXY_n    += int(ls[5])
+        log.logger.info('Screening results:nonXY_reads=%d,X_reads=%d,Y_reads=%s,chimeric_reads=%d,hybrid_reads=%d,pA_reads=%d,absent_reads=%d' % (nonXY_n, X_n, Y_n, chimeric_n, hybrid_n, pA_n, absent_n))
         return [nonXY_n, X_n, Y_n]
     except:
         log.logger.error('\n'+ traceback.format_exc())

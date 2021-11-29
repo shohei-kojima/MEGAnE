@@ -8,10 +8,11 @@ See file LICENSE for details.
 '''
 
 
-import os
+import os,logging
 from utils import parse_fasta
 import blastn
 import log,traceback
+import ctypes as ct
 
 
 def reshape(args, params, filenames):
@@ -177,7 +178,8 @@ def save_kmer(args, params, filenames, init_base):
         os.dup2(logging._handlerList[2]().stream.fileno(), 1)  # change stdout stream to logger
         so='%s/cpp/convert_rep_to_2bit_k11.so' % init_base
         cpp=ct.CDLL(so)
-        res=cpp.main(char_p(filenames.reshaped_rep), char_p(filenames.reshaped_rep))
+        argv=(ct.c_char_p * 3)('dummy'.encode('utf-8'), filenames.reshaped_rep.encode('utf-8'), filenames.reshaped_rep.encode('utf-8'))
+        res=cpp.main(len(argv), argv)
         os.dup2(stdout, 1)  # reset stdout stream
         log.logger.debug('exit status of cpp.main: %s' % res)
     except:

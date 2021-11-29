@@ -21,12 +21,13 @@
     5) n_thread : 1 or more.
     6) (optional) reference.fa : must be specified when CRAM input.
  Output:
-    1) overhang_pA.txt[thread_id] : pA reads
-    2) overhang.fa[thread_id] : all chimeric reads
-    3) mapped.fa[thread_id] : mapped regions of pA and chimeric reads
-    4) distant.txt[thread_id] : hybrid reads
-    5) absent.txt[thread_id] : chimeric reads coming from absence
-    6) stats.txt[thread_id] : discordant read stats
+    1) overhang_pA.txt[thread_id].txt : pA reads
+    2) overhang.fa[thread_id].txt : all chimeric reads
+    3) mapped.fa[thread_id].txt : mapped regions of pA and chimeric reads
+    4) distant.txt[thread_id].txt : hybrid reads
+    5) absent.txt[thread_id].txt : chimeric reads coming from absence
+    6) unmapped.txt[thread_id].txt : unmapped reads before RNAME '*'
+    7) stats.txt[thread_id] : discordant read stats
  Misc info:
     This requires ~1 GB RAM (for io buffering) in total.
     This depends on external C++ library, htslib. This program is compatible with at least htslib-1.14.
@@ -56,6 +57,7 @@ using namespace complementary_seq_hpp;
 #define READ_PAIR_GAP_LEN 2000
 #define MAX_SEQ_LEN 512
 #define DISCORDANT_READS_CLIP_LEN 20
+#define UNMAPPED_MIN_LEN 13
 #define REP_KMER_SIZE 11
 #define SHIFT_16_TO_11 10
 #define ABS_MIN_DIST 50
@@ -67,7 +69,9 @@ typedef unsigned long ul;
 typedef unsigned long long ull;
 
 const char ATGC[]="ATGC";
+const std::string SEMICOLON_STR=";";
 
+namespace extract_discordant_hpp {
 
 
 /*
@@ -105,6 +109,7 @@ struct read_stats {
     int64_t chimeric=0;
     int64_t distant=0;
     int64_t absent=0;
+    int64_t read_count=0;
 };
 
 
@@ -117,16 +122,18 @@ struct fstr {
     std::FILE* ofs_distant;
     std::FILE* ofs_mapped;
     std::FILE* ofs_abs;
+    std::FILE* ofs_unmapped;
     std::FILE* ofs_stat;
     bool is_occupied;
     
     fstr(std::FILE* ofs_pA, std::FILE* ofs_overhang, std::FILE* ofs_distant, std::FILE* ofs_mapped,
-         std::FILE* ofs_abs, std::FILE* ofs_stat, bool is_occupied) {
+         std::FILE* ofs_abs, std::FILE* ofs_unmapped, std::FILE* ofs_stat, bool is_occupied) {
         this->ofs_pA=ofs_pA;
         this->ofs_overhang=ofs_overhang;
         this->ofs_distant=ofs_distant;
         this->ofs_mapped=ofs_mapped;
         this->ofs_abs=ofs_abs;
+        this->ofs_unmapped=ofs_unmapped;
         this->ofs_stat=ofs_stat;
         this->is_occupied=is_occupied;
     }
@@ -142,8 +149,8 @@ class cfstrs {
     std::vector<fstr*> vec;  // stores fstr objects
 public:
     void push_back_new(std::FILE* ofs_pA, std::FILE* ofs_overhang, std::FILE* ofs_distant, std::FILE* ofs_mapped,
-                       std::FILE* ofs_abs, std::FILE* ofs_stat) {
-        fstr* fstrp = new fstr(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped, ofs_abs, ofs_stat, false);
+                       std::FILE* ofs_abs, std::FILE* ofs_unmapped, std::FILE* ofs_stat) {
+        fstr* fstrp = new fstr(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped, ofs_abs, ofs_unmapped, ofs_stat, false);
         this->vec.push_back(fstrp);
     }
     
@@ -176,6 +183,7 @@ public:
             fclose(t->ofs_distant);
             fclose(t->ofs_mapped);
             fclose(t->ofs_abs);
+            fclose(t->ofs_unmapped);
             fclose(t->ofs_stat);
         }
     }
@@ -622,7 +630,7 @@ inline ull custom_binary_search(const std::vector<uint32_t>& vec, const ull& vec
     3) vector containing repeat k-mer set
     4) vector size
  */
-inline bool is_rep_overhang(std::string seq, uint64_t clip_len, const std::vector<uint32_t>& crepkmer, const ull& num_kmer) {
+inline bool is_rep(std::string seq, uint64_t clip_len, const std::vector<uint32_t>& crepkmer, const ull& num_kmer) {
     ull pos=0;
     // first window_size (window_size = REP_KMER_SIZE)
     uint32_t bit2f=0;
@@ -662,13 +670,14 @@ inline bool is_rep_overhang(std::string seq, uint64_t clip_len, const std::vecto
  This 1) output pA and 2) stores overhang info and mapped seq to unordered_maps.
  */
 inline bool output_pA(std::vector<softclip_info>& softclips, const std::vector<uint32_t>& crepkmer, const ull& num_kmer,
-                     char* chr, std::string& fseq, std::string& rseq, int64_t& start, int64_t& end,
+                     std::string& fseq, std::string& rseq, int64_t& start, int64_t& end,
                      char* qname, int32_t& l_qseq, bool& is_read2, bool& is_reverse, char& strand,
                      std::string& tmp_str, std::string& tmp_str1, std::string& tmp_str2, std::string& tmp_str3,
                      std::unordered_map<std::string, std::string>& um1,
                      std::unordered_map<std::string, std::string>& um2,
                      char* tmp_buf, fstr* fs, const std::unordered_map<std::string, bool>& is_mainchr) {
     bool written=false;
+    int64_t Acount=0;
     for (softclip_info s : softclips) {
         if (s.breakpoint == 'N') { continue; }
         if (! is_mainchr.at(s.chr)) { continue; }
@@ -686,7 +695,7 @@ inline bool output_pA(std::vector<softclip_info>& softclips, const std::vector<u
             tmp_str1=tmp_str.substr(s.l_clip_len, mapped_len);
             if (is_simple_repeat(tmp_str1, mapped_len)) { continue; }
             tmp_str2.clear();  // clipped seq
-            int32_t Acount=0;
+            Acount=0;
             if (s.breakpoint == 'L') {
                 tmp_str2=tmp_str.substr(s.clipstart, s.clipend);
                 for (char c: tmp_str2) {
@@ -703,13 +712,14 @@ inline bool output_pA(std::vector<softclip_info>& softclips, const std::vector<u
             bool ME_overhang=false;
             if (((double) Acount / (s.clipend - s.clipstart)) > POLYA_OVERHANG_THRESHOLD) {
                 pA=true;
-            } else if (is_rep_overhang(tmp_str2, (s.clipend - s.clipstart), crepkmer, num_kmer)) {  // proceed if repeat overhang
+            } else if (is_rep(tmp_str2, (s.clipend - s.clipstart), crepkmer, num_kmer)) {  // proceed if repeat overhang
                 ME_overhang=true;
             }
             if (pA || ME_overhang) {
-                std::sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", chr, s.pos, (s.pos + s.rlen), s.breakpoint, qname, ((int)is_read2 + 1), strand);
+                std::sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", (s.chr).c_str(), s.pos, (s.pos + s.rlen), s.breakpoint, qname, ((int)is_read2 + 1), strand);
                 tmp_str3.clear();  // header name
                 tmp_str3=tmp_buf;
+                tmp_str3 += SEMICOLON_STR;
                 if (pA) {
                     std::fprintf(fs->ofs_pA, "%s\t%ld\n", tmp_buf, (s.clipend - s.clipstart));
                     written=true;
@@ -820,7 +830,34 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     uint16_t& flag = b->core.flag;
     if (((flag & BAM_FSUPPLEMENTARY) > 0) == true) { return; }
     if (((flag & BAM_FPAIRED) > 0) == false) { return; }
-    if (((flag & BAM_FUNMAP) > 0) == true) { return; }
+    // output unmapped
+    if (((flag & BAM_FUNMAP) > 0) == true) {
+        char* qname=bam_get_qname(b);         // read name
+        int32_t &l_qseq = b->core.l_qseq;     // length of read
+        uint8_t *tmp_s  = bam_get_seq(b);     // seq of read, nt16
+        uint16_t &flag  = b->core.flag;       // SAM flag
+        bool is_read2   = (flag & BAM_FREAD2) > 0;
+        char nt;
+        int non_N_count=0;
+        for (int i=0; i < l_qseq; i++) {
+            nt=seq_nt16_str[bam_seqi(tmp_s, i)];
+            tmp_buf[i]=nt;  // get nucleotide id and convert into IUPAC id
+            if ((! (nt == 'N')) && (! (nt == 'n'))) {
+                non_N_count++;
+            }
+        }
+        tmp_buf[l_qseq]='\0';
+        if (non_N_count >= UNMAPPED_MIN_LEN) {
+            tmp_str=tmp_buf;
+            // check rep k-mer
+            if (is_rep(tmp_str, l_qseq, crepkmer, num_kmer)) {
+                // output
+                std::fprintf(fs->ofs_unmapped, ">%s/%d\n%s\n", qname, ((int)is_read2 + 1), tmp_buf);
+            }
+        }
+        return;
+    }
+    stats.read_count++;
     
     // prep
     uint32_t* cigar   = bam_get_cigar(b);  // cigar, 32-bit
@@ -862,11 +899,9 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     softclips_xa.clear();
     
     // detect chimeric, softclip -> save as XA tag
-    if (contains_S) {
-        define_breakpoint(cigar_arr, n_cigar, breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq);
-        softclips_xa.push_back(softclip_info(std::string(chr), start, is_reverse, breakpoint,
-                                             l_clip_len, r_clip_len, clipstart, clipend, rlen));
-    }
+    define_breakpoint(cigar_arr, n_cigar, breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq);
+    softclips_xa.push_back(softclip_info(std::string(chr), start, is_reverse, breakpoint,
+                                         l_clip_len, r_clip_len, clipstart, clipend, rlen));
     
     // detect chimeric, SA-tag
     bool is_short_deletion=false;
@@ -914,19 +949,19 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     else { strand='+'; }
     
     // output overhangs
-    bool written;
+    bool written=false, _ret;
     if (! is_short_deletion) {
         um1.clear();
         um2.clear();
         if (contains_S || contains_XA) {
-            bool ret=output_pA(softclips_xa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
+            _ret=output_pA(softclips_xa, crepkmer, num_kmer, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
                                tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs, is_mainchr);
-            if (ret) { written=true; }
+            if (_ret) { written=true; }
         }
         if (contains_SA) {
-            bool ret=output_pA(softclips_sa, crepkmer, num_kmer, chr, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
+            _ret=output_pA(softclips_sa, crepkmer, num_kmer, fseq, rseq, start, end, qname, l_qseq, is_read2, is_reverse, strand,
                                tmp_str, tmp_str1, tmp_str2, tmp_str3, um1, um2, tmp_buf, fs, is_mainchr);
-            if (ret) { written=true; }
+            if (_ret) { written=true; }
         }
         if (written) { stats.pA++; }
         
@@ -934,14 +969,14 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
         if (! um1.empty()) {  // um1 = (std::string, std::string) = (mapped seq, header)
             it1=um1.begin();
             while (it1 != um1.end()) {
-                std::fprintf(fs->ofs_mapped, "%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
+                std::fprintf(fs->ofs_mapped, ">%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
                 it1++;
             }
         }
         if (! um2.empty()) {  // um1 = (std::string, std::string) = (clipped seq, header)
             it1=um2.begin();
             while (it1 != um2.end()) {
-                std::fprintf(fs->ofs_overhang, "%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
+                std::fprintf(fs->ofs_overhang, ">%s\n%s\n", (it1->second).c_str(), (it1->first).c_str());
                 it1++;
             }
             stats.chimeric++;
@@ -1074,16 +1109,18 @@ int extract_discordant_per_chr(const char* f, int tid, const options& opts,
     }
     
     // output read stats
-    std::fprintf(fs->ofs_stat, "%s\t%ld\t%ld\t%ld\t%ld\n", h->target_name[tid],
-                 stats.pA, stats.chimeric, stats.distant, stats.absent);
+    std::fprintf(fs->ofs_stat, "%s\t%ld\t%ld\t%ld\t%ld\t%ld\n", h->target_name[tid],
+                 stats.pA, stats.chimeric, stats.distant, stats.absent, stats.read_count);
     
     // finish up
     fstrs.release(fs);  // always release!!!
-    delete tmp_buf;
     hts_itr_destroy(iter);
     sam_hdr_destroy(h);
     sam_close(fp);
     bam_destroy1(b);
+    hts_idx_destroy(idx);
+    delete tmp_buf;
+    delete cig_buf;
     return 0;
 }
 
@@ -1177,19 +1214,21 @@ int extract_discordant(std::string bam, std::string f_mainchr, std::string mk, s
     
     // ofstreams (C fopen)
     for (int i=0; i < opts.n_thread; i++) {
-        std::FILE* ofs_pA       =fopen((opts.outdir + std::string("/overhang_pA.txt") + std::to_string(i)).c_str(), "w");
-        std::FILE* ofs_overhang =fopen((opts.outdir + std::string("/overhang.fa") + std::to_string(i)).c_str(), "w");
-        std::FILE* ofs_distant  =fopen((opts.outdir + std::string("/distant.txt") + std::to_string(i)).c_str(), "w");
-        std::FILE* ofs_mapped   =fopen((opts.outdir + std::string("/mapped.fa") + std::to_string(i)).c_str(), "w");
-        std::FILE* ofs_abs      =fopen((opts.outdir + std::string("/absent.txt") + std::to_string(i)).c_str(), "w");
+        std::FILE* ofs_pA       =fopen((opts.outdir + std::string("/overhang_pA.txt") + std::to_string(i) + std::string(".txt")).c_str(), "w");
+        std::FILE* ofs_overhang =fopen((opts.outdir + std::string("/overhang.fa") + std::to_string(i) + std::string(".txt")).c_str(), "w");
+        std::FILE* ofs_distant  =fopen((opts.outdir + std::string("/distant.txt") + std::to_string(i) + std::string(".txt")).c_str(), "w");
+        std::FILE* ofs_mapped   =fopen((opts.outdir + std::string("/mapped.fa") + std::to_string(i) + std::string(".txt")).c_str(), "w");
+        std::FILE* ofs_abs      =fopen((opts.outdir + std::string("/absent.txt") + std::to_string(i) + std::string(".txt")).c_str(), "w");
+        std::FILE* ofs_unmapped =fopen((opts.outdir + std::string("/unmapped.fa") + std::to_string(i) + std::string(".txt")).c_str(), "w");
         std::FILE* ofs_stat     =fopen((opts.outdir + std::string("/stats.txt") + std::to_string(i)).c_str(), "w");
         if (ofs_pA       == nullptr) { return 1; }
         if (ofs_overhang == nullptr) { return 1; }
         if (ofs_distant  == nullptr) { return 1; }
         if (ofs_mapped   == nullptr) { return 1; }
         if (ofs_abs      == nullptr) { return 1; }
+        if (ofs_unmapped == nullptr) { return 1; }
         if (ofs_stat     == nullptr) { return 1; }
-        fstrs.push_back_new(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped, ofs_abs, ofs_stat);
+        fstrs.push_back_new(ofs_pA, ofs_overhang, ofs_distant, ofs_mapped, ofs_abs, ofs_unmapped, ofs_stat);
     }
     
     // per chr processing
@@ -1257,3 +1296,5 @@ int main(int argc, char *argv[]) {
     int ret = extract_discordant(bam, f_mainchr, mk, mi, ref_fa, outdir, n_thread, is_cram);
     return ret;
 }
+
+}  // namespace
