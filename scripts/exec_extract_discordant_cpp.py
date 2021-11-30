@@ -32,7 +32,7 @@ def extract_discordant(args, params, filenames, init_base):
             res=cpp.main(len(argv), argv)
         else:
             argv=(ct.c_char_p * 7)('dummy'.encode('utf-8'),
-                                   args.b.encode('utf-8'),
+                                   args.c.encode('utf-8'),
                                    args.mainchr.encode('utf-8'),
                                    filenames.reshaped_rep_mk.encode('utf-8'),
                                    args.outdir.encode('utf-8'),
@@ -62,7 +62,7 @@ def extract_unmapped(args, params, filenames, init_base):
             res=cpp.main(len(argv), argv)
         else:
             argv=(ct.c_char_p * 6)('dummy'.encode('utf-8'),
-                                   args.b.encode('utf-8'),
+                                   args.c.encode('utf-8'),
                                    filenames.reshaped_rep_mk.encode('utf-8'),
                                    args.outdir.encode('utf-8'),
                                    str(args.p).encode('utf-8'),

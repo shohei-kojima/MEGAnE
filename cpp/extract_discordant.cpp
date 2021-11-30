@@ -420,8 +420,7 @@ inline void define_breakpoint(std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_L
         breakpoint ='N';  // undetermined
         clipstart  = 0;
         clipend    = 0;
-    }
-    if (l_clip_len > r_clip_len) {
+    } else if (l_clip_len > r_clip_len) {
         breakpoint ='L';
         clipstart  = 0;
         clipend    = l_clip_len;
@@ -710,13 +709,17 @@ inline bool output_pA(std::vector<softclip_info>& softclips, const std::vector<u
             // judge whether either pA read or ME overhang
             bool pA=false;
             bool ME_overhang=false;
-            if (((double) Acount / (s.clipend - s.clipstart)) > POLYA_OVERHANG_THRESHOLD) {
+            if (((double) Acount / (s.clipend - s.clipstart)) >= POLYA_OVERHANG_THRESHOLD) {
                 pA=true;
-            } else if (is_rep(tmp_str2, (s.clipend - s.clipstart), crepkmer, num_kmer)) {  // proceed if repeat overhang
+//            } else if (is_rep(tmp_str2, (s.clipend - s.clipstart), crepkmer, num_kmer)) {  // (proceed if repeat overhang) this slightly decreases the sensitivity
+            } else {  // proceed if repeat overhang
                 ME_overhang=true;
             }
             if (pA || ME_overhang) {
-                std::sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", (s.chr).c_str(), s.pos, (s.pos + s.rlen), s.breakpoint, qname, ((int)is_read2 + 1), strand);
+                char _strand;
+                if (s.is_reverse) { _strand='-'; }
+                else { _strand='+'; }
+                std::sprintf(tmp_buf, "%s:%ld-%ld/%c/%s/%d/%c", (s.chr).c_str(), s.pos, (s.pos + s.rlen), s.breakpoint, qname, ((int)is_read2 + 1), _strand);
                 tmp_str3.clear();  // header name
                 tmp_str3=tmp_buf;
                 tmp_str3 += SEMICOLON_STR;
@@ -910,13 +913,15 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
         char* sa_tag=(char*)sa_p;  // simpler version of `char *bam_aux2Z(const uint8_t *s)` in htslib sam.c
         SA_parser(sa_tag, tmp_str, softclips_sa, cigar_arr, cig_buf, cig_m,
                   breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq);
-        int vec_size=softclips_sa.size();
         // stop when short deletion rather than insertion
-        for (int i=1; i < vec_size; i++) {
-            if (softclips_xa[0].chr == softclips_sa[i].chr) {
-                if ((-50 < (softclips_xa[0].pos - softclips_sa[i].pos)) && ((softclips_xa[0].pos - softclips_sa[i].pos) < 50)) {
-                    is_short_deletion=true;
-                    break;
+        if (contains_S) {
+            int vec_size=softclips_sa.size();
+            for (int i=0; i < vec_size; i++) {
+                if (softclips_xa[0].chr == softclips_sa[i].chr) {
+                    if ((-50 < (softclips_xa[0].pos - softclips_sa[i].pos)) && ((softclips_xa[0].pos - softclips_sa[i].pos) < 50)) {
+                        is_short_deletion=true;
+                        break;
+                    }
                 }
             }
         }
@@ -1001,8 +1006,13 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
             tmp_str=tmp_buf;
         }
         if (contains_XA) {
+            bool _first=true;
             char _strand;
             for (softclip_info s : softclips_xa) {
+                if (_first == true) {  // should skip the first one, although this does not influence the final result
+                    _first=false;
+                    continue;
+                }
                 if ((s.breakpoint == 'N') || ((s.clipend - s.clipstart) < DISCORDANT_READS_CLIP_LEN)) {
                     if (s.is_reverse) { _strand='-'; }
                     else { _strand='+'; }
