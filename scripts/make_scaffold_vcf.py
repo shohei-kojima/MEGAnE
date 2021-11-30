@@ -525,7 +525,7 @@ def merge_vcf_ins(args, params, filenames):
                 d[id]['ALT']='<INS:ME>'
                 d[id]['QUAL']='.'
                 d[id]['FILTER']=filt
-                d[id]['INFO']='SVTYPE=%s;MEI=%s;MEPRED=%s;0START=%s;1END=%s;SVLEN=%s;MESTRAND=%s;AC=%d' % (m, pred_class, mepred, poss[m][id][0], poss[m][id][1], melen, strand, ac)
+                d[id]['INFO']='SVTYPE=%s;MEI=%s;MEPRED=%s;0START=%s;0END=%s;SVLEN=%s;MESTRAND=%s;AC=%d' % (m, pred_class, mepred, poss[m][id][0], poss[m][id][1], melen, strand, ac)
                 d[id]['FORMAT']='GT'
                 for info,_ in count[m][id]:
                     sample_id,c,_,_,_,_=info.split(',')
@@ -550,7 +550,7 @@ def merge_vcf_ins(args, params, filenames):
         header.append('##INFO=<ID=MEI,Number=.,Type=String,Description="Mobile element subclass">\n')
         header.append('##INFO=<ID=MEPRED,Number=.,Type=String,Description="MEI prediction status">\n')
         header.append('##INFO=<ID=0START,Number=1,Type=Integer,Description="Position of left breakpoint. 0-based numbering (eg BED style).">\n')
-        header.append('##INFO=<ID=1END,Number=1,Type=Integer,Description="Position of right breakpoint. 1-based numbering (eg BED style).">\n')
+        header.append('##INFO=<ID=0END,Number=1,Type=Integer,Description="Position of right breakpoint. 0-based numbering (eg BED style).">\n')
         header.append('##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">\n')
         header.append('##INFO=<ID=MESTRAND,Number=.,Type=String,Description="Strandness of MEI">\n')
         header.append('##INFO=<ID=AC,Number=1,Type=Integer,Description="Allele count.">\n')
@@ -781,7 +781,7 @@ def merge_vcf_abs(args, params, filenames):
                 d[id]['ALT']=fa['%s%s' % (m, id)][0]
                 d[id]['QUAL']='.'
                 d[id]['FILTER']=filt
-                d[id]['INFO']='SVTYPE=%s;MEI=%s;0START=%s;1END=%s;SVLEN=%s;AC=%d' % (m, pred_class, poss[m][id][0], poss[m][id][1], melen, ac)
+                d[id]['INFO']='SVTYPE=%s;MEI=%s;0START=%s;0END=%s;SVLEN=%s;AC=%d' % (m, pred_class, poss[m][id][0], poss[m][id][1], melen, ac)
                 d[id]['FORMAT']='GT'
                 for info,_ in count[m][id]:
                     sample_id,c,_,_,_=info.split(',')
@@ -802,7 +802,7 @@ def merge_vcf_abs(args, params, filenames):
         header.append('##INFO=<ID=SVTYPE,Number=.,Type=String,Description="Mobile element class">\n')
         header.append('##INFO=<ID=MEI,Number=.,Type=String,Description="Mobile element subclass">\n')
         header.append('##INFO=<ID=0START,Number=1,Type=Integer,Description="Position of left breakpoint. 0-based numbering (eg BED style).">\n')
-        header.append('##INFO=<ID=1END,Number=1,Type=Integer,Description="Position of right breakpoint. 1-based numbering (eg BED style).">\n')
+        header.append('##INFO=<ID=0END,Number=1,Type=Integer,Description="Position of right breakpoint. 0-based numbering (eg BED style).">\n')
         header.append('##INFO=<ID=SVLEN,Number=1,Type=Integer,Description="Difference in length between REF and ALT alleles">\n')
         header.append('##INFO=<ID=AC,Number=1,Type=Integer,Description="Allele count.">\n')
         header.append('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')

@@ -110,8 +110,8 @@ def fill_in_ins(args, params, filenames):
                     for info in ls[7].split(';'):
                         if 'MEI=' in info:
                             mes=info.replace('MEI=', '')
-                        elif '1END=' in info:
-                            end=info.replace('1END=', '')
+                        elif '0END=' in info:
+                            end=info.replace('0END=', '')
                             break
                     for me in mes.split('|'):
                         if not me in bps:
@@ -329,8 +329,8 @@ def fill_in_abs(args, params, filenames):
                 else:
                     ls=line.strip().split('\t')
                     for info in ls[7].split(';'):
-                        if '1END=' in info:
-                            end=info.replace('1END=', '')
+                        if '0END=' in info:
+                            end=info.replace('0END=', '')
                             break
                     if not ls[0] in bps:
                         bps[ls[0]]={}

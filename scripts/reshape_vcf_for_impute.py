@@ -320,8 +320,8 @@ def convert_to_bed(final_outf):
             if not line[0] == '#':
                 ls=line.split('\t', 10)
                 for info in ls[7].split(';'):
-                    if '1END=' in info:
-                        end=info.replace('1END=', '')
+                    if '0END=' in info:
+                        end=info.replace('0END=', '')
                         break
                 start= int(ls[1]) - 1
                 outfile.write('%s\t%d\t%s\t%s\n' % (ls[0], start, end, ls[2]))
