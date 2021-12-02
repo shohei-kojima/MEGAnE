@@ -29,7 +29,7 @@ def which(program):
                 return exe_file
     return None
 
-def check(args, argv):
+def check(args, argv, init_base):
     log.logger.debug('started')
     try:
         log.logger.debug('command line:\n'+ ' '.join(argv))
@@ -60,6 +60,15 @@ def check(args, argv):
                 exit(1)
             elif os.path.exists(f_check) is False:
                 log.logger.error('%s was not found.' % f_check)
+                exit(1)
+            else:
+                log.logger.debug('%s found.' % f_check)
+        
+        # check .so path
+        for so in ['extract_discordant.so', 'extract_unmapped.so', 'remove_multimapping_reads_from_fa.so', 'convert_rep_to_2bit_k11.so']:
+            f_check='%s/cpp/%s' % (init_base, so)
+            if os.path.exists(f_check) is False:
+                log.logger.error('%s was not found. Please compile MEGAnE before run this script.' % f_check)
                 exit(1)
             else:
                 log.logger.debug('%s found.' % f_check)
@@ -215,7 +224,7 @@ def check_reshape_vcf(args, argv):
         exit(1)
 
 
-def check_build_kmer(args, argv):
+def check_build_kmer(args, argv, init_base):
     log.logger.debug('started')
     try:
         log.logger.debug('command line:\n'+ ' '.join(argv))
@@ -236,6 +245,12 @@ def check_build_kmer(args, argv):
                 exit(1)
             else:
                 log.logger.debug('%s found.' % f_check)
+        f_check='%s/cpp/save_redundant_kmers.so' % init_base
+        if os.path.exists(f_check) is False:
+            log.logger.error('%s was not found. Please compile MEGAnE before run this script.' % f_check)
+            exit(1)
+        else:
+            log.logger.debug('%s found.' % f_check)
         
         # make sure "/" is not included in the prefix
         if args.prefix is None:

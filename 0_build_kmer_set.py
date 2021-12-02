@@ -42,7 +42,7 @@ import initial_check
 log.logger.debug('This is %s version %s' % (__file__, version))
 print()
 log.logger.info('Initial check started.')
-initial_check.check_build_kmer(args, sys.argv)
+initial_check.check_build_kmer(args, sys.argv, init.base)
 
 
 # output file names

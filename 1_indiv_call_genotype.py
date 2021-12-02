@@ -84,7 +84,7 @@ import initial_check
 log.logger.debug('This is %s version %s' % (__file__, version))
 print()
 log.logger.info('Initial check started.')
-initial_check.check(args, sys.argv)
+initial_check.check(args, sys.argv, init.base)
 
 
 # set up
@@ -343,7 +343,7 @@ if args.only_geno is False:
     os.remove(filenames.reshaped_rep)
     os.remove(filenames.reshaped_rep_mk)
     os.remove(filenames.reshaped_rep + '.mi')
-    for ext in ['nhr', 'nin', 'nog', 'nsd', 'nsi', 'nsq']:
+    for ext in ['nhr', 'nin', 'nog', 'nsd', 'nsi', 'nsq', 'ndb', 'nos', 'not', 'ntf', 'nto']:
         f='%s.%s' % (filenames.repdb, ext)
         if os.path.exists(f) is True:
             os.remove('%s.%s' % (filenames.repdb, ext))
