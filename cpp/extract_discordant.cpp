@@ -1,7 +1,7 @@
 /*
  Author: Shohei Kojima @ RIKEN
  Description:
-    This reads a BAM or CRAM file and extracts discordantly mapped reads based on cigar, SA tag, and XA tag.
+    This reads a BAM or CRAM file and extracts discordantly mapped reads based on cigar and SA tag.
     Discordantly mapped reads are:
         1) chimeric reads derived from ME insertions
         2) chimeric reads derived from absent MEs
@@ -873,7 +873,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     uint8_t *sa_p    = bam_aux_get(b, "SA");
     uint8_t *xa_p    = bam_aux_get(b, "XA");
     if (sa_p) { contains_SA=true; }
-    if (xa_p) { contains_XA=true; }
+//    if (xa_p) { contains_XA=true; }  // this is for compatibility with MEGAnE v0.1.1
     
     bool is_distant_read=false;
     int64_t& isize   = b->core.isize;  // insertion size (beween R1 and R2)
