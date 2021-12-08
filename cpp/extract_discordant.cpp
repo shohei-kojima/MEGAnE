@@ -870,6 +870,7 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
     bool contains_SA=false;
     bool contains_XA=false;
     parse_cigar(cigar, n_cigar, cigar_arr, contains_H, contains_S);
+    if (contains_H) { return; }   // discard hard-clipped reads
     uint8_t *sa_p    = bam_aux_get(b, "SA");
     uint8_t *xa_p    = bam_aux_get(b, "XA");
     if (sa_p) { contains_SA=true; }
