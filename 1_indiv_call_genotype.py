@@ -89,6 +89,7 @@ initial_check.check(args, sys.argv, init.base)
 
 # set up
 import setup,auto_setting
+os.environ['OMP_NUM_THREADS']=str(args.p)
 args.auto=auto_setting.init(args)
 if args.readlen in args.auto:
     auto_setting.estimate_readlen(args)

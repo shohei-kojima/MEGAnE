@@ -121,7 +121,7 @@ def output_ins_bed_vcf(args, params, filenames, data):
             if filt == 'PASS' and not data.merged_res[id][0] == 0:
                 count += 1
             info='SVTYPE=%s;MEPRED=%s;HOMLEN=%d;MEI_rpos=%s;%s;CN_conf=%s' % (ls[3], mepred, homlen, ls[2], meinfo, data.merged_res[id][2])
-            vcfline='%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\n' % (ls[0], onebase_start, new_id, seq, '<INS:ME>', '.', filt, info, 'CN', data.merged_res[id][0])
+            vcfline='%s\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' % (ls[0], onebase_start, new_id, seq, '<INS:ME>', '.', filt, info, 'CN', data.merged_res[id][0])
             out_vcf.append(vcfline)
         with open(filenames.ins_out_bed, 'w') as outfile:
             outfile.write(''.join(out_bed))

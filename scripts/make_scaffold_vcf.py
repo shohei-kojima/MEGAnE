@@ -533,6 +533,8 @@ def merge_vcf_ins(args, params, filenames):
                         gt='0/0'
                     elif c == '1':
                         gt='0/1'
+                    elif c == '1.5':
+                        gt='./1'
                     else:
                         gt='1/1'
                     d[id][sample_id]=gt
@@ -789,6 +791,8 @@ def merge_vcf_abs(args, params, filenames):
                         gt='0/0'
                     elif c == '1':
                         gt='0/1'
+                    elif c == '1.5':
+                        gt='./1'
                     else:
                         gt='1/1'
                     d[id][sample_id]=gt

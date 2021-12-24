@@ -904,6 +904,9 @@ def merge(args, params, filenames, data):
                         if data.cn_est_tsd_depth[id][1] >= data.tsd_thresholds[1] and data.cn_est_disc[id][1] >= data.disc_thresholds[0]:
                             allele_count=2
                             status='H'
+                        elif data.cn_est_tsd_depth[id][1] >= data.tsd_thresholds[1] and data.cn_est_disc[id][1] < data.disc_thresholds[0]:
+                            allele_count=1.5
+                            status='L'
                         else:
                             allele_count=1
                             status='L'
