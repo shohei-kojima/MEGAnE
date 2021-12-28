@@ -482,7 +482,7 @@ def merge_vcf_ins(args, params, filenames):
                 strands=[]  # me stands
                 for info,_ in count[m][id]:
                     infos=info.split(',')
-                    afs.append(int(infos[1]))
+                    afs.append(int(infos[1][0]))  # in case '1.5' -> '1'
                     quals.append(infos[2])
                     if not infos[3] == 'NA':
                         lens.append(int(infos[3]))
