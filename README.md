@@ -42,7 +42,7 @@ singularity exec ${sif} call_genotype_37 \
 -b /path/to/input.bam \
 -fa /path/to/reference_human_genome.fa \
 -mk /path/to/megane_kmer_set/reference_human_genome.mk \
--outdir test_run \
+-outdir MEGAnE_result_test \
 -sample_name test_sample \
 -p 4
 
@@ -51,8 +51,8 @@ singularity exec ${sif} call_genotype_38 \
 -c /path/to/input.cram \
 -fa /path/to/reference_human_genome.fa \
 -mk /path/to/megane_kmer_set/reference_human_genome.mk \
--outdir MEGAnE_result_sample_1 \
--sample_name sample_1 \
+-outdir MEGAnE_result_test \
+-sample_name test_sample \
 -p 4
 ```
   
@@ -63,8 +63,8 @@ singularity exec ${sif} call_genotype_38 \
 ```
 sif=/path/to/MEGAnE_[version].sif
 
-# first, list up samples you are going to merge
-ls -d /path/to/MEGAnE_result_* > dirlist.txt
+# first, list up samples (output directories from Step 2) you are going to merge
+ls -d /path/to/[all_output_directories] > dirlist.txt
 
 # merge non-reference ME insertions
 singularity exec ${sif} build_kmerset \
