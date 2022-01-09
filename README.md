@@ -81,10 +81,10 @@ singularity exec ${sif} build_kmerset \
 -cohort_name test
 ```
   
-### (Optional) Step 3. Make a joint call for imputation
+### (Optional) Step 3. Make a joint call for haplotype phasing
 - The step 2 above will generate two VCF files. This step merges the two files generated in the step 2.  
 - When merging the two VCF files, MEGAnE removes multi-allelic variants.  
-- This is particularly useful when you do haplotype-phasing using MEGAnE's results.  
+- This is particularly useful when you do haplotype phasing using MEGAnE's results.  
   
 ```
 sif=/path/to/MEGAnE_[version].sif
@@ -95,7 +95,7 @@ singularity exec ${sif} reshape_vcf \
 -cohort_name test
 ```
   
-### Example haplotype-phasing for MEGAnE's result  
+### (Optional) Example haplotype phasing of MEGAnE's result  
 - Here is one example of how to phase MEGAnE's result.  
 - This step requires external softwares.  
   
