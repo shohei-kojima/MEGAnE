@@ -14,8 +14,22 @@ import mmap,io
 import numpy as np
 import pybedtools
 from pybedtools import BedTool
-from utils import parse_fasta_for_merge_vcf
+from utils import parse_fasta_for_merge_vcf, load_me_classification
 import log,traceback
+
+
+def rename_L1(me, me_to_class):
+    if ('_5end' in me) or ('_3end' in me) or ('_orf2' in me):
+        if me_to_class[me] == 'LINE/L1':
+            me=me.replace('_5end', '').replace('_3end', '').replace('_orf2', '')
+    return me
+
+
+def judge_split_L1(me, me_to_class):
+    if ('_5end' in me) or ('_3end' in me) or ('_orf2' in me):
+        if me_to_class[me] == 'LINE/L1':
+            return True
+    return False
 
 
 def check_paths(args):
@@ -78,7 +92,7 @@ def check_paths(args):
         exit(1)
 
 
-def load_geno_ins_mmap(args, dir, te_len, chrY_set):
+def load_geno_ins_mmap(args, dir, te_len, chrY_set, me_to_class):
     f=args.dirs[dir][0]
     vcf_loaded=set()
     tmp_bed={}
@@ -109,7 +123,10 @@ def load_geno_ins_mmap(args, dir, te_len, chrY_set):
                                     if len(pred.split(',')) == 3:
                                         clas,bp,strand=pred.split(',')
                                         pred_class.append('%s,%s' % (clas, clas))
-                                        s,e=bp.split('/')
+                                        if 'NA' in bp:
+                                            s,e=0,0
+                                        else:
+                                            s,e=bp.split('/')
                                         if strand == '+/+':
                                             strands.append('+')
                                             tmp_len= int(e) - int(s)
@@ -126,23 +143,27 @@ def load_geno_ins_mmap(args, dir, te_len, chrY_set):
                                 preds=infos[5].replace('MEI_rbp=', '')
                                 for pred in preds.split('|'):
                                     clas,bp,strand=pred.split(',')
-                                    pred_class.append('%s,%s' % (clas, clas))
-                                    te_lens.append(te_len[clas] - int(bp))
+                                    _clas=rename_L1(clas, me_to_class)
+                                    pred_class.append('%s,%s' % (_clas, _clas))
+                                    if judge_split_L1(clas, me_to_class) is False:
+                                        te_lens.append(te_len[clas] - int(bp))
                                     strands.append(strand)
                             elif infos[5] == 'MEI_rbp=pA':
                                 preds=infos[4].replace('MEI_lbp=', '')
                                 for pred in preds.split('|'):
-                                    clas,bp,strand=pred.split(',')
-                                    pred_class.append('%s,%s' % (clas, clas))
-                                    te_lens.append(te_len[clas] - int(bp))
+                                    _clas,bp,strand=pred.split(',')
+                                    clas=rename_L1(clas, me_to_class)
+                                    pred_class.append('%s,%s' % (_clas, _clas))
+                                    if judge_split_L1(clas, me_to_class) is False:
+                                        te_lens.append(te_len[clas] - int(bp))
                                     strands.append(strand)
                         else:
                             mepred='FAILED'
                             left, right=infos[4].replace('MEI_lbp=', ''), infos[5].replace('MEI_rbp=', '')
                             for pred in left.split('|'):
-                                pred_class.append(pred.split(',')[0])
+                                pred_class.append(rename_L1(pred.split(',')[0], me_to_class))
                             for pred in right.split('|'):
-                                pred_class.append(pred.split(',')[0])
+                                pred_class.append(rename_L1(pred.split(',')[0], me_to_class))
                         if len(te_lens) > 0:
                             telen= str(int(np.round(np.mean(te_lens))))
                         else:
@@ -171,7 +192,7 @@ def load_geno_ins_mmap(args, dir, te_len, chrY_set):
     return [tmp_bed, tmp_vlc, sample_id, dir]
 
 
-def load_geno_ins(args, dir, te_len, chrY_set):
+def load_geno_ins(args, dir, te_len, chrY_set, me_to_class):
     f=args.dirs[dir][0]
     vcf_loaded=set()
     tmp_bed={}
@@ -200,7 +221,10 @@ def load_geno_ins(args, dir, te_len, chrY_set):
                                 if len(pred.split(',')) == 3:
                                     clas,bp,strand=pred.split(',')
                                     pred_class.append('%s,%s' % (clas, clas))
-                                    s,e=bp.split('/')
+                                    if 'NA' in bp:
+                                        s,e=0,0
+                                    else:
+                                        s,e=bp.split('/')
                                     if strand == '+/+':
                                         strands.append('+')
                                         tmp_len= int(e) - int(s)
@@ -217,23 +241,27 @@ def load_geno_ins(args, dir, te_len, chrY_set):
                             preds=infos[5].replace('MEI_rbp=', '')
                             for pred in preds.split('|'):
                                 clas,bp,strand=pred.split(',')
-                                pred_class.append('%s,%s' % (clas, clas))
-                                te_lens.append(te_len[clas] - int(bp))
+                                _clas=rename_L1(clas, me_to_class)
+                                pred_class.append('%s,%s' % (_clas, _clas))
+                                if judge_split_L1(clas, me_to_class) is False:
+                                    te_lens.append(te_len[clas] - int(bp))
                                 strands.append(strand)
                         elif infos[5] == 'MEI_rbp=pA':
                             preds=infos[4].replace('MEI_lbp=', '')
                             for pred in preds.split('|'):
                                 clas,bp,strand=pred.split(',')
-                                pred_class.append('%s,%s' % (clas, clas))
-                                te_lens.append(te_len[clas] - int(bp))
+                                _clas=rename_L1(clas, me_to_class)
+                                pred_class.append('%s,%s' % (_clas, _clas))
+                                if judge_split_L1(clas, me_to_class) is False:
+                                    te_lens.append(te_len[clas] - int(bp))
                                 strands.append(strand)
                     else:
                         mepred='FAILED'
                         left, right=infos[4].replace('MEI_lbp=', ''), infos[5].replace('MEI_rbp=', '')
                         for pred in left.split('|'):
-                            pred_class.append(pred.split(',')[0])
+                            pred_class.append(rename_L1(pred.split(',')[0], me_to_class))
                         for pred in right.split('|'):
-                            pred_class.append(pred.split(',')[0])
+                            pred_class.append(rename_L1(pred.split(',')[0], me_to_class))
                     if len(te_lens) > 0:
                         telen= str(int(np.round(np.mean(te_lens))))
                     else:
@@ -265,6 +293,8 @@ def merge_vcf_ins(args, params, filenames):
     try:
         pybedtools.set_tempdir(args.pybedtools_tmp)
         chrY_set=set([ chr for chr in args.male_sex_chr.split(',') ])
+        me_to_class,_=load_me_classification(args.rep)
+        
         # load te length
         te_len={}
         tmp=[]
@@ -360,7 +390,7 @@ def merge_vcf_ins(args, params, filenames):
                         end=file_num
                     jobs=[]
                     for dir,te_len_each in zip(dirs[n:end], te_lens):
-                        jobs.append(p.apply_async(load_geno_ins_mmap, (args, dir, te_len_each, chrY_set)))
+                        jobs.append(p.apply_async(load_geno_ins_mmap, (args, dir, te_len_each, chrY_set, me_to_class)))
                     res=[]
                     for job in jobs:
                         res.append(job.get())
@@ -382,7 +412,7 @@ def merge_vcf_ins(args, params, filenames):
         else:
             processed_n=0
             for dir in args.dirs:
-                tmp_bed,tmp_vlc,sample_id,dir=load_geno_ins(args, dir, te_len, chrY_set)
+                tmp_bed,tmp_vlc,sample_id,dir=load_geno_ins(args, dir, te_len, chrY_set, me_to_class)
                 for me in tmp_bed:
                     if not me in bed:
                         bed[me]=[]

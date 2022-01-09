@@ -12,7 +12,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='v1.0.0 2021/02/24'
+version='v1.0.0 2022/01/09'
 
 
 # args
@@ -22,7 +22,7 @@ parser.add_argument('-merge_absent_me', help='Specify a file containing paths to
 parser.add_argument('-f', metavar='str', type=str, help='Required. Specify paths to the vcf files to be merged. One line should contain one path to a vcf file.')
 parser.add_argument('-fa', metavar='str', type=str, help='Required. Specify reference genome which are used when input reads were mapped. Example: GRCh38DH.fa')
 parser.add_argument('-rep', metavar='str', type=str, help='Required. Specify RepBase file used for repeatmasking. Example: humrep.ref')
-parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing the names of non-ME repeat class. Default: /path/to/prog/lib/human_non_ME_rep_headers.txt')
+parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Specify full path to a file containing the names of non-ME repeat class. Default: /path/to/MEGAnE/docs/human_non_ME_rep_headers.txt')
 parser.add_argument('-chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) to be analyzed with comma as a delimiter (e.g. chr1,chr2). By default (i.e. without this flag), MEGAnE analyzes all chromosomes.')
 parser.add_argument('-male_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the male-specific chromosome(s). Default: chrY,Y', default='chrY,Y')
 parser.add_argument('-female_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) that is diploid in female. Default: chrX,X', default='chrX,X')

@@ -1,6 +1,7 @@
 Satellite
 satellite
 SAT
+MSAT
 Pseudogene
 snRNA
 KER

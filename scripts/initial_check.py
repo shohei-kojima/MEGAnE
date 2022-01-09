@@ -109,6 +109,19 @@ def check(args, argv, init_base):
         else:
             log.logger.error('Please specify BAM or CRAM file with -b or -c flag.')
             exit(1)
+        if args.unsorted is False:
+            if args.b is not None:
+                if os.path.exists(args.b + '.bai') is False:
+                    base,_=os.path.splitext(args.b)
+                    if os.path.exists(base + '.bai') is False:
+                        log.logger.info('Generating BAM index...')
+                        pysam.index(args.b, '-@ %d' % args.p)
+            else:
+                if os.path.exists(args.c + '.crai') is False:
+                    base,_=os.path.splitext(args.c)
+                    if os.path.exists(base + '.crai') is False:
+                        log.logger.info('Generating CRAM index...')
+                        pysam.index(args.c, '-@ %d' % args.p)
         
         # check prerequisite modules
         from Bio.Seq import Seq

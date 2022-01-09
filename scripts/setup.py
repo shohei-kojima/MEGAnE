@@ -176,11 +176,11 @@ def setup(args, base):
         if args.setting is not None:
             param_path=args.setting
         elif args.verylowdep is True:
-            param_path=join(base, 'lib/parameter_settings_lowdep.txt')
+            param_path=join(base, 'docs/parameter_settings_lowdep.txt')
         elif args.lowdep is True:
-            param_path=join(base, 'lib/parameter_settings_lowdep.txt')
+            param_path=join(base, 'docs/parameter_settings_lowdep.txt')
         else:
-            param_path=join(base, 'lib/parameter_settings.txt')
+            param_path=join(base, 'docs/parameter_settings.txt')
         import load_parameters
         params=load_parameters.load(args, param_path)
 
@@ -228,7 +228,7 @@ def setup_geno_only_load_params(args, base):
     try:
         # load parameter settings
         global params
-        param_path=join(base, 'lib/parameter_settings_geno.txt')
+        param_path=join(base, 'docs/parameter_settings_geno.txt')
         import load_parameters
         params=load_parameters.load_geno(args, param_path)
         # check sex, cov, readlen
@@ -343,7 +343,7 @@ def setup_geno(args, base):
         
         # load parameter settings
         global params
-        param_path=join(base, 'lib/parameter_settings_geno.txt')
+        param_path=join(base, 'docs/parameter_settings_geno.txt')
         import load_parameters
         params=load_parameters.load_geno(args, param_path)
                 
@@ -403,7 +403,7 @@ def setup_merge_vcf(args, base):
         if args.repremove is not None:
             param_path=args.repremove
         else:
-            param_path=join(base, 'lib/human_non_ME_rep_headers.txt')
+            param_path=join(base, 'docs/human_non_ME_rep_headers.txt')
         rep_headers_to_be_removed=set()
         with open(param_path) as infile:
             for line in infile:

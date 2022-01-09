@@ -8,6 +8,7 @@ See file LICENSE for details.
 '''
 
 import os,gzip
+import utils
 import math
 from statistics import mean
 import pybedtools
@@ -20,14 +21,21 @@ def grouped_mei_to_bed(args, params, filenames):
     
     try:
         pybedtools.set_tempdir(args.pybedtools_tmp)
+        me_to_class,_=utils.load_me_classification(filenames.reshaped_rep)
+        
+        def rename_L1(me):
+            if ('_5end' in me) or ('_3end' in me) or ('_orf2' in me):
+                if me_to_class[me] == 'LINE/L1':
+                    me=me.replace('_5end', '').replace('_3end', '').replace('_orf2', '')
+            return me
         
         def predict_shared_te(R_list, L_list, r_strand, l_strand):
             cands=[]
             R_tes,L_tes=set(),set()
             for l in R_list:
-                R_tes.add(l[0])
+                R_tes.add(rename_L1(l[0]))
             for l in L_list:
-                L_tes.add(l[0])
+                L_tes.add(rename_L1(l[0]))
             shared_tes= R_tes & L_tes
             if len(shared_tes) >= 1:
                 tes=sorted(list(shared_tes))
@@ -47,11 +55,17 @@ def grouped_mei_to_bed(args, params, filenames):
                         else:
                             d[te][1].append(int(s))
                 for te in d:
-                    d[te][0]=round(mean(d[te][0]))
-                    d[te][1]=round(mean(d[te][1]))
-                    cands.append('%s,%d/%d,%s/%s' % (te, d[te][0], d[te][1], r_strand, l_strand))
+                    if len(d[te][0]) >= 1:
+                        d[te][0]=str(round(mean(d[te][0])))
+                    else:
+                        d[te][0]='NA'
+                    if len(d[te][1]) >= 1:
+                        d[te][1]=str(round(mean(d[te][1])))
+                    else:
+                        d[te][1]='NA'
+                    cands.append('%s,%s/%s,%s/%s' % (te, d[te][0], d[te][1], r_strand, l_strand))
             return cands
-
+        
         def search_transduction(params, filenames, infilename):
             bed=[]
             with open(filenames.tmp_for_3transd, 'w') as outfile:
@@ -168,12 +182,12 @@ def grouped_mei_to_bed(args, params, filenames):
                                 for te in tes.split(';'):
                                     if not te == 'NA' and not te == '':
                                         ts=te.split(',')
-                                        R_tes.add(ts[0])
+                                        R_tes.add(rename_L1(ts[0]))
                             for tes in ls[11].split(';;'):
                                 for te in tes.split(';'):
                                     if not te == 'NA' and not te == '':
                                         ts=te.split(',')
-                                        L_tes.add(ts[0])
+                                        L_tes.add(rename_L1(ts[0]))
                             shared_tes= R_tes & L_tes
                             # if shared TEs exist
                             if len(shared_tes) >= 1:
@@ -185,6 +199,7 @@ def grouped_mei_to_bed(args, params, filenames):
                                         for te in tes.split(';'):
                                             if not te == 'NA' and not te == '':
                                                 te_name=te.split(',')[0]
+                                                te_name=rename_L1(te_name)
                                                 if te_name in evals_d:
                                                     evals_d[te_name].append(float(eval))
                                 for eval,tes in zip(ls[9].split(';'), ls[11].split(';;')):
@@ -192,6 +207,7 @@ def grouped_mei_to_bed(args, params, filenames):
                                         for te in tes.split(';'):
                                             if not te == 'NA' and not te == '':
                                                 te_name=te.split(',')[0]
+                                                te_name=rename_L1(te_name)
                                                 if te_name in evals_d:
                                                     evals_d[te_name].append(float(eval))
                                 for te in evals_d:
@@ -209,7 +225,8 @@ def grouped_mei_to_bed(args, params, filenames):
                                     for te in tes.split(';'):
                                         if not te == 'NA' and not te == '':
                                             ts=te.split(',')
-                                            if ts[0] in tes_min_eval:
+                                            _me=rename_L1(ts[0])
+                                            if _me in tes_min_eval:
                                                 if ts[3] == '+':
                                                     R_plus.append(ts)
                                                 else:
@@ -219,7 +236,8 @@ def grouped_mei_to_bed(args, params, filenames):
                                     for te in tes.split(';'):
                                         if not te == 'NA' and not te == '':
                                             ts=te.split(',')
-                                            if ts[0] in tes_min_eval:
+                                            _me=rename_L1(ts[0])
+                                            if _me in tes_min_eval:
                                                 if ts[3] == '+':
                                                     L_plus.append(ts)
                                                 else:
@@ -241,10 +259,11 @@ def grouped_mei_to_bed(args, params, filenames):
                                 for cand in cands:
                                     if ('+/+' in cand) or ('-/-' in cand):
                                         rbp,lbp=cand.split(',')[1].split('/')
-                                        inslen= int(lbp) - int(rbp)
-                                        if 10 < inslen < 50:
-                                            len_short=True
-                                len_status='no' if len_short is True else 'yes'
+                                        if not rbp == 'NA' and not lbp == 'NA':
+                                            inslen= int(lbp) - int(rbp)
+                                            if 10 < inslen < 50:
+                                                len_short=True
+                                            len_status='no' if len_short is True else 'yes'
                                 pred_status='PASS'
                                 pred_res='MEI=' + '|'.join(cands)
                             # if not shared TE exist

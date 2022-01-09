@@ -12,7 +12,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='v1.0.0 2021/11/29'
+version='v1.0.0 2022/01/09'
 
 
 # args
@@ -40,7 +40,7 @@ parser.add_argument('-L1_filt_off', help='Optional. Specify if your sample is NO
 parser.add_argument('-unsorted', help='Optional. Specify if an input BAM/CRAM is not position sorted.', action='store_true')
 parser.add_argument('-verylowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 10x).', action='store_true')
 parser.add_argument('-lowdep', help='Optional. Specify if you use parameter settings for low depth (generally less than 15x).', action='store_true')
-parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/prog/lib/parameter_settings.txt')
+parser.add_argument('-setting', metavar='str', type=str, help='Optional. Specify full path to the parameter setting file. Default: /path/to/MEGAnE/docs/parameter_settings.txt')
 parser.add_argument('-only_ins', help='Optional. Specify if you only analyze non-reference MEI insertions.', action='store_true')
 parser.add_argument('-only_abs', help='Optional. Specify if you only analyze absence of reference MEI.', action='store_true')
 parser.add_argument('-pybedtools_tmp', metavar='str', type=str, help='Optional. Specify directory for temporary bedtools files, e.g. /dev/shm')

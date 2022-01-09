@@ -101,13 +101,14 @@ def load_me_classification(path_to_file):
         for line in infile:
             if '>' in line:
                 ls=line.strip().replace('>', '').split('\t')
+                clas=None
                 if len(ls) >= 2:
-                    clas=ls[1]
-                    if ls[0] == 'SVA2':  # exist in humrep.ref of RepBase24.01
-                        clas='SINE'
-                clas=clas.replace(' ', '_')
+                    if len(ls[1]) >= 1:
+                        clas=ls[1].replace(' ', '_')
+                        if ls[0] == 'SVA2':  # exist in humrep.ref of RepBase24.01
+                            clas='SINE'
+                        all_clas.add(clas)
                 mes[ls[0]]=clas
-                all_clas.add(clas)
     return mes, all_clas
 
 
