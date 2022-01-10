@@ -13,11 +13,14 @@ docker pull docker://shoheikojima/megane:v1.0.0
 ```
   
 # Input file
-- Currently, MEGAnE supports BAM and CRAM file aligned by BWA-MEM, DRAGEN,  and Isaac.  
-- We recommend to analyze 25x or higher depth, but it 
-
+- MEGAnE supports position-sorted BAM and CRAM file aligned by BWA-MEM, DRAGEN, and Isaac.  
+- MEGAnE only supports paired-end WGS. Single-end WGS is not compatible.  
+- We recommend to analyze WGS of 25x or higher depth, but it can also analyze 15x depth WGS by using the `-lowdep` option.  
+- MEGAnE has a best performance with WGS of 150-bp or longer read length. We do not recommend to use WGS of less than 100-bp.  
+- For more details, please see our wiki page (under construction) or the instruction PDF file found in `docs` directory.  
+  
 # In-depth usage
-Please see our wiki page (under construction) or the instruction PDF file found at `docs/MEGAnE_v1.0_instruction.pdf`.  
+Please see our wiki page (under construction) or the instruction PDF file found in `docs` directory.  
   
 # Quick usage for human WGS
 
