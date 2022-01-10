@@ -1,5 +1,6 @@
 # About MEGAnE
-
+**MEGAnE**, **M**obile **E**lement search and **G**enotyping **An**alysis **E**nvironment, identifies and genotypes polymorphic mobile elements from short-read whole genome shotgun sequencing data (WGS). The current version does not support whole exome sequencing data nor is it tuned to detect somatic polymorphisms. The initial release of MEGAnE officially supports human and mouse datasets. However, we designed MEGAnE to allow analysis of other species, if the end user provides repeat library (e.g. consensus sequences from RepBase or Dfam).
+  
 # Installation
 MEGAnE can be available as Docker and Singularity containers. We highly recommend to use such containers.  
   
@@ -11,6 +12,10 @@ sudo singularity build MEGAnE_v1.0.0.sif docker://shoheikojima/megane:v1.0.0
 docker pull docker://shoheikojima/megane:v1.0.0
 ```
   
+# Input file
+- Currently, MEGAnE supports BAM and CRAM file aligned by BWA-MEM, DRAGEN,  and Isaac.  
+- We recommend to analyze 25x or higher depth, but it 
+
 # In-depth usage
 Please see our wiki page (under construction) or the instruction PDF file found at `docs/MEGAnE_v1.0_instruction.pdf`.  
   
