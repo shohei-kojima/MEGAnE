@@ -67,6 +67,7 @@ singularity exec ${sif} call_genotype_38 \
 ### Step 2. Joint calling
 - After the analysis of multiple BAM/CRAM files, you can make a joint call.  
 - This will take several hours when merging 1000s samples.  
+- MEGAnE supports joint calling from massive WGS (e.g. 10s of thousands). For more details, please see detailed the instruction PDF file found in `docs` directory.  
   
 ```
 sif=/path/to/MEGAnE_[version].sif
@@ -75,14 +76,14 @@ sif=/path/to/MEGAnE_[version].sif
 ls -d /path/to/[all_output_directories] > dirlist.txt
 
 # merge non-reference ME insertions
-singularity exec ${sif} build_kmerset \
+singularity exec ${sif} joint_calling_hs \
 -merge_mei \
 -f dirlist.txt \
 -fa /path/to/reference_human_genome.fa \
 -cohort_name test
 
 # merge reference ME polymorphisms
-singularity exec ${sif} build_kmerset \
+singularity exec ${sif} joint_calling_hs \
 -merge_absent_me \
 -f dirlist.txt \
 -fa /path/to/reference_human_genome.fa \
