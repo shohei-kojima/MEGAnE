@@ -220,4 +220,4 @@ print('Repeats found: ', len(out))
 with open(args.o, 'w') as outfile:
     outfile.write(''.join(out))
 
-print('When running MEGAnE with this output, please specify %s with "-rep" flag.' % args.o))
+print('When running MEGAnE with this output, please specify %s with "-rep" flag.' % args.o)
