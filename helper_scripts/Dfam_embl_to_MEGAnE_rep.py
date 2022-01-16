@@ -13,14 +13,14 @@ Usage:
     
 Details:
     First, please convert the "Dfam_curatedonly.h5" file to the embl format using the "famdb.py".
-    e.g. in the case of human: python famdb.py -i /path/to/Dfam_curatedonly.h5 families -f embl -ad 9606 > Dfam_9606.embl
+    e.g. in the case of mouse: python famdb.py -i /path/to/Dfam_curatedonly.h5 families -f embl -ad 10090 > Dfam_10090.embl
     "famdb.py" can be downloaded from https://github.com/Dfam-consortium/FamDB/blob/master/famdb.py
     You can convert the embl format file to a MEGAnE rep file.
-    e.g. python Dfam_embl_to_MEGAnE_rep.py -i Dfam_9606.embl
-    This will generate "Dfam_9606.rep" file which can be used in MEGAnE step 1.
+    e.g. python Dfam_embl_to_MEGAnE_rep.py -i Dfam_10090.embl
+    This will generate "Dfam_10090.rep" file which can be used in MEGAnE step 1.
 
 Show help message:
-    python Dfam_fa_to_rep.py -h
+    python Dfam_embl_to_MEGAnE_rep.py -h
 '''
 
 
@@ -176,6 +176,50 @@ def reconstruct_L1(embl, out, headers):
     return out, headers, reconstructed
 
 
+def reconstruct_L1HS_L1PREC2(embl, out, headers):
+    reconstructed=set()
+    # reconstruct L1HS
+    found=[False, False, False]
+    for seqname in embl:
+        repbase,family,seq=embl[seqname]
+        if repbase == 'L1HS':
+            if '_5end' in seqname:
+                end5=seq
+                found[0]=True
+            elif '_orf2' in seqname:
+                orf2=seq
+                found[1]=True
+            elif '_3end' in seqname:
+                end3=seq
+                found[2]=True
+    if sum(found) == 3:
+        seq= end5 + orf2[150:] + end3[150:]
+        out.append('>%s\t%s\t.\n%s\n' % ('L1HS', 'LINE/L1', seq))
+        headers['L1HS'] += 1
+        reconstructed.add('L1HS')
+        reconstructed.add('L1P1')
+    # reconstruct L1PREC2
+    found=[False, False, False]
+    for seqname in embl:
+        repbase,family,seq=embl[seqname]
+        if repbase == 'L1PREC2':
+            if '_5end' in seqname:
+                end5=seq
+                found[0]=True
+            elif '_orf2' in seqname:
+                orf2=seq
+                found[1]=True
+            elif '_3end' in seqname:
+                end3=seq
+                found[2]=True
+    if sum(found) == 3:
+        seq= end5 + orf2[150:] + end3[150:]
+        out.append('>%s\t%s\t.\n%s\n' % ('L1PREC2', 'LINE/L1', seq))
+        headers['L1PREC2'] += 1
+        reconstructed.add('L1PREC2')
+    return out, headers, reconstructed
+
+
 def format(embl):
     out=[]
     headers=collections.Counter()
@@ -191,14 +235,18 @@ def format(embl):
             redundant.add(repbase)
     
     # reconstruct L1
-    out,headers,reconstructed=reconstruct_L1(embl, out, headers)
-    print('Reconstructed L1: ', len(reconstructed))
+    out,headers,reconstructed1=reconstruct_L1(embl, out, headers)
+    out,headers,reconstructed2=reconstruct_L1HS_L1PREC2(embl, out, headers)
+    reconstructed= reconstructed1 | reconstructed2
+    print('Reconstructed L1: ', len(reconstructed - {'L1P1'}))
     
     # others
     for seqname in embl:
         repbase,family,seq=embl[seqname]
-        if repbase in reconstructed:
-            continue
+        if family == 'LINE/L1':
+            L1_name=seqname.replace('_5end', '').replace('_orf2', '').replace('_3end', '')
+            if L1_name in reconstructed:
+                continue
         if family is None:
             family=''
         else:
