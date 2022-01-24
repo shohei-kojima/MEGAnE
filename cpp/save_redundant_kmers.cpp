@@ -62,7 +62,7 @@ int find_and_save_red_kmers(char* fa, char* f_fai, char* out_mk, char* out_mi) {
     // for 2bit conversion
     const int window_size=init_dna_to_2bit_64();
     std::vector<uint64_t> v;
-    v.reserve(genome_total_len);
+    v.reserve(genome_total_len * 2);
     
     // read chrs
     for (int chr=0; chr < chr_num; chr++) {
