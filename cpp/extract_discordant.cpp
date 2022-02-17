@@ -404,13 +404,13 @@ inline void define_breakpoint(std::pair<char, uint32_t> (&cigar_arr)[MAX_CIGAR_L
                              char& breakpoint, int32_t& l_clip_len, int32_t& r_clip_len,
                               int64_t& clipstart, int64_t& clipend, int32_t& l_qseq) {
     // left length
-    if (cigar_arr[0].first == 'S') {
+    if (cigar_arr[0].first == 'S' || cigar_arr[0].first == 'H') {  // in case of DRAGEN, SA tag will have hard clip
         l_clip_len=cigar_arr[0].second;
     } else {
         l_clip_len=0;
     }
     // right length
-    if (cigar_arr[n_cigar - 1].first == 'S') {
+    if (cigar_arr[n_cigar - 1].first == 'S' || cigar_arr[n_cigar - 1].first == 'H') {  // same as above
         r_clip_len=cigar_arr[n_cigar - 1].second;
     } else {
         r_clip_len=0;
