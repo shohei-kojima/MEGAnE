@@ -78,6 +78,40 @@ def parse_fasta_transd(path_to_file):
     return tmp
 
 
+def rename_fasta_header_serial_num(orig_fa_path, new_fa_path, header_file_path):
+    new_fa=open(new_fa_path, 'w')
+    header=open(header_file_path, 'w')
+    n=0
+    with open(orig_fa_path) as infile:
+        for line in infile:
+            if line[0] == '>':
+                header.write('%d\t%s' % (n, line[1:]))
+                new_fa.write('>%d\n' % n)
+                n += 1
+            else:
+                new_fa.write(line)
+    new_fa.close()
+    header.close()
+    shutil.move(new_fa_path, orig_fa_path)
+
+
+def reconstruct_blast_out_header(res_no_header_path, new_res_path, header_file_path):
+    new_res=open(new_res_path, 'w')
+    # load headers
+    n_to_header={}
+    with open(header_file_path) as infile:
+        for line in infile:
+            ls=line.strip().split('\t')
+            n_to_header[ls[0]]=ls[1]
+    with open(res_no_header_path) as infile:
+        for line in infile:
+            ls=line.split('\t', 1)
+            ls[0]=n_to_header[ls[0]]
+            new_res.write('\t'.join(ls))
+    new_res.close()
+    shutil.move(new_res_path, res_no_header_path)
+
+
 def parse_fasta_for_merge_vcf(path_to_file):
     tmp={}
     seq=[]

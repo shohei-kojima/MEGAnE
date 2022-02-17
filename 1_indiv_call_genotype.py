@@ -173,6 +173,9 @@ filenames.abs_res           =os.path.join(args.outdir, 'absent_MEs.bed')
 filenames.transd_res        =os.path.join(args.outdir, 'absent_MEs_transduction.bed')
 filenames.abs_dummmy        =os.path.join(args.outdir, 'absent_MEs_dummy.bed')
 
+filenames.tmp               =os.path.join(args.outdir, 'just_tmp.txt')
+filenames.tmp_header        =os.path.join(args.outdir, 'blast_tmp_header.txt')
+
 
 if args.only_geno is False:
     # 0. preprocess repbase file
@@ -245,9 +248,12 @@ if args.only_geno is False:
             blastn.blastn(args, params, filenames.unmapped_fa, filenames.repdb, filenames.blast2_res)
             parse_blastn_result.unmapped_to_fa(params, filenames.unmapped_fa, filenames.blast2_res, filenames.unmapped_hit_fa)
             utils.gzip_or_del(args, params, filenames.blast2_res)
+            utils.rename_fasta_header_serial_num(filenames.unmapped_hit_fa, filenames.tmp, filenames.tmp_header)
             blastn.blastn_culling(args, params, filenames.unmapped_hit_fa, args.fadb, filenames.blast3_res, params.max_ref_genome_hits_for_unmapped + 1)
+            utils.reconstruct_blast_out_header(filenames.blast3_res, filenames.tmp, filenames.tmp_header)
             parse_blastn_result.find_chimeric_unmapped(args, params, filenames.blast3_res, filenames.unmapped_MEI)
             # del files
+            utils.gzip_or_del(args, params, filenames.tmp_header)
             utils.gzip_or_del(args, params, filenames.blast3_res)
             utils.gzip_or_del(args, params, filenames.unmapped_hit_fa)
         utils.gzip_or_del(args, params, filenames.unmapped_fa)
