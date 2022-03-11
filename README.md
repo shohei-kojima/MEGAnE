@@ -1,6 +1,8 @@
 # About MEGAnE
 **MEGAnE**, **M**obile **E**lement search and **G**enotyping **An**alysis **E**nvironment, identifies and genotypes polymorphic mobile elements from short-read whole genome shotgun sequencing data (WGS). The current version does not support whole exome sequencing data nor is it tuned to detect somatic polymorphisms. The initial release of MEGAnE officially supports human and mouse datasets. However, we designed MEGAnE to allow analysis of other species, if the end user provides repeat library (e.g. consensus sequences from RepBase or Dfam).
   
+MEGAnE (眼鏡 in Japanese) is pronunced like "mega" + "net." In Japanese, megane means a glass or glasses that fine-tunes our sight to see something or understand truth.  
+  
 # Installation
 MEGAnE can be available as Docker and Singularity containers. We highly recommend to use such containers.  
   

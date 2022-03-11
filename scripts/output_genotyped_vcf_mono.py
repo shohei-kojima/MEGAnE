@@ -49,7 +49,9 @@ def output_ins_bed_vcf(args, params, filenames):
         header.append('##ALT=<ID=INS:ME,Description="Insertion of mobile element">\n')
         header.append('##FILTER=<ID=LC,Description="Low confidence">\n')
         header.append('##FILTER=<ID=NU,Description="Not unique">\n')
-        header.append('##FILTER=<ID=S,Description="Shorter than 50-bp">\n')
+        header.append('##FILTER=<ID=S,Description="Spanning read num is outlier">\n')
+        header.append('##FILTER=<ID=F,Description="Shorter than 50-bp">\n')
+        header.append('##FILTER=<ID=D,Description="Relative depth of breakpoint is outlier">\n')
         header.append('##FILTER=<ID=G,Description="Outliers during genotyping">\n')
         header.append('##FILTER=<ID=R,Description="No discordant read stat available">\n')
         header.append('##FILTER=<ID=Y,Description="Variants on chrY. This is only available when female">\n')
@@ -88,7 +90,7 @@ def output_ins_bed_vcf(args, params, filenames):
             if 'unique:no' in ls[7]:
                 filt.append('NU')
             if '50bp_or_longer:no' in ls[7]:
-                filt.append('S')
+                filt.append('F')
             if remove_Y is True and ls[0] in params.chrY:
                 filt.append('Y')
             if len(filt) == 0:
