@@ -215,6 +215,12 @@ def setup(args, base):
         # homozygous
         if args.homozygous is True:
             args.monoallelic=True
+        
+        # L1 filter
+        args.L1_filt_off=True  # default from MEGAnE 1.0.0
+        if args.L1_filt_on is True:
+            args.L1_filt_off=False
+        
     except SystemExit:
         log.logger.debug('\n'+ traceback.format_exc())
         exit(1)

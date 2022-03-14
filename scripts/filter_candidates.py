@@ -76,6 +76,7 @@ def filter(args, params, filenames):
                     coeff= coeff / 100
                     func=gaussian_func_biallelics(coeff)
                     try:
+                        np.random.seed(123)
                         popt,pcov=curve_fit(func, x, y, init_param)
                         residuals= y - func(x, *popt)  # all x
                         rss=np.sum(residuals**2)
@@ -97,6 +98,7 @@ def filter(args, params, filenames):
                 log.logger.debug('r_squared=%f,biallelic_coeff=%f' %(r_squared, coeff))
             elif args.monoallelic is True:
                 coeff=None
+                np.random.seed(123)
                 popt,pcov=curve_fit(gaussian_func, x, y, init_param)
                 residuals= y - gaussian_func(x, *popt)
                 rss=np.sum(residuals**2)

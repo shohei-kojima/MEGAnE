@@ -49,7 +49,7 @@ sif=/path/to/MEGAnE_[version].sif
 
 # In the case of BAM file mapping to GRCh37-related genome (e.g. hs37d5, human_g1k_v37, hg19)
 singularity exec ${sif} call_genotype_37 \
--b /path/to/input.bam \
+-i /path/to/input.bam \
 -fa /path/to/reference_human_genome.fa \
 -mk /path/to/megane_kmer_set/reference_human_genome.mk \
 -outdir MEGAnE_result_test \
@@ -58,7 +58,7 @@ singularity exec ${sif} call_genotype_37 \
 
 # In the case of CRAM file mapping to GRCh38-related genome (e.g. GRCh38DH, hg38)
 singularity exec ${sif} call_genotype_38 \
--c /path/to/input.cram \
+-i /path/to/input.cram \
 -fa /path/to/reference_human_genome.fa \
 -mk /path/to/megane_kmer_set/reference_human_genome.mk \
 -outdir MEGAnE_result_test \
@@ -74,7 +74,7 @@ singularity exec ${sif} call_genotype_38 \
 ```
 sif=/path/to/MEGAnE_[version].sif
 
-# first, list up samples (output directories from Step 2) you are going to merge
+# first, list up samples (output directories from Step 1) you are going to merge
 ls -d /path/to/[all_output_directories] > dirlist.txt
 
 # merge non-reference ME insertions

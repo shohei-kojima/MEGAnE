@@ -63,6 +63,7 @@ def calc_dosage(args, params, filenames, infilename, plotfilename, outfilename):
                 coeff= coeff / 100
                 func=gaussian_func_biallelics(coeff)
                 try:
+                    np.random.seed(123)
                     popt,pcov=curve_fit(func, x, y, init_param)
                     residuals= y - func(x, *popt)  # all x
                     rss=np.sum(residuals**2)

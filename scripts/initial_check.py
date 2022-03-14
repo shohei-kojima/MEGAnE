@@ -47,6 +47,17 @@ def check(args, argv, init_base):
             log.logger.error('Too many thread number. Please specify the number less than your cpu cores. You specified = %d, cpu cores = %d.' % (args.p, cpu_num))
             exit(1)
         
+        # judge bam or cram
+        if args.i.split('.')[-1].lower() == 'bam':
+            args.b=args.i
+            args.c=None
+        elif args.i.split('.')[-1].lower() == 'cram':
+            args.b=None
+            args.c=args.i
+        else:
+            log.logger.error('Input WGS (%s) must end with either ".bam" or ".cram". Please check the file name again.' % args.i)
+            exit(1)
+        
         # check PATH
         for i in ['blastn', 'bedtools', 'samtools']:
             if which(i) is None:
