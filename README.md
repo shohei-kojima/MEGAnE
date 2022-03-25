@@ -1,17 +1,20 @@
-# About MEGAnE
+# MEGAnE
 **MEGAnE**, **M**obile **E**lement search and **G**enotyping **An**alysis **E**nvironment, identifies and genotypes polymorphic mobile elements from short-read whole genome shotgun sequencing data (WGS). The current version does not support whole exome sequencing data nor is it tuned to detect somatic polymorphisms. The initial release of MEGAnE officially supports human and mouse datasets. However, we designed MEGAnE to allow analysis of other species, if the end user provides repeat library (e.g. consensus sequences from RepBase or Dfam).
   
 MEGAnE (眼鏡 in Japanese) is pronunced like "mega" + "net." In Japanese, megane means a glass or glasses that fine-tunes our sight to see something or understand truth.  
+**Currently MEGAnE is beta version. Please use this version at your own risk.**
   
 # Installation
 MEGAnE can be available as Docker and Singularity containers. We highly recommend to use such containers.  
   
 ```
 # build for Singlarity 3
-sudo singularity build MEGAnE_v1.0.0.sif docker://shoheikojima/megane:v1.0.0
+sudo singularity build MEGAnE.sif docker://shoheikojima/megane:v1.0.0.beta
+# or 
+singularity build --fakeroot MEGAnE.sif docker://shoheikojima/megane:v1.0.0.beta
 
 # build for Docker
-docker pull docker://shoheikojima/megane:v1.0.0
+docker pull docker://shoheikojima/megane:v1.0.0.beta
 ```
   
 # Input file
@@ -31,7 +34,7 @@ Please see our wiki page.
 - Usually, this takes ~10 min and requires ~50GB RAM.  
   
 ```
-sif=/path/to/MEGAnE_[version].sif
+sif=/path/to/MEGAnE.sif
 
 singularity exec ${sif} build_kmerset \
 -fa /path/to/reference_human_genome.fa \
@@ -45,7 +48,7 @@ singularity exec ${sif} build_kmerset \
 - One 30x human WGS takes ~1 hour using 4 threads.  
   
 ```
-sif=/path/to/MEGAnE_[version].sif
+sif=/path/to/MEGAnE.sif
 
 # In the case of BAM file mapping to GRCh37-related genome (e.g. hs37d5, human_g1k_v37, hg19)
 singularity exec ${sif} call_genotype_37 \
@@ -72,7 +75,7 @@ singularity exec ${sif} call_genotype_38 \
 - MEGAnE supports joint calling from massive WGS (e.g. 10s of thousands). For more details, please see the wiki page.  
   
 ```
-sif=/path/to/MEGAnE_[version].sif
+sif=/path/to/MEGAnE.sif
 
 # first, list up samples (output directories from Step 1) you are going to merge
 ls -d /path/to/[all_output_directories] > dirlist.txt
@@ -98,7 +101,7 @@ singularity exec ${sif} joint_calling_hs \
 - This is particularly useful when you do haplotype phasing using MEGAnE's results.  
   
 ```
-sif=/path/to/MEGAnE_[version].sif
+sif=/path/to/MEGAnE.sif
 
 singularity exec ${sif} reshape_vcf \
 -i /path/to/jointcall_out/[cohort_name]_MEI_jointcall.vcf \
