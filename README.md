@@ -197,3 +197,8 @@ shapeit4 \
 --output SNP_ME.phased.vcf.gz
 ```
 
+# Acknowledgement
+- MEGAnE uses thread-pool in this page: https://github.com/progschj/ThreadPool
+- MEGAnE uses htslib: https://github.com/samtools/htslib
+- MEGAnE wraps [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi), [samtools](https://www.htslib.org), [bedtools](https://bedtools.readthedocs.io/en/latest/).
+- MEGAnE was developed by Shohei Kojima and Nicholas F. Parrish at [RIKEN](https://www.riken.jp/en/research/labs/ims/genom_immunobiol_riken_hakubi/index.html) with great inputs from Atsushi Takeda and Michiaki Hamada at [Waseda University](https://www.hamadalab.com).
