@@ -24,10 +24,10 @@ docker pull docker://shoheikojima/megane:v1.0.0.beta
 - MEGAnE only supports paired-end WGS. Single-end WGS is not compatible. MEGAnE does not support WES.  
 - We recommend to analyze WGS of 25x or higher depth, but it can also analyze 15x depth WGS by using the `-lowdep` option.  
 - MEGAnE has a best performance with WGS of 150-bp or longer read length. We do not recommend to use WGS of less than 100-bp.  
-- For more details, please see our Wiki page.  
+- For more details, please see our [Wiki](https://github.com/shohei-kojima/MEGAnE/wiki) page.  
   
 # In-depth usage
-Please see our Wiki page.  
+Please see our [Wiki](https://github.com/shohei-kojima/MEGAnE/wiki) page.  
   
 # Quick usage for human WGS
 
@@ -74,7 +74,7 @@ singularity exec ${sif} call_genotype_38 \
 ### Step 2. Joint calling
 - After the analysis of multiple BAM/CRAM files, you can make a joint call.  
 - This will take several hours when merging 1000s samples.  
-- MEGAnE supports joint calling from massive WGS (e.g. 10s of thousands). For more details, please see the Wiki page.  
+- MEGAnE supports joint calling from massive WGS (e.g. 10s of thousands). For more details, please see the [Wiki](https://github.com/shohei-kojima/MEGAnE/wiki) page.  
   
 ```
 sif=/path/to/MEGAnE.sif
