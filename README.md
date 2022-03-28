@@ -1,7 +1,7 @@
 # MEGAnE
-**MEGAnE**, **M**obile **E**lement search and **G**enotyping **An**alysis **E**nvironment, identifies and genotypes polymorphic mobile elements from short-read whole genome shotgun sequencing data (WGS). The current version does not support whole exome sequencing data nor is it tuned to detect somatic polymorphisms. The initial release of MEGAnE officially supports human and mouse datasets. However, we designed MEGAnE to allow analysis of other species, if the end user provides repeat library (e.g. consensus sequences from RepBase or Dfam).
+**MEGAnE**, **M**obile **E**lement search and **G**enotyping **An**alysis **E**nvironment, identifies and genotypes polymorphic mobile elements from short-read whole genome shotgun sequencing data (WGS). The current version does not support whole exome sequencing data nor is it tuned to detect somatic polymorphisms. The initial release of MEGAnE officially supports human and mouse datasets. However, we designed MEGAnE to allow analysis of other species, if the end user provides a repeat library (e.g. consensus sequences from RepBase or Dfam).
   
-MEGAnE (眼鏡 in Japanese) is pronunced like "mega" + "net." In Japanese, megane means a glass or glasses that fine-tunes our sight to see something or understand truth.  
+MEGAnE (眼鏡 in Japanese) is pronunced like "mega" + "ne" as in "net." In Japanese, megane refers to a glass/lens that fine-tunes our sight enabling us to see something more clearly or understand truth.
   
 **Currently MEGAnE is beta version. Please use this version at your own risk.**
   
@@ -11,7 +11,7 @@ Shohei Kojima et al, bioRxiv 2022.03.25.485726; doi: https://doi.org/10.1101/202
   
 # Installation
 MEGAnE can be available as docker and Singularity containers from [dockerhub](https://hub.docker.com/r/shoheikojima/megane).  
-We highly recommend to use such containers rather than preparing the required environment by yourself.  
+We highly recommend using such containers rather than preparing the required environment by yourself.  
   
 ```
 # build for Singlarity
