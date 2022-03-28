@@ -1,7 +1,7 @@
 # MEGAnE
-**MEGAnE**, **M**obile **E**lement search and **G**enotyping **An**alysis **E**nvironment, identifies and genotypes polymorphic mobile elements from short-read whole genome shotgun sequencing data (WGS). The current version does not support whole exome sequencing data nor is it tuned to detect somatic polymorphisms. The initial release of MEGAnE officially supports human and mouse datasets. However, we designed MEGAnE to allow analysis of other species, if the end user provides a repeat library (e.g. consensus sequences from RepBase or Dfam).
+**MEGAnE**, **M**obile **E**lement **G**enotyping **An**alysis **E**nvironment, identifies and genotypes polymorphic mobile elements from short-read whole genome shotgun sequencing data (WGS). The current version does not support whole exome sequencing data nor is it tuned to detect somatic polymorphisms. The initial release of MEGAnE officially supports human and mouse datasets. However, we designed MEGAnE to allow analysis of other species, if the end user provides a repeat library (e.g. consensus sequences from RepBase or Dfam).
   
-MEGAnE (眼鏡 in Japanese) is pronunced like "mega" + "ne" as in "net." In Japanese, megane refers to a glass/lens that fine-tunes our sight enabling us to see something more clearly or understand truth.
+MEGAnE (眼鏡 in Japanese) is pronounced like "mega" + "ne" as in "net." In Japanese, <i>megane</i> refers to a glass/lens that fine-tunes our vision enabling us to see something more clearly or understand truth.
   
 **Currently MEGAnE is beta version. Please use this version at your own risk.**
   
@@ -76,7 +76,7 @@ singularity exec ${sif} call_genotype_38 \
 ```
   
 ### Step 2. Joint calling
-- After the analysis of multiple BAM/CRAM files, you can make a joint call.  
+- After analyzing multiple BAM/CRAM files, you can make a joint call.  
 - This will take several hours when merging 1000s samples.  
 - MEGAnE supports joint calling from massive WGS (e.g. 10s of thousands). For more details, please see the [Wiki](https://github.com/shohei-kojima/MEGAnE/wiki) page.  
   
@@ -201,4 +201,4 @@ shapeit4 \
 - MEGAnE uses thread-pool in this page: https://github.com/progschj/ThreadPool
 - MEGAnE uses htslib: https://github.com/samtools/htslib
 - MEGAnE wraps [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi), [samtools](https://www.htslib.org), [bedtools](https://bedtools.readthedocs.io/en/latest/).
-- MEGAnE was developed by Shohei Kojima and Nicholas F. Parrish at [RIKEN](https://www.riken.jp/en/research/labs/ims/genom_immunobiol_riken_hakubi/index.html) with great inputs from Atsushi Takeda and Michiaki Hamada at [Waseda University](https://www.hamadalab.com).
+- MEGAnE was developed by Shohei Kojima and Nicholas F. Parrish at [RIKEN](https://www.riken.jp/en/research/labs/ims/genom_immunobiol_riken_hakubi/index.html) with great input from Atsushi Takeda and Michiaki Hamada at [Waseda University](https://www.hamadalab.com).
