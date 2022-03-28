@@ -5,6 +5,10 @@ MEGAnE (眼鏡 in Japanese) is pronunced like "mega" + "net." In Japanese, megan
   
 **Currently MEGAnE is beta version. Please use this version at your own risk.**
   
+# Citation
+Mobile elements in human population-specific genome and phenotype divergence  
+Shohei Kojima et al, bioRxiv 2022.03.25.485726; doi: https://doi.org/10.1101/2022.03.25.485726
+  
 # Installation
 MEGAnE can be available as docker and Singularity containers from [dockerhub](https://hub.docker.com/r/shoheikojima/megane).  
 We highly recommend to use such containers rather than preparing the required environment by yourself.  
