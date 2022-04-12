@@ -11,7 +11,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 import ctypes as ct
 
 # version
-version='v1.0.0 2021/11/21'
+version='v1.0.1 2021/11/21'
 
 # args
 parser=argparse.ArgumentParser(description='')

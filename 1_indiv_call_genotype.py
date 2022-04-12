@@ -12,7 +12,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='v1.0.0 2022/03/14'
+version='v1.0.1 2022/04/12'
 
 
 # args
@@ -31,6 +31,7 @@ parser.add_argument('-readlen', metavar='int or auto', type=str, help='Optional.
 parser.add_argument('-sex', metavar='str', type=str, help='Optional, but specify whenever possible. Specify "female" or "male" or "auto" or "unknown". "auto" is only available for human samples. If "auto" is specified, it automatically estimate the sex. Default: auto', default='auto')
 parser.add_argument('-male_sex_chr', metavar='str', type=str, help='Optional. Specify a name of the male-specific chromosome. Default: chrY and Y', default='chrY,Y')
 parser.add_argument('-female_sex_chr', metavar='str', type=str, help='Optional. Specify a name of the chromosome that is diploid in female. Default: chrX and X', default='chrX,X')
+parser.add_argument('-no_sex_chr', help='Optional. Specify if the input species does not have sex chromosome (e.g. environmental sex determination).', action='store_true')
 parser.add_argument('-sample_name', metavar='str', type=str, help='Optional. Specify sample name which will be labeled in the VCF output. If not specified, BAM/CRAM filename will be output.')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./result_out', default='./result_out')
 parser.add_argument('-homozygous', help='Optional. Specify if you use inbred mouse strains (i.e. homozygous at all loci).', action='store_true')

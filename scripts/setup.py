@@ -140,23 +140,27 @@ def setup(args, base):
         else:
             log.logger.info('All %d main chromosome(s) were found in %s.' % (found_n, samfilename))
         # sex chr
-        found_n=0
-        for chr in chrX:
-            if chr in all_chrs_in_bam_header:
-                log.logger.info('"%s" was found in %s. "%s" will be considered as a female sex chromosome.' % (chr, samfilename, chr))
-                found_n += 1
-        if found_n == 0:
-            log.logger.error('Sex chromosome %s was NOT found in %s. Please check again if you are specifying correct chrosomes with "-female_sex_chr" flag.' % (chrX, samfilename))
-            exit(1)
-        found_n=0
-        for chr in chrY:
-            if chr in all_chrs_in_bam_header:
-                log.logger.info('"%s" was found in %s. "%s" will be considered as a male sex chromosome.' % (chr, samfilename, chr))
-                found_n += 1
-                args.nochrY=False
-        if found_n == 0:
-            args.nochrY=True
-            log.logger.warning('Sex chromosome %s was NOT found in %s. Male sex chromosome will not be analyzed. Will continue anyway.' % (chrY, samfilename))
+        if args.no_sex_chr is False:
+            found_n=0
+            for chr in chrX:
+                if chr in all_chrs_in_bam_header:
+                    log.logger.info('"%s" was found in %s. "%s" will be considered as a female sex chromosome.' % (chr, samfilename, chr))
+                    found_n += 1
+            if found_n == 0:
+                log.logger.error('Sex chromosome %s was NOT found in %s. Please check again if you are specifying correct chrosomes with "-female_sex_chr" flag.' % (chrX, samfilename))
+                exit(1)
+            found_n=0
+            for chr in chrY:
+                if chr in all_chrs_in_bam_header:
+                    log.logger.info('"%s" was found in %s. "%s" will be considered as a male sex chromosome.' % (chr, samfilename, chr))
+                    found_n += 1
+                    args.nochrY=False
+            if found_n == 0:
+                args.nochrY=True
+                log.logger.warning('Sex chromosome %s was NOT found in %s. Male sex chromosome will not be analyzed. Will continue anyway.' % (chrY, samfilename))
+        else:
+            args.nochrY=True  # this is needed because of auto_setting.estimate_depth_sex
+            log.logger.info('"-no_sex_chr" option was specified. All chromosomes will be treated as autosomes.')
         
         # fai
         global fai_path
@@ -244,6 +248,9 @@ def setup_geno_only_load_params(args, base):
         male={'male', 'Male', 'MALE', 'M', 'm'}
         chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
         chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
+        if args.no_sex_chr is True:
+            chrX=set()
+            chrY=set()
         args.sex=args.sex.replace('"', '')
         if not args.sex in auto:
             if not args.sex in female:
