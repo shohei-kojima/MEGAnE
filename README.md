@@ -10,7 +10,7 @@ Mobile elements in human population-specific genome and phenotype divergence
 Shohei Kojima et al, bioRxiv 2022.03.25.485726; doi: https://doi.org/10.1101/2022.03.25.485726
   
 # Quick guide
-** Please see our [Wiki](https://github.com/shohei-kojima/MEGAnE/wiki) page for further instruction and details**  
+**Please see our [Wiki](https://github.com/shohei-kojima/MEGAnE/wiki) page for further instruction and details.**  
 
 ## Installation
 MEGAnE can be available as docker and Singularity containers from [dockerhub](https://hub.docker.com/r/shoheikojima/megane).  
