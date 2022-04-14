@@ -292,7 +292,11 @@ def merge_vcf_ins(args, params, filenames):
     log.logger.debug('started')
     try:
         pybedtools.set_tempdir(args.pybedtools_tmp)
-        chrY_set=set([ chr for chr in args.male_sex_chr.split(',') ])
+        chrY_set=set()
+        if args.no_sex_chr is False:
+            chrY_set=set([ chr for chr in args.male_sex_chr.split(',') ])
+        else:
+            pass
         me_to_class,_=load_me_classification(args.rep)
         
         # load te length

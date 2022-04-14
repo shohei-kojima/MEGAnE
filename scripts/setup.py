@@ -406,8 +406,12 @@ def setup_merge_vcf(args, base):
         global female, male, chrX, chrY
         female={'female', 'Female', 'F', 'f'}
         male={'male', 'Male', 'M', 'm'}
-        chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
-        chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
+        if args.no_sex_chr is False:
+            chrX=set([ chr for chr in args.female_sex_chr.split(',') ])
+            chrY=set([ chr for chr in args.male_sex_chr.split(',') ])
+        else:
+            chrX=set()
+            chrY=set()
         if args.chr is not None:
             args.chr=set([ chr for chr in args.chr.split(',') ])
         

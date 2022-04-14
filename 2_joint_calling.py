@@ -26,6 +26,7 @@ parser.add_argument('-repremove', metavar='str', type=str, help='Optional. Speci
 parser.add_argument('-chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) to be analyzed with comma as a delimiter (e.g. chr1,chr2). By default (i.e. without this flag), MEGAnE analyzes all chromosomes.')
 parser.add_argument('-male_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the male-specific chromosome(s). Default: chrY,Y', default='chrY,Y')
 parser.add_argument('-female_sex_chr', metavar='str', type=str, help='Optional. Specify name(s) of the chromosome(s) that is diploid in female. Default: chrX,X', default='chrX,X')
+parser.add_argument('-no_sex_chr', help='Optional. Specify if the input species does not have sex chromosome (e.g. environmental sex determination).', action='store_true')
 parser.add_argument('-outdir', metavar='str', type=str, help='Optional. Specify output directory. Default: ./jointcall_out', default='./jointcall_out')
 parser.add_argument('-cohort_name', metavar='str', type=str, help='Optional. Specify a cohort name. This will be used for the variant names as well the output file name. Default: YYYY-MM-DD-HHMMSS')
 parser.add_argument('-make_scaffold', help='Optional. Specify if you only generate a scaffold VCF. This option is for joint calling of massive samples (e.g. >10,000).', action='store_true')
