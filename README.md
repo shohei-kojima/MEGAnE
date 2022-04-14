@@ -3,13 +3,16 @@
   
 MEGAnE (眼鏡 in Japanese) is pronounced like "mega" + "ne" as in "net." In Japanese, <i>megane</i> refers to a glass/lens that fine-tunes our vision enabling us to see something more clearly or understand truth.
   
-**Currently MEGAnE is beta version. Please use this version at your own risk.**
+**Currently MEGAnE is beta version. Please use this version at your own risk.**  
   
 # Citation
 Mobile elements in human population-specific genome and phenotype divergence  
 Shohei Kojima et al, bioRxiv 2022.03.25.485726; doi: https://doi.org/10.1101/2022.03.25.485726
   
-# Installation
+# Quick guide
+** Please see our [Wiki](https://github.com/shohei-kojima/MEGAnE/wiki) page for further instruction and details**  
+
+## Installation
 MEGAnE can be available as docker and Singularity containers from [dockerhub](https://hub.docker.com/r/shoheikojima/megane).  
 We highly recommend using such containers rather than preparing the required environment by yourself.  
   
@@ -23,17 +26,17 @@ singularity build --fakeroot MEGAnE.sif docker://shoheikojima/megane:v1.0.0.beta
 docker pull docker://shoheikojima/megane:v1.0.0.beta
 ```
   
-# Input file
+## Input file
 - MEGAnE can take a position-sorted BAM and CRAM file aligned by BWA-MEM and DRAGEN (in the case of DRAGEN, `-skip_unmapped` should be specified).  
 - MEGAnE only supports paired-end WGS. Single-end WGS is not compatible. MEGAnE does not support WES.  
 - We recommend to analyze WGS of 25x or higher depth, but it can also analyze 15x depth WGS by using the `-lowdep` option.  
 - MEGAnE has a best performance with WGS of 150-bp or longer read length. We do not recommend to use WGS of less than 100-bp.  
 - For more details, please see our [Wiki](https://github.com/shohei-kojima/MEGAnE/wiki) page.  
   
-# In-depth usage
+## In-depth usage
 Please see our [Wiki](https://github.com/shohei-kojima/MEGAnE/wiki) page.  
   
-# Quick usage for human WGS
+## Quick usage for human WGS
 
 ### Step 0. Prepare MEGAnE k-mer file
 - Before analyzing your BAM/CRAM files, you need to make MEGAnE k-mer files from your human reference genome (e.g. GRCh38DH, hs37d5, etc).  
