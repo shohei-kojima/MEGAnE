@@ -12,7 +12,7 @@ import os,sys,datetime,argparse,glob,shutil,logging
 
 
 # version
-version='v1.0.1 2022/04/12'
+version='v1.0.2 2022/05/03'
 
 
 # args
@@ -195,10 +195,11 @@ if args.only_geno is False:
         os.remove(filenames.rep_slide_file)
     
     # 1. process unmapped overhangs
-    import parse_blastn_result, find_additional_pA, extract_discordant, extract_discordant_c
+    import parse_blastn_result, find_additional_pA, extract_discordant
     from multiprocessing import Pool
     log.logger.info('Discordant read search started.')
     if (args.unsorted is True) or (args.v0 is True):
+        import extract_discordant_c
         if args.p >= 2:
             def extract_discordant_exe(n):
                 tmp=extract_discordant_c.main(args, params, filenames, n)  ### c
