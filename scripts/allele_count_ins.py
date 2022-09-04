@@ -160,10 +160,13 @@ def limit(args, params, filenames, data):
             infile=pysam.AlignmentFile(filenames.limited_b, 'rb')
         else:
             infile=pysam.AlignmentFile(filenames.limited_c, 'rc', reference_filename=args.fa)
+        no_mdz=False
         for line in infile:
             line=line.tostring()
-            break
-        if not 'MD:Z' in line:
+            if not 'MD:Z' in line:
+                no_mdz=True
+                break
+        if no_mdz:
             if args.b is not None:
                 os.rename(filenames.limited_b, filenames.limited_tb)
                 cmd='samtools calmd -@ %d -b %s %s > %s' % (args.p, filenames.limited_tb, args.fa, filenames.limited_b)
