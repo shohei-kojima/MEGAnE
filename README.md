@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/229880456.svg)](https://zenodo.org/badge/latestdoi/229880456)
+
 # MEGAnE
 **MEGAnE**, **M**obile **E**lement **G**enotyping **An**alysis **E**nvironment, identifies and genotypes polymorphic mobile elements from short-read whole genome shotgun sequencing data (WGS). The current version does not support whole exome sequencing data nor is it tuned to detect somatic polymorphisms. The initial release of MEGAnE officially supports human and mouse datasets. However, we designed MEGAnE to allow analysis of other species, if the end user provides a repeat library (e.g. consensus sequences from RepBase or Dfam).
   

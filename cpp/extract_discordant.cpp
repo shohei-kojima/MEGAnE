@@ -936,13 +936,14 @@ inline void process_aln(htsFile *fp, sam_hdr_t *h, bam1_t *b, const std::vector<
                   breakpoint, l_clip_len, r_clip_len, clipstart, clipend, l_qseq);
     }
     
-    // prep seq
+    // prep seq, seq_nt16_str[] = "=ACMGRSVTWYHKDBN" (see hts.c)
     char nt;
     fseq.clear();
     rseq.clear();
     uint8_t* seq_p = bam_get_seq(b);
     for (int i=0; i < l_qseq; i++) {
         nt=seq_nt16_str[bam_seqi(seq_p, i)];
+        if (nt == 'N') { return; }  // if N is found in the read, do not process
         fseq += nt;
         rseq += complement[nt];  // just complement, do not reverse
     }
