@@ -482,6 +482,7 @@ def merge_vcf_ins(args, params, filenames):
                 else:
                     failed[m].add(id)
         for m in failed:
+            log.logger.debug('%s=%d dropped,%d kept' % (m, len(failed[m]), len(poss[m])))
             if len(failed[m]) >= 1:
                 log.logger.debug('%s=%d ids failed' % (m, len(failed[m])))
         # retrieve fasta
@@ -495,17 +496,24 @@ def merge_vcf_ins(args, params, filenames):
                 if start < 0:
                     start=0
                 bed.append('%s\t%d\t%s\t%s\n' % (chr, start, poss[m][id][1], id))
+                log.logger.debug('%s,%d,%s,%s' % (chr, start, poss[m][id][1], id))
+        log.logger.debug('len of bed=%d' % len(bed))
         bed=BedTool(''.join(bed), from_string=True)
+        log.logger.debug('bed file obj was made')
         fa=bed.sequence(fi=args.fa, name=True)
+        log.logger.debug('fa was made')
         tmp=parse_fasta_for_merge_vcf(fa.seqfn)
+        log.logger.debug('len of tmp=%d' % len(tmp))
         fa={}
         for h in tmp:
             fa[h.split('::')[0].replace('>', '')]=tmp[h].upper()
+        log.logger.debug('len of fa=%d' % len(fa))
         # output
         n=0
         d={}
         sample_ids=set()
         for m in count:
+            log.logger.debug('processing=%s' % m)
             for id in count[m]:
                 if id in failed[m]:
                     continue
@@ -574,6 +582,8 @@ def merge_vcf_ins(args, params, filenames):
                     d[id][sample_id]=gt
                     sample_ids.add(sample_id)
                 n += 1
+            log.logger.debug('processed=%s,%d' % (m, n))
+        log.logger.debug('total processed=%d' % n)
         sample_ids=sorted(list(sample_ids))
         for id in d:
             for sample_id in sample_ids:
@@ -582,6 +592,7 @@ def merge_vcf_ins(args, params, filenames):
                     if id in vlc_intersects:
                         if sample_id in vlc_intersects[id]:
                             d[id][sample_id]='0/.'
+        log.logger.debug('genotyping done')
         header.append('##INFO=<ID=SVTYPE,Number=.,Type=String,Description="Mobile element class">\n')
         header.append('##INFO=<ID=MEI,Number=.,Type=String,Description="Mobile element subclass">\n')
         header.append('##INFO=<ID=MEPRED,Number=.,Type=String,Description="MEI prediction status">\n')
@@ -592,6 +603,7 @@ def merge_vcf_ins(args, params, filenames):
         header.append('##INFO=<ID=AC,Number=1,Type=Integer,Description="Allele count.">\n')
         header.append('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">\n')
         header.append('##FORMAT=<ID=CN,Number=1,Type=Integer,Description="Copy number genotype for imprecise events">\n')
+        log.logger.debug('just before outputting filenames.merged_vcf_ins')
         with gzip.open(filenames.merged_vcf_ins, 'wt') as outfile:
             outfile.write(''.join(header))
             outfile.write('#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t%s\n' % '\t'.join(sample_ids))
@@ -601,6 +613,7 @@ def merge_vcf_ins(args, params, filenames):
                 for c in col_names:
                     tmp.append(d[id][c])
                 outfile.write('\t'.join(tmp) +'\n')
+        log.logger.debug('all done')
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
