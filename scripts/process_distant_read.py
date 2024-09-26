@@ -19,7 +19,7 @@ def process_reads(args, params, filenames):
         import pybedtools
         from pybedtools import BedTool
         pybedtools.set_tempdir(args.pybedtools_tmp)
-        
+
         def process_bed(bed):
             ids={}
             bed=BedTool(bed, from_string=True)
@@ -39,20 +39,20 @@ def process_reads(args, params, filenames):
         mes,_=utils.load_me_classification(filenames.reshaped_rep)
 
         # list up simple repeat in the ref genome
-        simple=''
-        tes=''
+        simple=[]
+        tes=[]
         with open(filenames.repout_bed) as infile:
             for line in infile:
                 ls=line.split()
                 name,clas=ls[3].split(':')
                 if clas == 'Simple_repeat':
-                    simple += line
+                    simple.append(line)
                 elif not name in mes:
-                    simple += line
+                    simple.append(line)
                 else:
                     tes += line
-        simple=BedTool(simple, from_string=True)
-        tes=BedTool(tes, from_string=True)
+        simple=BedTool("".join(simple), from_string=True)
+        tes=BedTool("".join(tes), from_string=True)
 
         # pairing of distant reads
         d={}
@@ -88,6 +88,11 @@ def process_reads(args, params, filenames):
                         tmp=process_bed(bed)
                         d.update(tmp)
                         bed=[]
+
+        bed='\n'.join(bed)
+        tmp=process_bed(bed)
+        d.update(tmp)
+
         del(simple)
         del(tes)
         del(retain)
