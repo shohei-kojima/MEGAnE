@@ -32,13 +32,13 @@ def filter(args, params, filenames):
     log.logger.debug('started')
     try:
         pybedtools.set_tempdir(args.pybedtools_tmp)
-        
+
         if args.b is not None:
             input_sample=os.path.basename(args.b)
         elif args.c is not None:
             input_sample=os.path.basename(args.c)
         nts=['A', 'T']
-        
+
         # determine cutoff from actual percentile threshold
         def determine_cutoff(list_support_read_count):
             cutoff_pos= math.ceil(len(list_support_read_count) * params.actual_cutoff_rank)
@@ -49,7 +49,7 @@ def filter(args, params, filenames):
             def gaussian_func_biallelic(x, a, mu, sigma):
                 return ((1-coeff)*a*np.exp(-(x-mu)**2/(2*sigma**2))) + (coeff*a*np.exp(-(x-(2*mu))**2/(4*sigma**2)))
             return gaussian_func_biallelic
-        
+
         def gaussian_func(x, a, mu, sigma):
             return a*np.exp(-(x-mu)**2/(2*sigma**2))
 
@@ -104,7 +104,7 @@ def filter(args, params, filenames):
                 rss=np.sum(residuals**2)
                 tss=np.sum((y - np.mean(y))**2)
                 r_squared= 1 - (rss / tss)
-            reject1perc=norm.interval(alpha=params.fit_gaussian_CI_alpha, loc=popt[1], scale=abs(popt[2]))
+            reject1perc=norm.interval(params.fit_gaussian_CI_alpha, loc=popt[1], scale=abs(popt[2]))
             return x, y, popt, pcov, reject1perc, r_squared, coeff
 
         def L1_filter(line, r_pos, l_pos, pA_only, R_eval, L_eval):
@@ -191,7 +191,7 @@ def filter(args, params, filenames):
             gaussian_executed=True
             cutoff=determine_cutoff(for_gaussian_fitting)  # percentile cutoff
             log.logger.debug('total_support_read_num_cutoff=%d' % cutoff)
-            
+
             x,y,popt,pcov,reject1perc,r_squared,coeff=fit_gaussian(for_gaussian_fitting)  # gaussian cutoff
             log.logger.debug('popt=%s,pcov=%s' %(str(popt), str(pcov)))
             xd=np.arange(min(x), max(x), 0.5)
@@ -317,7 +317,7 @@ def filter(args, params, filenames):
                                         high.add(line)
                                 else:
                                     high.add(line)
-            
+
             with open(outfilename, 'w') as outfile:
                 for line in all:
                     if line in high:
@@ -463,7 +463,7 @@ def grouping(args, filenames):
                 outfile.flush()
                 os.fdatasync(outfile.fileno())
             return ins_n
-                    
+
         global ins_ns
         ins_ns=[]
         if args.gaussian_executed is True:
@@ -481,4 +481,3 @@ def grouping(args, filenames):
     except:
         log.logger.error('\n'+ traceback.format_exc())
         exit(1)
-
